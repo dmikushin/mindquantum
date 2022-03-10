@@ -19,7 +19,7 @@
 
 #include "QuEST.h"
 #include "QuEST_internal.h"
-#include "backends/quest/quest_utils.h"
+#include "quest_utils.h"
 #include "core/utils.h"
 #include "gate/basic_gate.h"
 #include "hamiltonian/hamiltonian.h"

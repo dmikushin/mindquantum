@@ -24,7 +24,7 @@
 #include <thread>
 #include <vector>
 
-#include "backends/projectq/projectq_utils.h"
+#include "projectq_utils.h"
 #include "gate/basic_gate.h"
 #include "gate/gates.h"
 #include "hamiltonian/hamiltonian.h"

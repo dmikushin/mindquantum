@@ -179,16 +179,6 @@ endif()
 
 include(${CMAKE_CURRENT_LIST_DIR}/pybind11.cmake)
 
-# ------------------------------------------------------------------------------
-
-if(ENABLE_PROJECTQ)
-  include(${CMAKE_CURRENT_LIST_DIR}/projectq.cmake)
-endif()
-
-if(ENABLE_QUEST)
-  include(${CMAKE_CURRENT_LIST_DIR}/quest.cmake)
-endif()
-
 # ==============================================================================
 # For Huawei internal security assessment
 

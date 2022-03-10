@@ -116,7 +116,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/linker_flags.cmake)
 # ==============================================================================
 # Add submodule dependencies (now rather than later so that the relevant macros/variables are defined)
 
-add_subdirectory(mindquantum/src)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/third_party)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ccsrc)
 
 # ==============================================================================
 # Some more macro definitions

@@ -20,10 +20,10 @@
 #include <pybind11/stl_bind.h>
 
 #ifdef ENABLE_PROJECTQ
-#    include "backends/projectq/projectq.h"
+#    include "projectq.h"
 #endif
 #ifdef ENABLE_QUEST
-#    include "backends/quest/quest.h"
+#    include "quest.h"
 #endif
 #include "core/type.h"
 #include "gate/gates.h"

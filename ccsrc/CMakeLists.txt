@@ -16,8 +16,8 @@
 #
 # ==============================================================================
 
-add_library(mq_quest INTERFACE)
-target_sources(mq_quest INTERFACE quest.h quest_utils.h)
+# lint_cmake: -whitespace/indent
 
-target_include_directories(mq_quest INTERFACE ${CMAKE_CURRENT_LIST_DIR})
-target_link_libraries(mq_quest INTERFACE QuEST)
+add_subdirectory(mqbackend)
+add_subdirectory(mq_base)
+# add_subdirectory(cxx_experimental)
