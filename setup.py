@@ -25,10 +25,11 @@ import platform
 import shutil
 import subprocess
 import sys
-from distutils.command.clean import clean
 
 import setuptools
+from setuptools.cmd import Command
 from setuptools.command.build_ext import build_ext
+from setuptools.command.clean import clean
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__)))
 
@@ -390,9 +391,9 @@ class GenerateRequirementFile(setuptools.Command):
 ext_modules = [
     CMakeExtension(pymod='mindquantum.libQuEST', target='QuEST', optional=True),
     CMakeExtension(pymod='mindquantum.mqbackend'),
-    CMakeExtension(pymod='mindquantum.experimental._cxx_core'),
-    CMakeExtension(pymod='mindquantum.experimental._cxx_cengines'),
-    CMakeExtension(pymod='mindquantum.experimental._cxx_ops'),
+    CMakeExtension(pymod='mindquantum.experimental._cxx_core', optional=True),
+    CMakeExtension(pymod='mindquantum.experimental._cxx_cengines', optional=True),
+    CMakeExtension(pymod='mindquantum.experimental._cxx_ops', optional=True),
 ]
 
 
