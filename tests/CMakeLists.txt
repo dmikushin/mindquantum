@@ -24,13 +24,11 @@ include(Catch)
 
 # ==============================================================================
 
-# cmake-format: off
-# add_subdirectory(core)
-# add_subdirectory(decompositions)
-# add_subdirectory(mapping)
-# add_subdirectory(ops)
-# add_subdirectory(optimisation)
-# cmake-format: on
+add_subdirectory(core)
+add_subdirectory(decompositions)
+add_subdirectory(mapping)
+add_subdirectory(ops)
+add_subdirectory(optimisation)
 
 # ==============================================================================
 

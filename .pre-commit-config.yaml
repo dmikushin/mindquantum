@@ -39,15 +39,19 @@ repos:
       - id: check-toml
       - id: debug-statements
       - id: end-of-file-fixer
+        exclude: ^(.*patch[0-9]*)$
       - id: mixed-line-ending
       - id: trailing-whitespace
+        exclude: ^(.*patch[0-9]*)$
       - id: fix-encoding-pragma
+        exclude: ^(.*patch[0-9]*)$
 
   # Changes tabs to spaces
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.1.10
     hooks:
       - id: remove-tabs
+        exclude: ^(.*patch[0-9]*)$
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 2.1.5
@@ -58,7 +62,7 @@ repos:
     rev: v2.1.0
     hooks:
       - id: codespell
-        files: (.*mindquantum/.*)
+        files: (.*ccsrc/.*|.*mindquantum/.*|.*\.txt|.*\.cmake|.*\.md)
         args: [-q, '7', -S, '.git,third_party', -I, .codespell.allow]
 
   - repo: https://github.com/cheshirekow/cmake-format-precommit

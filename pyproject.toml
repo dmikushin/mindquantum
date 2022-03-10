@@ -1,6 +1,5 @@
 [build-system]
-# requires = ["setuptools>=42", "wheel", "pybind11>=2.6.0", "setuptools_scm[toml]>=3.4"]
-requires = ["setuptools>=42", "wheel", "pybind11>=2.6.0"]
+requires = ["setuptools>=45", "wheel", "pybind11>=2.6.2", "setuptools_scm[toml]>=6"]
 build-backend = "backend"
 backend-path = ["_build"]
 
@@ -8,7 +7,7 @@ backend-path = ["_build"]
 
 [tool.black]
     line-length = 120
-    target-version = ['py36','py37','py38']
+    target-version = ['py36','py37','py38', 'py39']
     skip-string-normalization = true
 
 
@@ -58,11 +57,11 @@ backend-path = ["_build"]
 profile = "black"
 
 
-#[tool.setuptools_scm]
-#write_to = 'VERSION.txt'
-#write_to_template = '{version}'
-#local_scheme = 'no-local-version'
-#fallback_version = '0.3.0'
+[tool.setuptools_scm]
+write_to = 'VERSION.txt'
+write_to_template = '{version}'
+local_scheme = 'no-local-version'
+fallback_version = 'v2.0.0'
 
 
 [tool.yapf]

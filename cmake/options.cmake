@@ -78,9 +78,6 @@ endif()
 option(USE_PARALLEL_STL "Use parallel STL algorithms (GCC, Intel, IntelLLVM and MSVC only for now)"
        ${_USE_PARALLEL_STL})
 
-option(ENABLE_PROJECTQ "Enable ProjectQ support" ON)
-option(ENABLE_QUEST "Enable QuEST support" ON)
-
 # ------------------------------------------------------------------------------
 
 option(ENABLE_PROFILING "Enable compilation with profiling flags." OFF)

@@ -23,6 +23,15 @@ format:
   require_valid_layout: false
 parse:
   additional_commands:
+    file:
+      pargs:
+        flags:
+          - CONFIGURE
+          - '@ONLY'
+      kwargs:
+        OUTPUT: 1
+        CONTENT: 1
+        NEWLINE_STYLE: 1
     test_compile_option:
       pargs:
         nargs: 1+
@@ -42,6 +51,47 @@ parse:
         LANGS: +
         FLAGS: +
         GENEX: 1
+    __exec_cmd:
+      kwargs:
+        COMMAND: +
+        WORKING_DIRECTORY: 1
+    mindquantum_add_pkg:
+      pargs:
+        nargs: 1
+        flags:
+          - CMAKE_PKG_NO_COMPONENTS
+          - FORCE_CONFIG_SEARCH
+          - FORCE_EXACT_VERSION
+          - GEN_CMAKE_CONFIG
+          - ONLY_MAKE
+          - ONLY_UNPACK
+          - SKIP_BUILD_STEP
+          - SKIP_INSTALL_STEP
+      kwargs:
+        CMAKE_PATH: 1
+        CUSTOM_CMAKE: 1
+        DIR: 1
+        EXE: 1
+        GIT_REPOSITORY: 1
+        GIT_TAG: 1
+        MD5: 1
+        NS_NAME: 1
+        URL: 1
+        VER: 1
+        BUILD_COMMAND: +
+        BUILD_OPTION: +
+        CMAKE_OPTION: +
+        CONFIGURE_COMMAND: +
+        COPY_TO_BINARY_DIR: +
+        INSTALL_COMMAND: +
+        INSTALL_INCS: +
+        INSTALL_LIBS: +
+        LIBS: +
+        ONLY_MAKE_INCS: +
+        ONLY_MAKE_LIBS: +
+        PATCHES: +
+        PRE_CONFIGURE_COMMAND: +
+        TARGET_ALIAS: +
 lint:
   argument_var_pattern: _?[a-z][a-z0-9_]+
   local_var_pattern: _?([a-z][a-z0-9_]+|[A-Z][A-Z0-9_]+)

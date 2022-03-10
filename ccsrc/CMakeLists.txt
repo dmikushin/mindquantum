@@ -20,4 +20,7 @@
 
 add_subdirectory(mqbackend)
 add_subdirectory(mq_base)
-# add_subdirectory(cxx_experimental)
+
+if(ENABLE_CXX_EXPERIMENTAL)
+  add_subdirectory(cxx_experimental)
+endif()
