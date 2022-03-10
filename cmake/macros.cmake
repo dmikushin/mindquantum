@@ -58,6 +58,25 @@ macro(to_cmake_path path_var)
   endif()
 endmacro()
 
+# ------------------------------------------------------------------------------
+
+# ~~~
+# (helper function) Compute the absolute path to an existing file or directory with symlinks resolved.
+#
+# real_path(<path> <out-var>)
+# ~~~
+function(real_path path var)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+    file(REAL_PATH "${path}" _resolved_path)
+  else()
+    get_filename_component(_resolved_path "${path}" REALPATH)
+  endif()
+
+  set(${var}
+      "${_resolved_path}"
+      PARENT_SCOPE)
+endfunction()
+
 # ==============================================================================
 
 # ~~~
@@ -194,6 +213,70 @@ function(duplicate_target new_target original_target)
       _copy_target_property(${original_target} ${new_target} ${_config}_${prop})
     endforeach()
   endforeach()
+endfunction()
+
+# ==============================================================================
+
+# ~~~
+# Apply a list of patches by calling `patch -p1 <patch-file>`
+#
+# apply_patches(<working_directory> [<patch-file> [... <patch-file>]])
+# ~~~
+function(apply_patches working_directory)
+  set(_execute_patch_args)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+    list(APPEND _execute_patch_args ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE)
+  endif()
+
+  foreach(_patch_file ${ARGN})
+    # NB: All these shenanigans with file(CONFIGURE ...) are just to make sure that we get a file with LF line
+    # endings...
+    get_filename_component(_patch_file_name ${_patch_file} NAME)
+    set(_lf_patch_file ${CMAKE_BINARY_DIR}/_mq_patch/${_patch_file_name})
+    file(READ "${_patch_file}" _content)
+    # NB: escape patches that have @XXX@ since those would be replaced by the call to file(CONFIGURE)
+    set(_at @)
+    string(REGEX REPLACE [[\@([a-zA-Z_]+)\@]] [[@_at@\1@_at@]] _content "${_content}")
+    if(CMAKE_VERSION VERSION_LESS 3.20)
+      set(_less <)
+      set(_greater >)
+      # NB: some of the patches contain email addresses <name.surname@email.com>
+      string(REGEX REPLACE [[<([a-zA-Z0-9\.]+)\@([a-zA-Z0-9\.]+)>]] [[@_less@\1@_at@\2@_greater@]] _content
+                           "${_content}")
+      string(REPLACE "<" "@_less@" _content "${_content}")
+      string(REPLACE ">" "@_greater@" _content "${_content}")
+    endif()
+    set(NEWLINE_STYLE LF)
+    if(PATCH_USE_NATIVE_ENCODING AND WIN32)
+      set(NEWLINE_STYLE CRLF)
+    endif()
+
+    file(
+      CONFIGURE
+      OUTPUT "${_lf_patch_file}"
+      CONTENT "${_content}"
+      @ONLY
+      NEWLINE_STYLE ${NEWLINE_STYLE})
+
+    file(MD5 "${_lf_patch_file}" _md5)
+    set(_patch_lock_file "${working_directory}/mq_applied_patch_${_md5}")
+
+    if(NOT EXISTS "${_patch_lock_file}")
+      message(STATUS "Applying patch ${_patch_file}")
+      execute_process(
+        COMMAND "${Patch_EXECUTABLE}" -p1
+        INPUT_FILE "${_lf_patch_file}"
+        WORKING_DIRECTORY "${working_directory}"
+        RESULT_VARIABLE _result ${_execute_patch_args})
+      if(NOT _result EQUAL "0")
+        message(FATAL_ERROR "Failed patch: ${_lf_patch_file}")
+      endif()
+      file(TOUCH ${_patch_lock_file})
+    else()
+      message(STATUS "Skipping patch ${_patch_file} since already applied.")
+    endif()
+  endforeach()
+
 endfunction()
 
 # ==============================================================================

@@ -15,50 +15,23 @@
 # limitations under the License.
 #
 # ==============================================================================
-
-set(PKG_NAME quest)
-set(PKG_ROOT ${DEP_DIR}/${PKG_NAME}-src)
-
-set(URL "https://gitee.com/donghufeng/QuEST/repository/archive/v3.2.1.tar.gz")
-
-file(GLOB _patch_files "${PATCH_DIR}/quest/*.patch*")
-
-# ==============================================================================
 # Fetch the source code
 
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
   set(CMAKE_CUDA_ARCHITECTURES 60;70)
 endif()
 
-FetchContent_Declare(${PKG_NAME} URL ${URL})
-FetchContent_Populate(${PKG_NAME})
+FetchContent_Declare(quest URL "https://gitee.com/donghufeng/QuEST/repository/archive/v3.2.1.tar.gz")
+if(NOT quest_POPULATED)
+  FetchContent_Populate(quest)
+endif()
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Patch the source code
 
-# cmake-lint: disable=C0103
-set(${PKG_NAME}_PATCHED
-    FALSE
-    CACHE STRING INTERNAL)
-
-if(NOT ${PKG_NAME}_PATCHED)
-  message("Patching for ${PKG_NAME}")
-  foreach(_file ${_patch_files})
-    execute_process(
-      COMMAND ${Patch_EXECUTABLE} -p1
-      INPUT_FILE ${_file}
-      WORKING_DIRECTORY ${PKG_ROOT}
-      RESULT_VARIABLE _result)
-
-    if(NOT _result EQUAL 0)
-      message(FATAL_ERROR "Failed patch: ${_file}")
-    endif()
-  endforeach()
-
-  set(${PKG_NAME}_PATCHED
-      TRUE
-      CACHE STRING INTERNAL FORCE)
-endif()
+file(GLOB _patch_files "${CMAKE_CURRENT_LIST_DIR}/patch/*.patch*")
+list(SORT _patch_files CASE INSENSITIVE)
+apply_patches("${quest_SOURCE_DIR}" ${_patch_files})
 
 # ==============================================================================
 
@@ -67,7 +40,7 @@ function(add_quest_subdirectory)
   set(GPUACCELERATED ${ENABLE_CUDA})
   set(TESTING OFF)
   set(GPU_COMPUTE_CAPABILITY ${CMAKE_CUDA_ARCHITECTURES})
-  add_subdirectory(${PKG_ROOT} ${CMAKE_BINARY_DIR}/_deps/${PKG_NAME}-build EXCLUDE_FROM_ALL)
+  add_subdirectory("${quest_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/quest" EXCLUDE_FROM_ALL)
 endfunction()
 
 add_quest_subdirectory()

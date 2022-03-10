@@ -1,5 +1,5 @@
---- projectq-src/projectq/backends/_sim/_cppkernels/intrin/alignedallocator.hpp	2020-06-05 15:07:57.000000000 +0200
-+++ projectq-src-new/projectq/backends/_sim/_cppkernels/intrin/alignedallocator.hpp	2021-10-04 10:44:26.352241980 +0200
+--- projectq-src/projectq/backends/_sim/_cppkernels/intrin/alignedallocator.hpp    2020-06-05 15:07:57.000000000 +0200
++++ projectq-src-new/projectq/backends/_sim/_cppkernels/intrin/alignedallocator.hpp    2021-10-04 10:44:26.352241980 +0200
 @@ -1,120 +1,231 @@
 -// Copyright (C) 2012 Andreas Hehn  <hehn@phys.ethz.ch>.
 -

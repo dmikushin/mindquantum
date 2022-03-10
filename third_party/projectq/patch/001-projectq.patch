@@ -1,6 +1,6 @@
 diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intrin/kernel1.hpp patched/projectq/backends/_sim/_cppkernels/intrin/kernel1.hpp
---- original/projectq/backends/_sim/_cppkernels/intrin/kernel1.hpp	2020-06-05 15:07:57.000000000 +0200
-+++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel1.hpp	2022-02-08 19:17:47.492721800 +0100
+--- original/projectq/backends/_sim/_cppkernels/intrin/kernel1.hpp    2020-06-05 15:07:57.000000000 +0200
++++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel1.hpp    2022-02-08 19:17:47.492721800 +0100
 @@ -17,18 +17,18 @@
  {
      __m256d v[2];
@@ -44,8 +44,8 @@ diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intr
                  if (((i0 + i1)&ctrlmask) == ctrlmask)
                      kernel_core(psi, i0 + i1, d0, mm, mmt);
 diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intrin/kernel2.hpp patched/projectq/backends/_sim/_cppkernels/intrin/kernel2.hpp
---- original/projectq/backends/_sim/_cppkernels/intrin/kernel2.hpp	2020-06-05 15:07:57.000000000 +0200
-+++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel2.hpp	2022-02-08 19:17:41.316252100 +0100
+--- original/projectq/backends/_sim/_cppkernels/intrin/kernel2.hpp    2020-06-05 15:07:57.000000000 +0200
++++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel2.hpp    2022-02-08 19:17:41.316252100 +0100
 @@ -17,21 +17,21 @@
  {
      __m256d v[4];
@@ -103,8 +103,8 @@ diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intr
                          kernel_core(psi, i0 + i1 + i2, d0, d1, mm, mmt);
                  }
 diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intrin/kernel3.hpp patched/projectq/backends/_sim/_cppkernels/intrin/kernel3.hpp
---- original/projectq/backends/_sim/_cppkernels/intrin/kernel3.hpp	2020-06-05 15:07:57.000000000 +0200
-+++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel3.hpp	2022-02-08 19:14:10.301241000 +0100
+--- original/projectq/backends/_sim/_cppkernels/intrin/kernel3.hpp    2020-06-05 15:07:57.000000000 +0200
++++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel3.hpp    2022-02-08 19:14:10.301241000 +0100
 @@ -17,10 +17,10 @@
  {
      __m256d v[4];
@@ -186,8 +186,8 @@ diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intr
                              kernel_core(psi, i0 + i1 + i2 + i3, d0, d1, d2, mm, mmt);
                      }
 diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intrin/kernel4.hpp patched/projectq/backends/_sim/_cppkernels/intrin/kernel4.hpp
---- original/projectq/backends/_sim/_cppkernels/intrin/kernel4.hpp	2020-06-05 15:07:57.000000000 +0200
-+++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel4.hpp	2022-02-08 19:17:35.207743600 +0100
+--- original/projectq/backends/_sim/_cppkernels/intrin/kernel4.hpp    2020-06-05 15:07:57.000000000 +0200
++++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel4.hpp    2022-02-08 19:17:35.207743600 +0100
 @@ -17,10 +17,10 @@
  {
      __m256d v[4];
@@ -311,8 +311,8 @@ diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intr
                                  kernel_core(psi, i0 + i1 + i2 + i3 + i4, d0, d1, d2, d3, mm, mmt);
                          }
 diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intrin/kernel5.hpp patched/projectq/backends/_sim/_cppkernels/intrin/kernel5.hpp
---- original/projectq/backends/_sim/_cppkernels/intrin/kernel5.hpp	2020-06-05 15:07:57.000000000 +0200
-+++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel5.hpp	2022-02-08 19:14:24.233743800 +0100
+--- original/projectq/backends/_sim/_cppkernels/intrin/kernel5.hpp    2020-06-05 15:07:57.000000000 +0200
++++ patched/projectq/backends/_sim/_cppkernels/intrin/kernel5.hpp    2022-02-08 19:14:24.233743800 +0100
 @@ -17,10 +17,10 @@
  {
      __m256d v[4];
@@ -516,8 +516,8 @@ diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intr
                                      kernel_core(psi, i0 + i1 + i2 + i3 + i4 + i5, d0, d1, d2, d3, d4, mm, mmt);
                              }
 diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intrin/kernels.hpp patched/projectq/backends/_sim/_cppkernels/intrin/kernels.hpp
---- original/projectq/backends/_sim/_cppkernels/intrin/kernels.hpp	2020-06-05 15:07:57.000000000 +0200
-+++ patched/projectq/backends/_sim/_cppkernels/intrin/kernels.hpp	2022-02-08 19:18:01.809906200 +0100
+--- original/projectq/backends/_sim/_cppkernels/intrin/kernels.hpp    2020-06-05 15:07:57.000000000 +0200
++++ patched/projectq/backends/_sim/_cppkernels/intrin/kernels.hpp    2022-02-08 19:18:01.809906200 +0100
 @@ -20,6 +20,7 @@
  #include <algorithm>
  #include "cintrin.hpp"
@@ -527,8 +527,8 @@ diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/intr
  #define LOOP_COLLAPSE1 2
  #define LOOP_COLLAPSE2 3
 diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/omp_compat.hpp patched/projectq/backends/_sim/_cppkernels/omp_compat.hpp
---- original/projectq/backends/_sim/_cppkernels/omp_compat.hpp	1970-01-01 01:00:00.000000000 +0100
-+++ patched/projectq/backends/_sim/_cppkernels/omp_compat.hpp	2022-02-08 17:50:05.344973100 +0100
+--- original/projectq/backends/_sim/_cppkernels/omp_compat.hpp    1970-01-01 01:00:00.000000000 +0100
++++ patched/projectq/backends/_sim/_cppkernels/omp_compat.hpp    2022-02-08 17:50:05.344973100 +0100
 @@ -0,0 +1,14 @@
 +#ifndef OMP_COMPAT_HPP
 +#define OMP_COMPAT_HPP
@@ -545,8 +545,8 @@ diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/omp_
 +
 +#endif // OMP_COMPAT_HPP
 diff -ruNx alignedallocator.hpp original/projectq/backends/_sim/_cppkernels/simulator.hpp patched/projectq/backends/_sim/_cppkernels/simulator.hpp
---- original/projectq/backends/_sim/_cppkernels/simulator.hpp	2020-06-05 15:07:57.000000000 +0200
-+++ patched/projectq/backends/_sim/_cppkernels/simulator.hpp	2022-02-08 19:18:53.558466800 +0100
+--- original/projectq/backends/_sim/_cppkernels/simulator.hpp    2020-06-05 15:07:57.000000000 +0200
++++ patched/projectq/backends/_sim/_cppkernels/simulator.hpp    2022-02-08 19:18:53.558466800 +0100
 @@ -18,11 +18,7 @@
  #include <vector>
  #include <complex>

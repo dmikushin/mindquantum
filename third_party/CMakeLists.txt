@@ -16,6 +16,10 @@
 #
 # ==============================================================================
 
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/utils.cmake)
+
+# ==============================================================================
+
 if(ENABLE_PROJECTQ)
   add_subdirectory(projectq)
 endif()
@@ -23,6 +27,8 @@ endif()
 if(ENABLE_QUEST)
   add_subdirectory(quest)
 endif()
+
+# =============================================================================
 
 include(${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake)
 

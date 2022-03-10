@@ -15,52 +15,25 @@
 # limitations under the License.
 #
 # ==============================================================================
-
-set(PKG_NAME projectq)
-set(PKG_ROOT ${DEP_DIR}/${PKG_NAME}-src)
-
-set(URL "https://gitee.com/mirrors/ProjectQ/repository/archive/v0.5.1.tar.gz")
-
-file(GLOB _patch_files "${PATCH_DIR}/projectq/*.patch*")
-
-# ==============================================================================
 # Fetch the source code
 
-FetchContent_Declare(${PKG_NAME} URL ${URL})
-FetchContent_Populate(${PKG_NAME})
+FetchContent_Declare(projectq URL "https://gitee.com/mirrors/ProjectQ/repository/archive/v0.5.1.tar.gz")
+if(NOT projectq_POPULATED)
+  FetchContent_Populate(projectq)
+endif()
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Patch the source code
 
-# cmake-lint: disable=C0103
-set(${PKG_NAME}_PATCHED
-    FALSE
-    CACHE STRING INTERNAL)
-
-if(NOT ${PKG_NAME}_PATCHED)
-  message("Patching for ${PKG_NAME}")
-  foreach(_file ${_patch_files})
-    execute_process(
-      COMMAND ${Patch_EXECUTABLE} -p1
-      INPUT_FILE ${_file}
-      WORKING_DIRECTORY ${PKG_ROOT}
-      RESULT_VARIABLE _result)
-
-    if(NOT _result EQUAL 0)
-      message(FATAL_ERROR "Failed patch: ${_file}")
-    endif()
-  endforeach()
-
-  set(${PKG_NAME}_PATCHED
-      TRUE
-      CACHE STRING INTERNAL FORCE)
-endif()
+file(GLOB _patch_files "${CMAKE_CURRENT_LIST_DIR}/patch/*.patch*")
+list(SORT _patch_files CASE INSENSITIVE)
+apply_patches("${projectq_SOURCE_DIR}" ${_patch_files})
 
 # ==============================================================================
 
 add_library(projectq INTERFACE)
 target_compile_features(projectq INTERFACE cxx_std_14)
-target_include_directories(projectq INTERFACE ${PKG_ROOT})
+target_include_directories(projectq INTERFACE ${projectq_SOURCE_DIR})
 
 # ==============================================================================
 

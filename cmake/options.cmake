@@ -25,6 +25,7 @@ option(ENABLE_PROJECTQ "Enable ProjectQ support" ON)
 option(ENABLE_QUEST "Enable QuEST support" ON)
 option(ENABLE_GITEE "Use Gitee instead of GitHub for checking out third-party dependencies" OFF)
 option(ENABLE_CXX_EXPERIMENTAL "Enable the new (experimental) C++ backend" OFF)
+option(PATCH_USE_NATIVE_ENCODING "Patch files use the native OS encofing (otherwise force LF)" OFF)
 
 # ==============================================================================
 # Python related options
