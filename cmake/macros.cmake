@@ -44,6 +44,161 @@ endfunction()
 # ==============================================================================
 
 # ~~~
+# (helper function) Convert a path to CMake format
+#
+# to_cmake_path(<path-var>)
+# ~~~
+macro(to_cmake_path path_var)
+  if(DEFINED ${path_var})
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
+      cmake_path(CONVERT "${${path_var}}" TO_CMAKE_PATH_LIST ${path_var} NORMALIZE)
+    else()
+      file(TO_CMAKE_PATH "${${path_var}}" ${path_var})
+    endif()
+  endif()
+endmacro()
+
+# ==============================================================================
+
+# ~~~
+# (helper function) Copy a property from a source target to a destination target if set
+#
+# _copy_target_property(<source> <destination> <property>)
+# ~~~
+function(_copy_target_property source destination property)
+  get_property(
+    _is_set
+    TARGET ${source}
+    PROPERTY ${property}
+    SET)
+  if(_is_set)
+    get_target_property(_value ${source} ${property})
+    set_target_properties(${destination} PROPERTIES ${property} "${_value}")
+  endif()
+endfunction()
+
+# ------------------------------------------------------------------------------
+
+# ~~~
+# Create a copy of an existing target
+#
+# duplicate_target(<new_target> <original_target>)
+#
+# WARNING: not designed to work with aliased targets!
+# ~~~
+function(duplicate_target new_target original_target)
+  get_target_property(_type ${original_target} TYPE)
+
+  set(_lib_type)
+  if("${_type}" STREQUAL "STATIC_LIBRARY")
+    set(_lib_type STATIC)
+  elseif("${_type}" STREQUAL "MODULE_LIBRARY")
+    set(_lib_type MODULE)
+  elseif("${_type}" STREQUAL "SHARED_LIBRARY")
+    set(_lib_type SHARED)
+  elseif("${_type}" STREQUAL "OBJECT_LIBRARY")
+    set(_lib_type OBJECT)
+  elseif("${_type}" STREQUAL "INTERFACE_LIBRARY")
+    set(_lib_type INTERFACE)
+  endif()
+
+  get_target_property(_imported ${original_target} IMPORTED)
+  if(_imported)
+    get_target_property(_global ${original_target} IMPORTED_GLOBAL)
+    if(_global)
+      set(_args GLOBAL)
+    endif()
+
+    if("${_type}" STREQUAL "EXECUTABLE")
+      add_executable(${new_target} IMPORTED ${_args})
+    else()
+      add_library(${new_target} ${_lib_type} IMPORTED ${_args})
+    endif()
+  else()
+    if("${_type}" STREQUAL "EXECUTABLE")
+      add_executable(${new_target})
+    else()
+      add_library(${new_target} ${_lib_type})
+    endif()
+  endif()
+
+  foreach(
+    _prop
+    COMPILE_FLAGS
+    C_COMPILER_LAUNCHER
+    C_EXTENSIONS
+    C_LINKER_LAUNCHER
+    C_STANDARD
+    C_STANDARD_REQUIRED
+    C_VISIBILITY_PRESET
+    CXX_COMPILER_LAUNCHER
+    CXX_EXTENSIONS
+    CXX_LINKER_LAUNCHER
+    CXX_STANDARD
+    CXX_STANDARD_REQUIRED
+    CXX_VISIBILITY_PRESET
+    EXCLUDE_FROM_ALL
+    EXPORT_NAME
+    IMPORTED_CONFIGURATIONS)
+    _copy_target_property(${original_target} ${new_target} ${_prop})
+  endforeach()
+
+  foreach(
+    _prop
+    COMPILE_DEFINITIONS
+    COMPILE_FEATURES
+    COMPILE_OPTIONS
+    INCLUDE_DIRECTORIES
+    LINK_DEPENDS
+    LINK_LIBRARIES
+    LINK_OPTIONS
+    POSITION_INDEPENDENT_CODE
+    PRECOMPILE_HEADERS
+    SOURCES)
+    _copy_target_property(${original_target} ${new_target} ${_prop})
+    _copy_target_property(${original_target} ${new_target} INTERFACE_${_prop})
+  endforeach()
+  _copy_target_property(${original_target} ${new_target} INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
+
+  foreach(
+    _prop
+    COMPILE_PDB_NAME
+    EXCLUDE_FROM_DEFAULT_BUILD
+    IMPORTED_IMPLIB
+    IMPORTED_LIBNAME
+    IMPORTED_LINK_DEPENDENT_LIBRARIES
+    IMPORTED_LINK_INTERFACE_LANGUAGES
+    IMPORTED_LINK_INTERFACE_MULTIPLICITY
+    IMPORTED_LOCATION
+    IMPORTED_NO_SONAME
+    IMPORTED_OBJECTS
+    IMPORTED_SONAME
+    INTERPROCEDURAL_OPTIMIZATION
+    LINK_FLAGS
+    LINK_INTERFACE_LIBRARIES
+    LINK_INTERFACE_MULTIPLICITY
+    PDB_NAME
+    PDB_OUTPUT_DIRECTORY
+    RUNTIME_OUTPUT_DIRECTORY
+    RUNTIME_OUTPUT_NAME
+    STATIC_LIBRARY_FLAGS)
+    _copy_target_property(${original_target} ${new_target} ${_prop})
+
+    foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+      _copy_target_property(${original_target} ${new_target} ${_prop}_${_config})
+    endforeach()
+
+  endforeach()
+  foreach(_prop OUTPUT_NAME POSTFIX)
+    foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+      _copy_target_property(${original_target} ${new_target} ${_config}_${prop})
+    endforeach()
+  endforeach()
+endfunction()
+
+# ==============================================================================
+
+# ~~~
 # Convenience function to test for the existence of some compiler flags for a a particular language
 #
 # check_compiler_flag(<lang> <var_prefix> <flags1> [<flags2>...])
@@ -193,7 +348,7 @@ function(check_link_flags lang var_prefix)
   set(_wrapper_flag ${CMAKE_${lang}_LINKER_WRAPPER_FLAG})
   list(GET _wrapper_flag -1 _last)
   set(_separate_options FALSE)
-  if(_last STREQUAL " ")
+  if("${_last}" STREQUAL " ")
     set(_separate_options TRUE)
     list(REMOVE_AT _wrapper_flag -1)
   endif()
@@ -512,10 +667,11 @@ function(find_python_module module)
     set(CMAKE_FIND_PACKAGE_NAME PYMOD_${module})
   endif()
 
+  # NB: NAME_MISMATCHED is a CMake 3.17 addition
   find_package_handle_standard_args(
     PYMOD_${module_name}
     REQUIRED_VARS PYMOD_${MODULE}_PATH
-    VERSION_VAR PYMOD_${MODULE}_VERSION)
+    VERSION_VAR PYMOD_${MODULE}_VERSION NAME_MISMATCHED)
 
   set(PYMOD_${MODULE}_FOUND
       ${PYMOD_${MODULE}_FOUND}

@@ -19,6 +19,14 @@
 include(CMakeDependentOption)
 
 # ==============================================================================
+# MindQuantum feature selection
+
+option(ENABLE_PROJECTQ "Enable ProjectQ support" ON)
+option(ENABLE_QUEST "Enable QuEST support" ON)
+option(ENABLE_GITEE "Use Gitee instead of GitHub for checking out third-party dependencies" OFF)
+option(ENABLE_CXX_EXPERIMENTAL "Enable the new (experimental) C++ backend" OFF)
+
+# ==============================================================================
 # Python related options
 
 if(APPLE)
@@ -50,7 +58,25 @@ option(CUDA_STATIC "Use static version of Nvidia CUDA libraries during linking (
 # ==============================================================================
 # Compilation options
 
-option(ENABLE_OPENMP "Use OpenMP for multi-threading" ON)
+# cmake-lint: disable=C0103
+set(_USE_OPENMP ON)
+if("x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC"
+   OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
+   OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel"
+   OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
+  set(_USE_OPENMP OFF)
+endif()
+option(USE_OPENMP "Use OpenMP instead parallel STL" ${_USE_OPENMP})
+
+set(_USE_PARALLEL_STL OFF)
+if("x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC"
+   OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
+   OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel"
+   OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
+  set(_USE_PARALLEL_STL ON)
+endif()
+option(USE_PARALLEL_STL "Use parallel STL algorithms (GCC, Intel, IntelLLVM and MSVC only for now)"
+       ${_USE_PARALLEL_STL})
 
 option(ENABLE_PROJECTQ "Enable ProjectQ support" ON)
 option(ENABLE_QUEST "Enable QuEST support" ON)

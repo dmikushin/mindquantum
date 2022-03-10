@@ -16,55 +16,9 @@
 #
 # ==============================================================================
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.17)
 
-set(_policy_list
-    CMP0012
-    CMP0015
-    CMP0022
-    CMP0023
-    CMP0028
-    CMP0042
-    CMP0048
-    CMP0051
-    CMP0054
-    CMP0056
-    CMP0057
-    CMP0066
-    CMP0067
-    CMP0068
-    CMP0074
-    CMP0076
-    CMP0077
-    CMP0079
-    CMP0094
-    CMP0104)
-foreach(_policy ${_policy_list})
-  if(POLICY ${_policy})
-    cmake_policy(SET ${_policy} NEW)
-  endif()
-  # cmake-format: off
-  # CMP0012: if() recognizes numbers and booleans
-  # CMP0015: paths relative to source dir for link_directories
-  # CMP0028: :: in target names
-  # CMP0042: MACOS_RPATH
-  # CMP0048: allow VERSION in project()
-  # CMP0051: list TARGET_OBJECTS in SOURCES property
-  # CMP0054: no more de-referencing of "expr" in if() statements
-  # CMP0056: try_compile(): link flags
-  # CMP0057: if IN_LIST
-  # CMP0066: try_compile(): use per-config flags, like CMAKE_CXX_FLAGS_RELEASE
-  # CMP0067: try_compile(): honor language standard variables (like C++11)
-  # CMP0068: RPATH on Mac OS does not affect install_name
-  # CMP0074: XXX_ROOT variables for find_package(XXX)
-  # CMP0076: target_sources relative paths
-  # CMP0077: option() honors normal variables
-  # CMP0079: target_link_libraries allows use with targets in other directories
-  #          (CMake 3.13 minimum)
-  # CMP0094: FindPython* use LOCATION strategy (stop at first valid version)
-  # CMP0104: Empty CUDA_ARCHITECTURES target property is an error
-  # cmake-format: on
-endforeach()
+cmake_policy(VERSION 3.0...3.20)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
@@ -76,6 +30,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/macros.cmake)
 
 # ==============================================================================
 # Create the MindQuantum project
+
 project(MindQuantum LANGUAGES C CXX)
 
 # Set a default build type if none was specified
@@ -88,9 +43,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo")
 endif()
 
-if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/mindquantum)
-endif()
+set(_doc_targets)
 
 # ==============================================================================
 # OS-detection
@@ -113,16 +66,63 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/packages.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/compiler_flags.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/linker_flags.cmake)
 
-# ==============================================================================
-# Add submodule dependencies (now rather than later so that the relevant macros/variables are defined)
-
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/third_party)
-
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ccsrc)
+# Test compiler capabilities
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/compiler_test.cmake)
 
 # ==============================================================================
 # Some more macro definitions
 
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/mindquantum)
+endif()
+
+# ==============================================================================
+
+# First add third-party libraries
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/third_party)
+
+# Then re-define some CMake macros/functions
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/macros_more.cmake)
+
+# Then add our libraries
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ccsrc)
+
+# ==============================================================================
+# Convenience target to automatically build all pybind11 C++ modules
+
+get_property(_targets GLOBAL PROPERTY _python_targets)
+add_custom_target(
+  python
+  DEPENDS ${_targets}
+  COMMENT "Build python C++ modules")
+
+# ==============================================================================
+
+if(binscope_exec)
+  gen_binscope_target(${_targets})
+endif()
+
+# ==============================================================================
+# Unit testing
+
+if(BUILD_TESTING AND NOT IS_PYTHON_BUILD)
+  enable_testing()
+  add_subdirectory(tests)
+else()
+  message(STATUS "Disabling building of tests")
+  message(STATUS "  (BUILD_TESTING=${BUILD_TESTING}, IS_PYTHON_BUILD=${IS_PYTHON_BUILD})")
+  # Essentially only for CI builds with testing disabled
+  add_custom_target(build_all_test COMMENT "Dummy target for CI builds")
+  add_custom_target(test COMMENT "Dummy target for CI builds")
+endif()
+
+# ==============================================================================
+
+if(NOT IS_PYTHON_BUILD)
+  find_package(Doxygen QUIET)
+  if(Doxygen_FOUND)
+    add_subdirectory(docs)
+  endif()
+endif()
 
 # ==============================================================================

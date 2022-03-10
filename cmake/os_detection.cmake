@@ -86,3 +86,13 @@ else()
 endif()
 
 # ==============================================================================
+
+include(ProcessorCount)
+if(JOBS)
+  set(_max_num_threads ${JOBS})
+else()
+  ProcessorCount(_max_num_threads)
+endif()
+message(STATUS "Max. number of parallel jobs for sub-commands: ${_max_num_threads}")
+
+# ==============================================================================

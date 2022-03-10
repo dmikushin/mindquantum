@@ -106,8 +106,7 @@ function(_OPENMP_FLAG_CANDIDATES LANG)
     unset(OpenMP_FLAG_CANDIDATES)
 
     set(OMP_FLAG_GNU "-fopenmp")
-    # set(OMP_FLAG_Clang "-fopenmp=libomp" "-fopenmp=libiomp5" "-fopenmp" "-Xclang -fopenmp")
-    set(OMP_FLAG_Clang "-fopenmp")
+    set(OMP_FLAG_Clang "-fopenmp=libomp" "-fopenmp=libiomp5" "-fopenmp" "-Xclang -fopenmp")
     set(OMP_FLAG_AppleClang "-Xclang -fopenmp")
     set(OMP_FLAG_HP "+Oopenmp")
     if(WIN32)
@@ -462,9 +461,13 @@ function(_OPENMP_GET_SPEC_DATE LANG SPEC_DATE)
 
   if(${OpenMP_SPECTEST_${LANG}_${OPENMP_PLAIN_FLAG}})
     file(
-      STRINGS ${BIN_FILE} specstr
-      LIMIT_COUNT 1
-      REGEX "INFO:OpenMP-date")
+      STRINGS
+      ${BIN_FILE}
+      specstr
+      LIMIT_COUNT
+      1
+      REGEX
+      "INFO:OpenMP-date")
     set(regex_spec_date ".*INFO:OpenMP-date\\[0*([^]]*)\\].*")
     if("${specstr}" MATCHES "${regex_spec_date}")
       set(${SPEC_DATE}

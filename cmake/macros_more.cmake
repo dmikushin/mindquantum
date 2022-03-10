@@ -55,3 +55,21 @@ function(pybind11_add_module target)
 endfunction()
 
 # ==============================================================================
+
+# Add a Catch2 test executable
+function(add_test_executable target)
+  cmake_parse_arguments(${target} "" "" "LIBS;DEFINES" ${ARGN})
+
+  add_executable(${target} ${target}.cpp ${${target}_UNPARSED_ARGUMENTS})
+  target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tests)
+  target_link_libraries(${target} PRIVATE Catch2::Catch2 ${${target}_LIBS})
+  catch_discover_tests(${target})
+  set_property(
+    SOURCE ${target}.cpp
+    APPEND_STRING
+    PROPERTY COMPILE_DEFINITIONS CATCH_CONFIG_MAIN)
+
+  target_compile_definitions(${target} PRIVATE ${${target}_DEFINES})
+endfunction()
+
+# ==============================================================================

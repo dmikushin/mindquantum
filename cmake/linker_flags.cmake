@@ -25,16 +25,14 @@ if(LINKER_STRIP_ALL)
     LANGS CXX DPCXX CUDA NVCXX
     FLAGS "--strip-all -s"
     AUTO_ADD_LO
-    GENEX "$<AND:$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>,$<COMPILE_LANGUAGE:@lang@>>"
-  )
+    GENEX "$<AND:$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>,$<COMPILE_LANGUAGE:@lang@>>")
 endif()
 
 test_link_option(
   _linker_flags
   LANGS CXX DPCXX CUDA NVCXX
   FLAGS "-z,now"
-  AUTO_ADD_LO
-)
+  AUTO_ADD_LO)
 
 # ------------------------------------------------------------------------------
 
@@ -43,8 +41,7 @@ if(LINKER_NOEXECSTACK)
     _link_no_execstack
     LANGS CXX DPCXX CUDA NVCXX
     FLAGS "-z,noexecstack"
-    AUTO_ADD_LO
-  )
+    AUTO_ADD_LO)
 endif()
 
 # ------------------------------------------------------------------------------
@@ -54,8 +51,7 @@ if(LINKER_RELRO)
     _link_relro
     LANGS CXX DPCXX CUDA NVCXX
     FLAGS "-z,relro"
-    AUTO_ADD_LO
-  )
+    AUTO_ADD_LO)
 endif()
 
 # ------------------------------------------------------------------------------
@@ -76,8 +72,7 @@ if(ENABLE_RUNPATH)
       _linker_dtags
       LANGS CXX DPCXX CUDA NVCXX
       FLAGS "--enable-new-dtags"
-      AUTO_ADD_LO
-    )
+      AUTO_ADD_LO)
   endif()
 else()
   if(LINKER_DTAGS)
@@ -85,8 +80,7 @@ else()
       _linker_dtags
       LANGS CXX DPCXX CUDA NVCXX
       FLAGS "--disable-new-dtags"
-      AUTO_ADD_LO
-    )
+      AUTO_ADD_LO)
   endif()
 
   if(CUDA_STATIC)
@@ -94,8 +88,7 @@ else()
       _nvhpc_static_flags
       LANGS NVCXX
       FLAGS "-static-nvidia" "-Mnorpath"
-      AUTO_ADD_LO VERBATIM
-    )
+      AUTO_ADD_LO VERBATIM)
   endif()
 endif()
 
@@ -109,11 +102,9 @@ if(UNIX AND NOT APPLE)
       message(STATUS "Readelf program not found -> skipping RPATH/RUNPATH check")
     endif()
     # cmake-lint: disable=C0103
-    set(
-      _cmake_rpath_check
-      ${_cmake_rpath_check}
-      CACHE BOOL "Do an extended CMake test to make sure no RPATH are set?"
-    )
+    set(_cmake_rpath_check
+        ${_cmake_rpath_check}
+        CACHE BOOL "Do an extended CMake test to make sure no RPATH are set?")
 
     mark_as_advanced(_readelf _cmake_rpath_check)
   endif()
@@ -144,10 +135,8 @@ set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
       endif()
 
       file(REMOVE ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt)
-      configure_file(
-        ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt.in
-        ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt @ONLY
-      )
+      configure_file(${CMAKE_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt.in
+                     ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt @ONLY)
 
       # ------------------------------------
 
@@ -157,16 +146,13 @@ set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
         _create_shared_lib_${lang} ${_binary_dir}
         ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest cmake-ldtest
         CMAKE_FLAGS -DCMAKE_VERBOSE_MAKEFILE=ON -DLINKER_FLAGS=${_linker_dtags_CXX}
-        OUTPUT_VARIABLE _compile_output
-      )
+        OUTPUT_VARIABLE _compile_output)
       if(_create_shared_lib_${lang})
         message(CHECK_PASS "succeeded")
       else()
         message(CHECK_FAIL "failed")
-        file(
-          APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-          "Failed to compile CMake RPATH extended ${_lang} test project.\nOutput of build:\n${_compile_output}\n"
-        )
+        file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+             "Failed to compile CMake RPATH extended ${_lang} test project.\nOutput of build:\n${_compile_output}\n")
       endif()
 
       # ------------------------------------
@@ -184,15 +170,13 @@ set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
           _shared_lib_${_lang}
           NAMES shared_lib_${_lang} libshared_lib_${_lang}
           PATHS ${_binary_dir} REQUIRED
-          NO_DEFAULT_PATH
-        )
+          NO_DEFAULT_PATH)
         mark_as_advanced(_shared_lib_${_lang})
 
         execute_process(
           COMMAND ${_readelf} -Wd ${_shared_lib_${_lang}}
           OUTPUT_VARIABLE _dyn_symbols
-          OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
+          OUTPUT_STRIP_TRAILING_WHITESPACE)
 
         # Local helper macro to add RPATH to the log file
         macro(_rpath_add_to_log name success msg)
@@ -204,11 +188,11 @@ set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
             set(_state_msg "failed")
           endif()
           file(
-            APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_file}
+            APPEND
+            ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_file}
             "\n\nLooking for absence of ${name} in ${_shared_lib_${_lang}} ${_state_msg}.\n"
             "Output of build for ${_shared_lib_${_lang}}:\n${_compile_output}\nOutput of readelf -Wd:"
-            "\n${_dyn_symbols}\n\n${msg}\n\n"
-          )
+            "\n${_dyn_symbols}\n\n${msg}\n\n")
         endmacro()
 
         set(_test_result FALSE)
@@ -247,11 +231,9 @@ set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
         # cmake-lint: disable=C0103
 
         # Only perform the RPATH/RUNPATH check once
-        set(
-          _cmake_rpath_check
-          FALSE
-          CACHE INTERNAL ""
-        )
+        set(_cmake_rpath_check
+            FALSE
+            CACHE INTERNAL "")
       else()
         message(CHECK_FAIL "failed")
         message(FATAL_ERROR "Failed extended RPATH test: cannot continue!")

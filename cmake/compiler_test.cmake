@@ -16,16 +16,19 @@
 #
 # ==============================================================================
 
-if(ENABLE_PROJECTQ)
-  add_subdirectory(projectq)
-endif()
+include(CheckCXXSourceCompiles)
 
-if(ENABLE_QUEST)
-  add_subdirectory(quest)
-endif()
+check_cxx_source_compiles(
+  "#include <concepts>
+#include <type_traits>
+template <class T>
+concept integral = std::is_integral_v<T>;
 
-include(${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake)
+template <integral T> auto foo(T t) { return t + t; }
+int main() { return foo(42); }
+"
+  compiler_has_concepts)
 
-if(ENABLE_CXX_EXPERIMENTAL)
-  include(${CMAKE_CURRENT_LIST_DIR}/tweedledum/tweedledum.cmake)
+if(NOT compiler_has_concepts)
+  message(WARNING "C++ compiler does not support C++20 concepts (language support, not STL implementation)")
 endif()

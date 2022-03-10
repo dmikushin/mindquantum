@@ -17,7 +17,7 @@
 # ==============================================================================
 
 # C++ standard flags
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -52,8 +52,7 @@ if(WIN32)
     _compile_win32_flags
     LANGS CXX
     FLAGS "/Zc:__cplusplus"
-    AUTO_ADD_CO
-  )
+    AUTO_ADD_CO)
 endif()
 
 # ------------------------------------------------------------------------------
@@ -63,8 +62,7 @@ test_compile_option(
   LANGS CXX DPCXX
   FLAGS "-ffast-math /fp:fast -fast" "-O3 /Ox"
   AUTO_ADD_CO
-  GENEX "$<AND:$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>,$<COMPILE_LANGUAGE:@lang@>>"
-)
+  GENEX "$<AND:$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>,$<COMPILE_LANGUAGE:@lang@>>")
 
 # --------------------------------------
 
@@ -72,14 +70,12 @@ if(X86_64)
   test_compile_option(
     _intrin_flag
     LANGS CXX DPCXX
-    FLAGS "-mavx2 -xCORE-AVX2 /QxCORE-AVX2 /arch:AVX2"
-  )
+    FLAGS "-mavx2 -xCORE-AVX2 /QxCORE-AVX2 /arch:AVX2")
 elseif(AARCH64)
   test_compile_option(
     _intrin_flag
     LANGS CXX DPCXX
-    FLAGS "-march=armv8.5-a -march=armv8.4-a -march=armv8.3-a -march=armv8.2-a"
-  )
+    FLAGS "-march=armv8.5-a -march=armv8.4-a -march=armv8.3-a -march=armv8.2-a")
 endif()
 
 # --------------------------------------
@@ -123,9 +119,44 @@ endif()
 
 # --------------------------------------
 
+include(CheckCXXSourceCompiles)
+
+check_cxx_source_compiles(
+  "#include <experimental/type_traits>
+#include <type_traits>
+#include <utility>
+struct A { int foo() const { return 0; } };
+template <typename T> using has_foo = decltype(std::declval<T&>().foo());
+static_assert(std::experimental::is_detected_v<has_foo, A>);
+int main() { return 0; }
+"
+  compiler_has_detected_ts2)
+
+# --------------------------------------
+
+check_cxx_source_compiles(
+  "#include <concepts>
+#include <type_traits>
+#include <utility>
+
+template <std::equality_comparable eq_t> auto foo(eq_t a, eq_t b) { return a == b; }
+template <typename T>
+requires std::convertible_to<T, double> auto goo(T t) { return t + 1.2; }
+template <std::integral int_t> auto hoo(int_t i) { return i + 1; }
+template <std::movable mov_t> auto&& ioo(mov_t&& m) {return std::move(m); }
+int main() {  return 0; }
+"
+  compiler_has_concepts_library)
+
+# --------------------------------------
+
 add_compile_definitions(
-  "$<$<BOOL:${ENABLE_OPENMP}>:ENABLE_OPENMP>" "$<$<BOOL:${VERSION_INFO}>:VERSION_INFO=${VERSION_INFO}>"
-  "$<$<AND:$<CONFIG:RELEASE>,$<COMPILE_LANGUAGE:CXX>>:_FORTIFY_SOURCE=2>")
+  "$<$<BOOL:${USE_OPENMP}>:USE_OPENMP>"
+  "$<$<BOOL:${USE_PARALLEL_STL}>:USE_PARALLEL_STL>"
+  "$<$<BOOL:${ENABLE_OPENMP}>:ENABLE_OPENMP>"
+  "$<$<BOOL:${VERSION_INFO}>:VERSION_INFO=${VERSION_INFO}>"
+  "$<$<AND:$<CONFIG:RELEASE>,$<COMPILE_LANGUAGE:CXX>>:_FORTIFY_SOURCE=2>"
+  "$<$<AND:$<BOOL:${compiler_has_detected_ts2}>,$<COMPILE_LANGUAGE:CXX>>:HAS_STD_DETECTED_TS2>")
 
 # ==============================================================================
 # Platform specific flags

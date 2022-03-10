@@ -1,6 +1,6 @@
 # ==============================================================================
 #
-# Copyright 2021 <Huawei Technologies Co., Ltd>
+# Copyright 2020 <Huawei Technologies Co., Ltd>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,16 +16,24 @@
 #
 # ==============================================================================
 
-if(ENABLE_PROJECTQ)
-  add_subdirectory(projectq)
-endif()
+find_package(Catch2 2.7.0 REQUIRED)
 
-if(ENABLE_QUEST)
-  add_subdirectory(quest)
-endif()
+include(CTest)
+include(Catch)
+# include(ParseAndAddCatchTests)
 
-include(${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake)
+# ==============================================================================
 
-if(ENABLE_CXX_EXPERIMENTAL)
-  include(${CMAKE_CURRENT_LIST_DIR}/tweedledum/tweedledum.cmake)
-endif()
+# cmake-format: off
+# add_subdirectory(core)
+# add_subdirectory(decompositions)
+# add_subdirectory(mapping)
+# add_subdirectory(ops)
+# add_subdirectory(optimisation)
+# cmake-format: on
+
+# ==============================================================================
+
+# add_test(NAME pytest COMMAND ${Python_EXECUTABLE} -m pytest -p no:warnings -v ${CMAKE_CURRENT_LIST_DIR})
+
+# ==============================================================================

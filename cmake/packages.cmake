@@ -63,6 +63,12 @@ if(ENABLE_OPENMP)
   endif()
 endif()
 
+if(USE_PARALLEL_STL)
+  find_package(TBB REQUIRED tbb)
+  target_compile_options(TBB::tbb INTERFACE "$<$<COMPILE_LANGUAGE:DPCXX>:-tbb>")
+  list(APPEND PARALLEL_LIBS TBB::tbb)
+endif()
+
 # ==============================================================================
 
 find_package(Threads REQUIRED)
@@ -82,7 +88,7 @@ if(DEFINED PYTHON_EXECUTABLE)
   set(Python_EXECUTABLE ${PYTHON_EXECUTABLE}) # cmake-lint: disable=C0103
 endif()
 
-set(_python_find_args Python 3.5.0 COMPONENTS Interpreter)
+set(_python_find_args Python 3.6.0 COMPONENTS Interpreter)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
   list(APPEND _python_find_args Development.Module)
 else()
@@ -175,9 +181,36 @@ print(get_config_var ('EXT_SUFFIX') or s.get_config_var ('SO'))"
   endif()
 endif()
 
-# ------------------------------------------------------------------------------
+# ==============================================================================
 
-include(${CMAKE_CURRENT_LIST_DIR}/pybind11.cmake)
+find_package(SymEngine 0.6.0 REQUIRED CONFIG PATHS /usr/local/symbolic)
+find_package(gmp REQUIRED)
+
+if(TARGET symengine)
+  target_link_libraries(symengine INTERFACE gmp::gmp)
+  duplicate_target(SymEngine::SymEngine symengine)
+elseif(TARGET SymEngine::SymEngine)
+  target_link_libraries(SymEngine::SymEngine INTERFACE gmp::gmp)
+endif()
+
+# ==============================================================================
+
+# ~~~
+# if("${OS_NAME}" STREQUAL "centos")
+#   # cmake-lint: disable=C0103
+#
+#   # On CentOS 7 & 8, favor boost169-* packages if installed
+#   set(BOOST_INCLUDEDIR /usr/include/boost169)
+#   set(BOOST_LIBRARYDIR /usr/lib64/boost169)
+#   set(Boost_MPI_LIBRARY_RELEASE
+#       /usr/lib64/openmpi/lib/boost169/libboost_mpi.so
+#       CACHE FILEPATH "" FORCE)
+# endif()
+#
+# set(_boost_version 1.69)
+# set(_boost_components graph;program_options;mpi;serialization;thread;regex)
+# include(${CMAKE_CURRENT_LIST_DIR}/boost.cmake)
+# ~~~
 
 # ==============================================================================
 # For Huawei internal security assessment

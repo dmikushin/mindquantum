@@ -1,6 +1,6 @@
 # ==============================================================================
 #
-# Copyright 2021 <Huawei Technologies Co., Ltd>
+# Copyright 2022 <Huawei Technologies Co., Ltd>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,16 +16,14 @@
 #
 # ==============================================================================
 
-if(ENABLE_PROJECTQ)
-  add_subdirectory(projectq)
-endif()
+include(FindTemplate)
 
-if(ENABLE_QUEST)
-  add_subdirectory(quest)
-endif()
+# ==============================================================================
+# find_utils_pop()
 
-include(${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake)
-
-if(ENABLE_CXX_EXPERIMENTAL)
-  include(${CMAKE_CURRENT_LIST_DIR}/tweedledum/tweedledum.cmake)
+if("${_find_utils_push_counter}" GREATER "0")
+  foreach(_var ${_find_utils_vars})
+    set(${_var} ${_${_var}_${_find_utils_push_counter}})
+  endforeach()
+  math(EXPR _find_utils_push_counter "${_find_utils_push_counter}-1")
 endif()
