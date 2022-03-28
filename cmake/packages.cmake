@@ -75,11 +75,6 @@ find_package(Threads REQUIRED)
 list(APPEND PARALLEL_LIBS Threads::Threads)
 
 find_package(Patch REQUIRED)
-include(FetchContent)
-set(FETCHCONTENT_QUIET OFF)
-set(BUILD_DIR ${CMAKE_BINARY_DIR})
-set(DEP_DIR ${BUILD_DIR}/_deps)
-set(PATCH_DIR ${CMAKE_SOURCE_DIR}/third_party/patch)
 
 # ==============================================================================
 
@@ -180,29 +175,6 @@ print(get_config_var ('EXT_SUFFIX') or s.get_config_var ('SO'))"
     message(CHECK_PASS "done")
   endif()
 endif()
-
-# ==============================================================================
-
-endif()
-
-# ==============================================================================
-
-# ~~~
-# if("${OS_NAME}" STREQUAL "centos")
-#   # cmake-lint: disable=C0103
-#
-#   # On CentOS 7 & 8, favor boost169-* packages if installed
-#   set(BOOST_INCLUDEDIR /usr/include/boost169)
-#   set(BOOST_LIBRARYDIR /usr/lib64/boost169)
-#   set(Boost_MPI_LIBRARY_RELEASE
-#       /usr/lib64/openmpi/lib/boost169/libboost_mpi.so
-#       CACHE FILEPATH "" FORCE)
-# endif()
-#
-# set(_boost_version 1.69)
-# set(_boost_components graph;program_options;mpi;serialization;thread;regex)
-# include(${CMAKE_CURRENT_LIST_DIR}/boost.cmake)
-# ~~~
 
 # ==============================================================================
 # For Huawei internal security assessment
