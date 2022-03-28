@@ -18,11 +18,12 @@
 import os
 
 os.environ['OMP_NUM_THREADS'] = '8'
-import numpy as np
 import mindspore as ms
+import numpy as np
+
 from mindquantum.algorithm.nisq.qaoa import Max2SATAnsatz
-from mindquantum.framework import MQAnsatzOnlyLayer
 from mindquantum.core.operators import Hamiltonian
+from mindquantum.framework import MQAnsatzOnlyLayer
 from mindquantum.simulator import Simulator
 
 ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")

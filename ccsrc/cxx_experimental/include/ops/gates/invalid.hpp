@@ -18,12 +18,12 @@
 #include <string_view>
 
 namespace mindquantum::ops {
-    class Invalid {
-     public:
-        static constexpr std::string_view kind() {
-            return "projectq.invalid";
-        }
-    };
+class Invalid {
+ public:
+    static constexpr std::string_view kind() {
+        return "projectq.invalid";
+    }
+};
 }  // namespace mindquantum::ops
 
 #endif /* INVALID_OP_HPP */

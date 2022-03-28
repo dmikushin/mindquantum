@@ -20,62 +20,62 @@
 #include "ops/gates/qubit_operator.hpp"
 
 namespace mindquantum::ops {
-    class TimeEvolution {
-     public:
-        using non_const_num_targets = void;
+class TimeEvolution {
+ public:
+    using non_const_num_targets = void;
 
-        static constexpr std::string_view kind() {
-            return "projectq.timeevolution";
-        }
+    static constexpr std::string_view kind() {
+        return "projectq.timeevolution";
+    }
 
-        //! Constructor
-        /*!
-         * Overload required in some cases for metaprogramming with operators.
-         */
-        TimeEvolution(uint32_t num_targets, QubitOperator hamiltonian, double time)
-            : TimeEvolution(std::move(hamiltonian), time) {
-            assert(num_targets == hamiltonian.num_targets());
-        }
+    //! Constructor
+    /*!
+     * Overload required in some cases for metaprogramming with operators.
+     */
+    TimeEvolution(uint32_t num_targets, QubitOperator hamiltonian, double time)
+        : TimeEvolution(std::move(hamiltonian), time) {
+        assert(num_targets == hamiltonian.num_targets());
+    }
 
-        //! Constructor
-        TimeEvolution(QubitOperator hamiltonian, double time) : hamiltonian_(std::move(hamiltonian)), time_(time) {
-        }
+    //! Constructor
+    TimeEvolution(QubitOperator hamiltonian, double time) : hamiltonian_(std::move(hamiltonian)), time_(time) {
+    }
 
-        HIQ_NODISCARD TimeEvolution adjoint() const {
-            return {hamiltonian_.num_targets(), hamiltonian_, -time_};
-        }
+    HIQ_NODISCARD TimeEvolution adjoint() const {
+        return {hamiltonian_.num_targets(), hamiltonian_, -time_};
+    }
 
-        HIQ_NODISCARD uint32_t num_targets() const {
-            return hamiltonian_.num_targets();
-        }
+    HIQ_NODISCARD uint32_t num_targets() const {
+        return hamiltonian_.num_targets();
+    }
 
-        bool operator==(const TimeEvolution& other) const {
-            return hamiltonian_ == other.hamiltonian_ && time_ == other.time_;
-        }
+    bool operator==(const TimeEvolution& other) const {
+        return hamiltonian_ == other.hamiltonian_ && time_ == other.time_;
+    }
 
-        // -------------------------------------------------------------------
+    // -------------------------------------------------------------------
 
-        HIQ_NODISCARD const QubitOperator& get_hamiltonian() const {
-            return hamiltonian_;
-        }
+    HIQ_NODISCARD const QubitOperator& get_hamiltonian() const {
+        return hamiltonian_;
+    }
 
-        HIQ_NODISCARD auto get_time() const {
-            return time_;
-        }
+    HIQ_NODISCARD auto get_time() const {
+        return time_;
+    }
 
-        HIQ_NODISCARD auto param() const {
-            return get_time();
-        }
+    HIQ_NODISCARD auto param() const {
+        return get_time();
+    }
 
-     private:
-        QubitOperator hamiltonian_;
-        double time_;
-    };
+ private:
+    QubitOperator hamiltonian_;
+    double time_;
+};
 }  // namespace mindquantum::ops
 
 namespace tweedledum {
-    template <>
-    inline constexpr uint8_t num_param_v<mindquantum::ops::TimeEvolution> = 1;
+template <>
+inline constexpr uint8_t num_param_v<mindquantum::ops::TimeEvolution> = 1;
 }  // namespace tweedledum
 
 #endif /* TIMEEVOLUTION_OP_HPP */

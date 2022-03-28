@@ -15,10 +15,11 @@
 # ============================================================================
 """Hamiltonian module."""
 
-import scipy.sparse as sp
 import numpy as np
-from projectq.ops import QubitOperator as pq_operator
+import scipy.sparse as sp
 from openfermion.ops import QubitOperator as of_operator
+from projectq.ops import QubitOperator as pq_operator
+
 from mindquantum import mqbackend as mb
 
 MODE = {'origin': 0, 'backend': 1, 'frontend': 2}
@@ -37,16 +38,19 @@ class Hamiltonian:
         >>> from mindquantum import Hamiltonian
         >>> ham = Hamiltonian(QubitOperator('Z0 Y1', 0.3))
     """
+
     def __init__(self, hamiltonian):
         from mindquantum.core.operators import QubitOperator as hiq_operator
         from mindquantum.core.operators.utils import count_qubits
+
         support_type = (pq_operator, of_operator, hiq_operator, sp.csr_matrix)
         if not isinstance(hamiltonian, support_type):
             raise TypeError("Require a QubitOperator or a csr_matrix, but get {}!".format(type(hamiltonian)))
         if isinstance(hamiltonian, sp.csr_matrix):
             if len(hamiltonian.shape) != 2 or hamiltonian.shape[0] != hamiltonian.shape[1]:
                 raise ValueError(
-                    f"Hamiltonian requires a two dimension square csr_matrix, but get shape {hamiltonian.shape}")
+                    f"Hamiltonian requires a two dimension square csr_matrix, but get shape {hamiltonian.shape}"
+                )
             if np.log2(hamiltonian.shape[0]) % 1 != 0:
                 raise ValueError(f"size of hamiltonian sparse matrix should be power of 2, but get {hamiltonian.shape}")
             self.hamiltonian = hiq_operator('')
@@ -102,8 +106,9 @@ class Hamiltonian:
                 else:
                     dim = self.sparse_mat.shape[0]
                     nnz = self.sparse_mat.nnz
-                    csr_mat = mb.csr_hd_matrix(dim, nnz, self.sparse_mat.indptr, self.sparse_mat.indices,
-                                               self.sparse_mat.data)
+                    csr_mat = mb.csr_hd_matrix(
+                        dim, nnz, self.sparse_mat.indptr, self.sparse_mat.indices, self.sparse_mat.data
+                    )
                     ham = mb.hamiltonian(csr_mat, self.n_qubits)
                 self.ham_cpp = ham
             return self.ham_cpp

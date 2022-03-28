@@ -18,6 +18,7 @@
 from mindquantum.core.operators.fermion_operator import FermionOperator
 from mindquantum.core.operators.qubit_operator import QubitOperator
 from mindquantum.core.parameterresolver import ParameterResolver as PR
+
 from ._base_operator import _Operator
 
 
@@ -25,8 +26,12 @@ def _check_valid_qubit_excitation_operator_term(term):
     """Check valid qubit excitation operator term."""
     if term is not None and term != '':
         if not isinstance(term, (str, tuple)):
-            raise ValueError('Qubit excitation operator requires a string or a tuple, \
-but get {}'.format(type(term)))
+            raise ValueError(
+                'Qubit excitation operator requires a string or a tuple, \
+but get {}'.format(
+                    type(term)
+                )
+            )
         if isinstance(term, str):
             terms = term.split(' ')
             for t in terms:
@@ -35,9 +40,13 @@ but get {}'.format(type(term)))
                         raise ValueError('Invalid qubit excitation operator term {}'.format(t))
         if isinstance(term, tuple):
             for t in term:
-                if len(t) != 2 or not isinstance(t[0], int) or not isinstance(t[1], int) or t[0] < 0 or t[1] not in [
-                        0, 1
-                ]:
+                if (
+                    len(t) != 2
+                    or not isinstance(t[0], int)
+                    or not isinstance(t[1], int)
+                    or t[0] < 0
+                    or t[1] not in [0, 1]
+                ):
                     raise ValueError('Invalid qubit excitation operator term {}'.format(t))
 
 
@@ -128,11 +137,9 @@ class QubitExcitationOperator(_Operator):
             for (idx, excit) in term_i:
                 qubit_op_ = None
                 if excit == 0:
-                    qubit_op_ = QubitOperator(((idx, "X"),), 1) + \
-                        QubitOperator(((idx, "Y"),), 1j)
+                    qubit_op_ = QubitOperator(((idx, "X"),), 1) + QubitOperator(((idx, "Y"),), 1j)
                 else:
-                    qubit_op_ = QubitOperator(((idx, "X"),), 1) - \
-                        QubitOperator(((idx, "Y"),), 1j)
+                    qubit_op_ = QubitOperator(((idx, "X"),), 1) - QubitOperator(((idx, "Y"),), 1j)
                 qubit_op_ *= 0.5
                 qubit_operator_i *= qubit_op_
             qubit_operator_i *= coeff_i
@@ -167,18 +174,23 @@ class QubitExcitationOperator(_Operator):
             if len(sub_term) >= 2:
                 if '^' in sub_term:
                     operator = '^'
-                    index = int(sub_term[:sub_term.index(operator)])
+                    index = int(sub_term[: sub_term.index(operator)])
                 else:
                     operator = ''
                     index = int(sub_term)
 
             if operator not in self.operators:
-                raise ValueError('Invalid type of operator {}.'
-                                 'The Qubit excitation operator should be one of this {}'.format(
-                                     operator, self.operators))
+                raise ValueError(
+                    'Invalid type of operator {}.'
+                    'The Qubit excitation operator should be one of this {}'.format(operator, self.operators)
+                )
             if index < 0:
-                raise ValueError("Invalid index {}.The qubit index should be\
-                    non negative integer".format(self.operators))
+                raise ValueError(
+                    "Invalid index {}.The qubit index should be\
+                    non negative integer".format(
+                        self.operators
+                    )
+                )
             terms_to_tuple.append((index, map_operator_to_integer_rep(operator)))
             # check the commutate terms with same index in the list and
             # replace it with the corresponding commutation relationship
@@ -315,7 +327,7 @@ def _normal_ordered_term(term, coefficient):
                 # If indice are same, employ the commutation relationship
                 # And generate the new term
                 if left_sub_term[0] == right_sub_term[0]:
-                    new_term = term[:(j - 1)] + term[(j + 1):]
+                    new_term = term[: (j - 1)] + term[(j + 1) :]
                     ordered_term += _normal_ordered_term(new_term, coefficient)
             elif left_sub_term[1] == right_sub_term[1]:
                 # If indice are same, evaluate it to zero.

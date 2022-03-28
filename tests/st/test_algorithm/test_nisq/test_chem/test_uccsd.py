@@ -15,8 +15,10 @@
 # ============================================================================
 """Test uccsd."""
 import numpy as np
+
 from mindquantum.algorithm.nisq.chem import generate_uccsd
 from mindquantum.core import gates as G
+
 
 def test_generate_uccsd():
     """

@@ -16,6 +16,7 @@
 """Text measure result"""
 # from mindquantum.core.gates import MeasureResult
 import math
+
 from ._config import _res_text_drawer_config
 
 
@@ -50,8 +51,7 @@ def measure_text_drawer(res):
     axis_num = ''
     axis = ''
     for i in range(split):
-        axis_num = str(round(max_prop / split * (split - i), deci)).rjust(
-            int(max_size / split)) + axis_num
+        axis_num = str(round(max_prop / split * (split - i), deci)).rjust(int(max_size / split)) + axis_num
         axis = axis_mask.rjust(int(max_size / split), hline) + axis
     axis_num = '0.00' + axis_num[4:]
     s[-1] += axis_num
@@ -60,8 +60,7 @@ def measure_text_drawer(res):
         state = k
         state = state.rjust(len(ket_exp))
         state += vline
-        state += (box_high if v == max_shot else box_low) * _trans(
-            v / res.shots, max_size, max_prop)
+        state += (box_high if v == max_shot else box_low) * _trans(v / res.shots, max_size, max_prop)
         s.append(state)
         s.append(' ' * len(ket_exp) + vline)
     return s

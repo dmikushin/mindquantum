@@ -15,17 +15,22 @@
 # ============================================================================
 """Test Circuit utils."""
 import numpy as np
-from mindquantum import pauli_word_to_circuits
-from mindquantum import decompose_single_term_time_evolution
-from mindquantum import QubitOperator
+
 import mindquantum.core.gates as G
-from mindquantum import Circuit, X, H, RX
+from mindquantum import (
+    RX,
+    Circuit,
+    H,
+    QubitOperator,
+    X,
+    decompose_single_term_time_evolution,
+    pauli_word_to_circuits,
+)
+from mindquantum.algorithm.library import qft
+from mindquantum.core.circuit.utils import AP, CPN
+from mindquantum.core.circuit.utils import apply as A
 from mindquantum.core.circuit.utils import controlled as C
 from mindquantum.core.circuit.utils import dagger as D
-from mindquantum.core.circuit.utils import apply as A
-from mindquantum.core.circuit.utils import AP
-from mindquantum.core.circuit.utils import CPN
-from mindquantum.algorithm.library import qft
 
 
 def test_pauli_word_to_circuits():
@@ -124,5 +129,5 @@ def test_state_evol():
 def test_qft():
     c = qft(range(4))
     s = c.get_qs()
-    s_exp = np.ones(2**4) * 0.25
+    s_exp = np.ones(2 ** 4) * 0.25
     assert np.allclose(s, s_exp)

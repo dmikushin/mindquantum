@@ -22,45 +22,45 @@
 #include "decompositions/decomposition_rule.hpp"
 
 namespace mindquantum::decompositions {
-    template <typename derived_t, typename... atoms_t>
-    class NonGateDecompositionRule : public DecompositionRule<derived_t, atoms_t...> {
-     public:
-        using base_t = NonGateDecompositionRule;
-        using self_t = NonGateDecompositionRule<derived_t, atoms_t...>;
-        using parent_t = DecompositionRule<derived_t, atoms_t...>;
-        using non_gate_decomposition = void;
+template <typename derived_t, typename... atoms_t>
+class NonGateDecompositionRule : public DecompositionRule<derived_t, atoms_t...> {
+ public:
+    using base_t = NonGateDecompositionRule;
+    using self_t = NonGateDecompositionRule<derived_t, atoms_t...>;
+    using parent_t = DecompositionRule<derived_t, atoms_t...>;
+    using non_gate_decomposition = void;
 
-        // ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
 
-        explicit NonGateDecompositionRule(AtomStorage& storage) : parent_t{storage}, storage_{storage} {
-        }
+    explicit NonGateDecompositionRule(AtomStorage& storage) : parent_t{storage}, storage_{storage} {
+    }
 
-        // ---------------------------------------------------------------------
+    // ---------------------------------------------------------------------
 
-        //! Getter function for the individual atoms
-        /*!
-         * Overload using a type template type parameter. This works since the list of atoms contains only unique
-         * values.
-         *
-         * \tparam atom_t Type of atom to look for.
-         */
-        template <typename atom_t, typename... args_t>
-        constexpr auto* atom(args_t&&... args) noexcept;
+    //! Getter function for the individual atoms
+    /*!
+     * Overload using a type template type parameter. This works since the list of atoms contains only unique
+     * values.
+     *
+     * \tparam atom_t Type of atom to look for.
+     */
+    template <typename atom_t, typename... args_t>
+    constexpr auto* atom(args_t&&... args) noexcept;
 
-        auto& storage() noexcept {
-            return storage_;
-        }
+    auto& storage() noexcept {
+        return storage_;
+    }
 
-        //! Apply a decomposition rule
-        /*!
-         * \param circuit Quantum circuit
-         * \param inst Quantum instructio to decompose
-         */
-        void apply(circuit_t& circuit, const instruction_t& inst) noexcept;
+    //! Apply a decomposition rule
+    /*!
+     * \param circuit Quantum circuit
+     * \param inst Quantum instructio to decompose
+     */
+    void apply(circuit_t& circuit, const instruction_t& inst) noexcept;
 
-     private:
-        AtomStorage& storage_;
-    };
+ private:
+    AtomStorage& storage_;
+};
 }  // namespace mindquantum::decompositions
 
 #include "decompositions/non_gate_decomposition_rule.tpp"

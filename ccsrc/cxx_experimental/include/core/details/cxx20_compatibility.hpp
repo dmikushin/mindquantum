@@ -19,13 +19,13 @@
 
 namespace std {
 #if !(defined __cpp_lib_remove_cvref) || __cpp_lib_remove_cvref != 201711L
-    template <class T>
-    struct remove_cvref {
-        using type = std::remove_cv_t<std::remove_reference_t<T>>;
-    };
+template <class T>
+struct remove_cvref {
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+};
 
-    template <class T>
-    using remove_cvref_t = typename remove_cvref<T>::type;
+template <class T>
+using remove_cvref_t = typename remove_cvref<T>::type;
 #endif  // __cpp_lib_remove_cvref
 }  // namespace std
 

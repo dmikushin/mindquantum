@@ -16,40 +16,40 @@
 #define VISITOR_HPP
 
 namespace mindquantum {
-    //! Helper class to generate visitors for std::variant
-    /*!
-     * This performs some "black magick" in order to allow users to create a
-     * visitor class consisting only of lambdas at the call site.
-     *
-     * It uses four key language features:
-     * - variadic templates (C++11)
-     * - aggregate initialization (C++11)
-     * - pack expansion of using directice (C++17)
-     * - custom template argument deduction rules (C++17)
-     *
-     * For example, the following would create an instance of a \c overload
-     * class with two overload for operator(): one taking an \c int and one
-     * taking a \c double.
-     *
-     * \code
-     *     overload{
-     *         [] (int i) {  std::cout << "int: " << i; },
-     *         [] (double d::cout << "double: " << d; },
-     *     }
-     * \endcode
-     */
-    template <class... Ts>
-    struct overload : Ts... {
-        using Ts::operator()...;
-    };
+//! Helper class to generate visitors for std::variant
+/*!
+ * This performs some "black magick" in order to allow users to create a
+ * visitor class consisting only of lambdas at the call site.
+ *
+ * It uses four key language features:
+ * - variadic templates (C++11)
+ * - aggregate initialization (C++11)
+ * - pack expansion of using directice (C++17)
+ * - custom template argument deduction rules (C++17)
+ *
+ * For example, the following would create an instance of a \c overload
+ * class with two overload for operator(): one taking an \c int and one
+ * taking a \c double.
+ *
+ * \code
+ *     overload{
+ *         [] (int i) {  std::cout << "int: " << i; },
+ *         [] (double d::cout << "double: " << d; },
+ *     }
+ * \endcode
+ */
+template <class... Ts>
+struct overload : Ts... {
+    using Ts::operator()...;
+};
 
 #if __cplusplus <= 201703L || (defined(__clang__))
-    //! Template deduction guide for the overload struct
-    /*!
-     * \note Not needed anymore for C++20
-     */
-    template <class... Ts>
-    overload(Ts...) -> overload<Ts...>;
+//! Template deduction guide for the overload struct
+/*!
+ * \note Not needed anymore for C++20
+ */
+template <class... Ts>
+overload(Ts...) -> overload<Ts...>;
 #endif /* __cplusplus <= 201703L */
 }  // namespace mindquantum
 

@@ -18,17 +18,17 @@
 #include <string_view>
 
 namespace mindquantum::decompositions {
-    // =========================================================================
-    // :: get_atom_for
+// =========================================================================
+// :: get_atom_for
 
-    auto AtomStorage::get_atom_for(const instruction_t& inst) noexcept -> atom_t* {
-        // NB: search backwards so that we get the most specialized decomposition atoms first (ie. more constrained on
-        //     control qubits)
-        if (auto it = std::find_if(rbegin(atoms_), rend(atoms_),
-                                   [&inst](const auto& atom) { return atom.second.is_applicable(inst); });
-            it != std::rend(atoms_)) {
-            return &it->second;
-        }
-        return nullptr;
+auto AtomStorage::get_atom_for(const instruction_t& inst) noexcept -> atom_t* {
+    // NB: search backwards so that we get the most specialized decomposition atoms first (ie. more constrained on
+    //     control qubits)
+    if (auto it = std::find_if(rbegin(atoms_), rend(atoms_),
+                               [&inst](const auto& atom) { return atom.second.is_applicable(inst); });
+        it != std::rend(atoms_)) {
+        return &it->second;
     }
+    return nullptr;
+}
 }  // namespace mindquantum::decompositions

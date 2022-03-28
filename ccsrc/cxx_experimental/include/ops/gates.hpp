@@ -30,24 +30,24 @@
 #include "gates/time_evolution.hpp"
 
 namespace mindquantum::ops {
-    using namespace tweedledum::Op;
+using namespace tweedledum::Op;
 }  // namespace mindquantum::ops
 
 namespace tweedledum {
-    template <>
-    inline constexpr uint8_t num_param_v<mindquantum::ops::P> = 1;
-    template <>
-    inline constexpr uint8_t num_param_v<mindquantum::ops::Rx> = 1;
-    template <>
-    inline constexpr uint8_t num_param_v<mindquantum::ops::Ry> = 1;
-    template <>
-    inline constexpr uint8_t num_param_v<mindquantum::ops::Rz> = 1;
-    template <>
-    inline constexpr uint8_t num_param_v<mindquantum::ops::Rxx> = 1;
-    template <>
-    inline constexpr uint8_t num_param_v<mindquantum::ops::Ryy> = 1;
-    template <>
-    inline constexpr uint8_t num_param_v<mindquantum::ops::Rzz> = 1;
+template <>
+inline constexpr uint8_t num_param_v<mindquantum::ops::P> = 1;
+template <>
+inline constexpr uint8_t num_param_v<mindquantum::ops::Rx> = 1;
+template <>
+inline constexpr uint8_t num_param_v<mindquantum::ops::Ry> = 1;
+template <>
+inline constexpr uint8_t num_param_v<mindquantum::ops::Rz> = 1;
+template <>
+inline constexpr uint8_t num_param_v<mindquantum::ops::Rxx> = 1;
+template <>
+inline constexpr uint8_t num_param_v<mindquantum::ops::Ryy> = 1;
+template <>
+inline constexpr uint8_t num_param_v<mindquantum::ops::Rzz> = 1;
 }  // namespace tweedledum
 
 #endif /* GATES_HPP */

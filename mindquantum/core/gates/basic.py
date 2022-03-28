@@ -15,27 +15,31 @@
 # ============================================================================
 """Basic module for quantum gate."""
 
+import numbers
 import warnings
-from copy import deepcopy
 from abc import abstractmethod
 from collections.abc import Iterable
-import numbers
+from copy import deepcopy
+
 import numpy as np
+
+from mindquantum import mqbackend as mb
 from mindquantum.core.parameterresolver import ParameterResolver as PR
 from mindquantum.utils.f import _common_exp
-from mindquantum import mqbackend as mb
-from mindquantum.utils.type_value_check import _check_gate_type
-from mindquantum.utils.type_value_check import _check_qubit_id
-from mindquantum.utils.type_value_check import _check_obj_and_ctrl_qubits
+from mindquantum.utils.type_value_check import (
+    _check_gate_type,
+    _check_obj_and_ctrl_qubits,
+    _check_qubit_id,
+)
 
 HERMITIAN_PROPERTIES = {
     'self_hermitian': 0,  # the hermitian of this gate is its self
     'do_hermitian': 1,  # just do hermitian when you need hermitian
-    'params_opposite': 2  # use the negative parameters for hermitian
+    'params_opposite': 2,  # use the negative parameters for hermitian
 }
 
 
-class BasicGate():
+class BasicGate:
     """
     BasicGate is the base class of all gates.
 
@@ -43,6 +47,7 @@ class BasicGate():
         name (str): the name of this gate.
         parameterized (bool): whether this is a parameterized gate. Default: False.
     """
+
     def __init__(self, name, parameterized=False):
         if not isinstance(name, str):
             raise TypeError("Excepted string for gate name, get {}".format(type(name)))
@@ -119,8 +124,12 @@ class BasicGate():
                 _check_qubit_id(i)
             new.obj_qubits = list(obj_qubits)
         else:
-            raise TypeError("Excepted int, list or tuple for \
-                obj_qubits, but get {}".format(type(obj_qubits)))
+            raise TypeError(
+                "Excepted int, list or tuple for \
+                obj_qubits, but get {}".format(
+                    type(obj_qubits)
+                )
+            )
         if ctrl_qubits is None:
             new.ctrl_qubits = []
         else:
@@ -132,8 +141,12 @@ class BasicGate():
                     _check_qubit_id(i)
                 new.ctrl_qubits = list(ctrl_qubits)
             else:
-                raise TypeError("Excepted int, list or tuple for \
-                    ctrl_qubits, but get {}".format(type(obj_qubits)))
+                raise TypeError(
+                    "Excepted int, list or tuple for \
+                    ctrl_qubits, but get {}".format(
+                        type(obj_qubits)
+                    )
+                )
         new.generate_description()
         new.check_obj_qubits()
         _check_obj_and_ctrl_qubits(new.obj_qubits, new.ctrl_qubits)
@@ -157,16 +170,18 @@ class BasicGate():
 
     def __eq__(self, other):
         _check_gate_type(other)
-        if self.name != other.name or \
-                self.parameterized != other.parameterized or \
-                self.obj_qubits != other.obj_qubits or \
-                self.ctrl_qubits != other.ctrl_qubits:
+        if (
+            self.name != other.name
+            or self.parameterized != other.parameterized
+            or self.obj_qubits != other.obj_qubits
+            or self.ctrl_qubits != other.ctrl_qubits
+        ):
             return False
         return True
 
     def __or__(self, qubits):
         if not isinstance(qubits, tuple):
-            qubits = (qubits, )
+            qubits = (qubits,)
 
         qubits = list(qubits)
 
@@ -190,6 +205,7 @@ class NoneParameterGate(BasicGate):
     Args:
         name (str): The name of the this gate.
     """
+
     def __init__(self, name):
         BasicGate.__init__(self, name, False)
         self.coeff = None
@@ -249,6 +265,7 @@ class ParameterGate(NoneParameterGate, BasicGate):
         coeff (Union[dict, ParameterResolver]): the coefficients of
             this parameterized gate. Default: None.
     """
+
     def __init__(self, name, coeff=None):
         if isinstance(coeff, numbers.Number):
             NoneParameterGate.__init__(self, name)
@@ -257,12 +274,18 @@ class ParameterGate(NoneParameterGate, BasicGate):
         else:
             BasicGate.__init__(self, name, True)
             if coeff is None:
-                warnings.warn("Parameter gate without parameters specified, \
-automatically set it to c1.")
+                warnings.warn(
+                    "Parameter gate without parameters specified, \
+automatically set it to c1."
+                )
                 self.coeff = PR({'c1': 1})
             elif not isinstance(coeff, (list, tuple, str, dict, PR)):
-                raise TypeError("Excepted str, list or tuple for coeff, \
-but get {}".format(type(coeff)))
+                raise TypeError(
+                    "Excepted str, list or tuple for coeff, \
+but get {}".format(
+                        type(coeff)
+                    )
+                )
             else:
                 if isinstance(coeff, str):
                     self.coeff = PR({coeff: 1})
@@ -286,13 +309,9 @@ but get {}".format(type(coeff)))
                 self.str = f'{name}({_common_exp(self.coeff, 3)})'
         else:
             if self.parameterized:
-                self.str = self.str[:len(
-                    name) + 1] + str(self.coeff.expression())\
-                    + '|' + self.str[len(name) + 1:]
+                self.str = self.str[: len(name) + 1] + str(self.coeff.expression()) + '|' + self.str[len(name) + 1 :]
             else:
-                self.str = self.str[:len(
-                    name) + 1] + str(_common_exp(self.coeff, 3))\
-                    + '|' + self.str[len(name) + 1:]
+                self.str = self.str[: len(name) + 1] + str(_common_exp(self.coeff, 3)) + '|' + self.str[len(name) + 1 :]
 
     @abstractmethod
     def matrix(self, *paras_out):
@@ -315,8 +334,11 @@ but get {}".format(type(coeff)))
             float, Multiply the values of the common keys of these two dicts.
         """
         if not isinstance(coeff_in, (dict, PR)) or not isinstance(paras_out, (dict, PR)):
-            raise TypeError("Require a dict or ParameterResolver for parameters, but get {} and {}!".format(
-                type(coeff_in), type(paras_out)))
+            raise TypeError(
+                "Require a dict or ParameterResolver for parameters, but get {} and {}!".format(
+                    type(coeff_in), type(paras_out)
+                )
+            )
         params = 0
         for key, value in coeff_in.items():
             if key not in paras_out:
@@ -405,6 +427,7 @@ class IntrinsicOneParaGate(ParameterGate):
         >>> rx2.linearcombination(rx2.coeff,{'a' : 3})
         1.5
     """
+
     def __init__(self, name, coeff=None):
         ParameterGate.__init__(self, name, coeff)
         self.hermitian_property = HERMITIAN_PROPERTIES['params_opposite']
@@ -483,8 +506,10 @@ class IntrinsicOneParaGate(ParameterGate):
                 theta = self.linearcombination(self.coeff, paras_out[0])
             else:
                 if len(self.coeff) != 1:
-                    raise Exception("This gate has more than one parameters, \
-                        need a parameters map!")
+                    raise Exception(
+                        "This gate has more than one parameters, \
+                        need a parameters map!"
+                    )
                 theta = paras_out[0] * list(self.coeff.values())[0]
             return self._matrix(theta)
         return self._matrix(self.coeff)
@@ -514,8 +539,10 @@ class IntrinsicOneParaGate(ParameterGate):
                 theta = self.linearcombination(self.coeff, paras_out[0])
             else:
                 if len(self.coeff) != 1:
-                    raise Exception("This gate has more than one parameters, \
-                        need a parameters map!")
+                    raise Exception(
+                        "This gate has more than one parameters, \
+                        need a parameters map!"
+                    )
                 theta = paras_out[0] * list(self.coeff.values())[0]
             if about_what is None:
                 if len(self.coeff) != 1:

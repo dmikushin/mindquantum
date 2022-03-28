@@ -15,8 +15,8 @@
 # ============================================================================
 """Bitphaseflip operator."""
 
-from mindquantum.core.gates import Z
 from mindquantum.core.circuit import Circuit
+from mindquantum.core.gates import Z
 from mindquantum.utils.type_value_check import _check_input_type
 
 

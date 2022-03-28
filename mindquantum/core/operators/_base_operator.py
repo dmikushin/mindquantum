@@ -18,9 +18,10 @@ This module serves as the base class for FermionOperator and QubitOperator.
 This module, we cite and refactor the code in Fermilib and OpenFermion
 licensed under Apache 2.0 license.
 """
-import numbers
 import copy
+import numbers
 from abc import ABCMeta, abstractmethod
+
 import numpy as np
 
 from mindquantum.core.parameterresolver import ParameterResolver as PR
@@ -79,6 +80,7 @@ class _Operator(metaclass=ABCMeta):
             the term as the product of its factors.
 
     """
+
     __hash__ = None
 
     def __init__(self, term=None, coefficient=1.0):
@@ -86,7 +88,9 @@ class _Operator(metaclass=ABCMeta):
         if not isinstance(coefficient, _validate_coeff_type):
             raise ValueError(
                 "Coefficient must be a numeric type or a string or a ParameterResolver, but get {}.".format(
-                    type(coefficient)))
+                    type(coefficient)
+                )
+            )
 
         self.terms = {}
         self.operators = None
@@ -131,7 +135,7 @@ class _Operator(metaclass=ABCMeta):
             return ()
         if isinstance(terms[0], int):
             self._validate_term(tuple(terms))
-            return (terms, )
+            return (terms,)
 
         for sub_term in terms:
             self._validate_term(sub_term)
@@ -200,12 +204,12 @@ class _Operator(metaclass=ABCMeta):
 
     def __truediv__(self, divisor):
         if isinstance(divisor, (int, float, complex)) and divisor != 0:
-            return self * (1. / divisor)
+            return self * (1.0 / divisor)
         raise TypeError('Cannot divide the {} by non_numeric type or the divisor is 0.'.format(type(self)))
 
     def __itruediv__(self, divisor):
         if isinstance(divisor, (int, float, complex)) and divisor != 0:
-            self *= (1. / divisor)
+            self *= 1.0 / divisor
             return self
         raise TypeError('Cannot divide the {} by non_numeric type or the divisor is 0.'.format(type(self)))
 
@@ -365,8 +369,7 @@ class _Operator(metaclass=ABCMeta):
 
     @property
     def constant(self):
-        """ Returns the value of the constant term.
-        """
+        """Returns the value of the constant term."""
         if () in self.terms:
             return self.terms[()]
         return 0.0
@@ -420,7 +423,7 @@ class _Operator(metaclass=ABCMeta):
         words = []
         for term, _ in self.terms.items():
             for k in term:
-                words.append(self.__class__((k, ), 1))
+                words.append(self.__class__((k,), 1))
         return words
 
     def singlet_coeff(self):

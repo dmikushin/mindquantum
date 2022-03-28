@@ -22,26 +22,26 @@
 #include "ops/parametric/angle_gates.hpp"
 
 namespace mindquantum::decompositions::rules {
-    class H2Rx
-        : public GateDecompositionRule<H2Rx, std::tuple<ops::H>, SINGLE_TGT_NO_CTRL, ops::parametric::Rx,
-                                       ops::parametric::Ph, ops::parametric::Ry> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 0UL);
+class H2Rx
+    : public GateDecompositionRule<H2Rx, std::tuple<ops::H>, SINGLE_TGT_NO_CTRL, ops::parametric::Rx,
+                                   ops::parametric::Ph, ops::parametric::Ry> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 0UL);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "H2Rx"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "H2Rx"sv;
+    }
 
-        void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            assert(std::size(qubits) == 1);
-            atom<ops::parametric::Rx>()->apply(circuit, ops::Rx{PI_VAL}, qubits);
-            atom<ops::parametric::Ph>()->apply(circuit, ops::Ph{PI_VAL_2}, qubits);
-            atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{-PI_VAL_2}, qubits);
-        }
-    };
+    void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
+                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+        assert(std::size(qubits) == 1);
+        atom<ops::parametric::Rx>()->apply(circuit, ops::Rx{PI_VAL}, qubits);
+        atom<ops::parametric::Ph>()->apply(circuit, ops::Ph{PI_VAL_2}, qubits);
+        atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{-PI_VAL_2}, qubits);
+    }
+};
 }  // namespace mindquantum::decompositions::rules
 
 #endif /* DECOMPOSITION_RULE_H2RX_HPP */

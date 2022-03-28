@@ -23,83 +23,83 @@
 #include "cengines/config.hpp"
 
 namespace mindquantum::cengines {
-    class ControlledCircuit {
-     public:
-        using cbit_t = tweedledum::Cbit;
+class ControlledCircuit {
+ public:
+    using cbit_t = tweedledum::Cbit;
 
-        ControlledCircuit(circuit_t& original, const qubits_t& controls)
-            : processed_(empty(controls))
-            , original_(original)
-            , circuit_(empty(controls) ? circuit_t{} : tweedledum::shallow_duplicate(original))
-            , controls_(controls) {
-        }
+    ControlledCircuit(circuit_t& original, const qubits_t& controls)
+        : processed_(empty(controls))
+        , original_(original)
+        , circuit_(empty(controls) ? circuit_t{} : tweedledum::shallow_duplicate(original))
+        , controls_(controls) {
+    }
 
-        ~ControlledCircuit() {
-            apply();
-        }
+    ~ControlledCircuit() {
+        apply();
+    }
 
-        ControlledCircuit(const ControlledCircuit&) = delete;
-        ControlledCircuit(ControlledCircuit&&) = default;
+    ControlledCircuit(const ControlledCircuit&) = delete;
+    ControlledCircuit(ControlledCircuit&&) = default;
 
-        void apply() {
-            if (!processed_) {
-                assert(!empty(controls_));
-                processed_ = true;
+    void apply() {
+        if (!processed_) {
+            assert(!empty(controls_));
+            processed_ = true;
 
-                circuit_.foreach_qubit([&original = original_](const qubit_t& qubit, std::string_view name) {
-                    if (qubit >= original.num_qubits()) {
+            circuit_.foreach_qubit([&original = original_](const qubit_t& qubit, std::string_view name) {
+                if (qubit >= original.num_qubits()) {
 #ifndef NDEBUG
-                        const auto new_qubit =
+                    const auto new_qubit =
 #endif  // NDEBUG
-                            original.create_qubit(name);
+                        original.create_qubit(name);
 
 #ifndef NDEBUG
-                        assert(qubit == new_qubit);
+                    assert(qubit == new_qubit);
 #endif  // NDEBUG
-                    }
-                });
+                }
+            });
 
-                circuit_.foreach_cbit([&original = original_](const cbit_t& cbit, std::string_view name) {
-                    if (cbit > original.num_cbits()) {
+            circuit_.foreach_cbit([&original = original_](const cbit_t& cbit, std::string_view name) {
+                if (cbit > original.num_cbits()) {
 #ifndef NDEBUG
-                        const auto new_cbit =
+                    const auto new_cbit =
 #endif  // NDEBUG
-                            original.create_cbit(name);
+                        original.create_cbit(name);
 #ifndef NDEBUG
-                        assert(cbit == new_cbit);
+                    assert(cbit == new_cbit);
 #endif  // NDEBUG
-                    }
-                });
+                }
+            });
 
-                circuit_.foreach_instruction([&original = original_, &controls = controls_](const instruction_t& inst) {
-                    auto qubits = controls;
-                    for (const auto& qubit: inst.qubits()) {
-                        qubits.emplace_back(qubit);
-                    }
-                    original.apply_operator(inst, qubits, inst.cbits());
-                });
-            }
+            circuit_.foreach_instruction([&original = original_, &controls = controls_](const instruction_t& inst) {
+                auto qubits = controls;
+                for (const auto& qubit : inst.qubits()) {
+                    qubits.emplace_back(qubit);
+                }
+                original.apply_operator(inst, qubits, inst.cbits());
+            });
         }
+    }
 
-        explicit operator circuit_t&() {
-            if (empty(controls_)) {
-                return original_;
-            }
-            return circuit_;
+    explicit operator circuit_t&() {
+        if (empty(controls_)) {
+            return original_;
         }
+        return circuit_;
+    }
 
-     private:
-        bool processed_;
-        circuit_t& original_;
-        circuit_t circuit_;
-        const qubits_t& controls_;
-    };
+ private:
+    bool processed_;
+    circuit_t& original_;
+    circuit_t circuit_;
+    const qubits_t& controls_;
+};
 
 }  // namespace mindquantum::cengines
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define HIQ_WITH_CONTROL_IMPL(original, name, unique_name, controls)                                                   \
-    mindquantum::cengines::ControlledCircuit unique_name{original, controls};                                             \
+    mindquantum::cengines::ControlledCircuit unique_name{original, controls};                                          \
     if (mindquantum::cengines::circuit_t & (name) = static_cast<mindquantum::cengines::circuit_t&>((unique_name)); true)
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define HIQ_WITH_CONTROL(original, name, controls)                                                                     \

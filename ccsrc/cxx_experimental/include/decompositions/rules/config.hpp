@@ -25,15 +25,15 @@
 #include "decompositions/atom_meta.hpp"
 
 namespace mindquantum::decompositions::rules {
-    using namespace std::literals::string_view_literals;
+using namespace std::literals::string_view_literals;
 
 #if __has_include(<numbers>) && __cplusplus > 201703L
-    static constexpr auto PI_VAL = std::numbers::pi;
+static constexpr auto PI_VAL = std::numbers::pi;
 #else
-    static constexpr auto PI_VAL = 3.141592653589793;
+static constexpr auto PI_VAL = 3.141592653589793;
 #endif  // __has_include(<numbers>) && C++20
-    static constexpr auto PI_VAL_2 = PI_VAL / 2.;
-    static constexpr auto PI_VAL_4 = PI_VAL / 4.;
+static constexpr auto PI_VAL_2 = PI_VAL / 2.;
+static constexpr auto PI_VAL_4 = PI_VAL / 4.;
 }  // namespace mindquantum::decompositions::rules
 
 #endif /* DECOPOSITION_RULES_CONFIG_HPP */

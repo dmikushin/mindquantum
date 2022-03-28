@@ -24,30 +24,30 @@
 #include "core/config.hpp"
 
 namespace mindquantum::ops {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    class Command {
-     public:
-        using gate_t = td::Operator;
+class Command {
+ public:
+    using gate_t = td::Operator;
 
-        const auto& get_qubits() const {
-            return qubits_;
-        }
-        const auto& get_control_qubits() const {
-            return control_qubits_;
-        }
-        const gate_t& get_gate() const {
-            assert(bool(operation_));
-            return *operation_;
-        }
+    const auto& get_qubits() const {
+        return qubits_;
+    }
+    const auto& get_control_qubits() const {
+        return control_qubits_;
+    }
+    const gate_t& get_gate() const {
+        assert(bool(operation_));
+        return *operation_;
+    }
 
-     protected:
-        qureg_t qubits_;
-        qureg_t control_qubits_;
+ protected:
+    qureg_t qubits_;
+    qureg_t control_qubits_;
 
-        // TODO: Can we do better than this?
-        std::unique_ptr<td::Operator> operation_;
-    };
+    // TODO: Can we do better than this?
+    std::unique_ptr<td::Operator> operation_;
+};
 
 }  // namespace mindquantum::ops
 

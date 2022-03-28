@@ -22,43 +22,42 @@
 #include "ops/parametric/angle_gates.hpp"
 
 namespace mindquantum::decompositions::rules {
-    class Rx2Rz
-        : public GateDecompositionRule<Rx2Rz, std::tuple<ops::Rx, ops::parametric::Rx>, SINGLE_TGT_PARAM_ANY_CTRL,
-                                       ops::H, ops::parametric::Rz> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 0);
+class Rx2Rz
+    : public GateDecompositionRule<Rx2Rz, std::tuple<ops::Rx, ops::parametric::Rx>, SINGLE_TGT_PARAM_ANY_CTRL, ops::H,
+                                   ops::parametric::Rz> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 0);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "Rx2Rz"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "Rx2Rz"sv;
+    }
 
-        void apply_impl(circuit_t& circuit, const decompositions::operator_t& op,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            atom<ops::H>()->apply(circuit, ops::H{}, qubits);
-            std::visit(
-                [this, &circuit, &qubits](const auto& param) {
-                    using ops::parametric::param_list_t;
-                    using param_t = std::remove_cvref_t<decltype(param)>;
+    void apply_impl(circuit_t& circuit, const decompositions::operator_t& op, const decompositions::qubits_t& qubits,
+                    const decompositions::cbits_t& /* unused */) {
+        atom<ops::H>()->apply(circuit, ops::H{}, qubits);
+        std::visit(
+            [this, &circuit, &qubits](const auto& param) {
+                using ops::parametric::param_list_t;
+                using param_t = std::remove_cvref_t<decltype(param)>;
 
-                    if constexpr (std::is_same_v<param_t, double>) {
-                        atom<ops::parametric::Rz>()->apply(circuit, ops::Rz{param}, qubits);
+                if constexpr (std::is_same_v<param_t, double>) {
+                    atom<ops::parametric::Rz>()->apply(circuit, ops::Rz{param}, qubits);
+                    return;
+                } else if constexpr (std::is_same_v<param_t, param_list_t>) {
+                    if (std::size(param) == 1) {
+                        atom<ops::parametric::Rz>()->apply(circuit, ops::parametric::Rz{param[0]}.eval_smart(), qubits);
                         return;
-                    } else if constexpr (std::is_same_v<param_t, param_list_t>) {
-                        if (std::size(param) == 1) {
-                            atom<ops::parametric::Rz>()->apply(circuit, ops::parametric::Rz{param[0]}.eval_smart(),
-                                                               qubits);
-                            return;
-                        }
                     }
-                    invalid_op_(circuit, qubits, param);
-                },
-                ops::parametric::get_param(op));
+                }
+                invalid_op_(circuit, qubits, param);
+            },
+            ops::parametric::get_param(op));
 
-            atom<ops::H>()->apply(circuit, ops::H{}, qubits);
-        }
-    };
+        atom<ops::H>()->apply(circuit, ops::H{}, qubits);
+    }
+};
 }  // namespace mindquantum::decompositions::rules
 
 #endif /* DECOMPOSITION_RULE_RX2RZ_HPP */

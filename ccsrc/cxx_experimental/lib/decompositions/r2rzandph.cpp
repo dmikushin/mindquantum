@@ -19,15 +19,15 @@
 #include "ops/gates/ph.hpp"
 
 namespace mindquantum::decompositions {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    void decompose_r2rzandph(circuit_t& result, const instruction_t& inst) {
-        const auto& qubits = inst.qubits();
-        const auto angle = inst.cast<td::Op::P>().angle();
+void decompose_r2rzandph(circuit_t& result, const instruction_t& inst) {
+    const auto& qubits = inst.qubits();
+    const auto angle = inst.cast<td::Op::P>().angle();
 
-        result.apply_operator(ops::Ph(angle / 2), qubits);
-        // NB: angle -> angle / 2 compared to ProjectQ because of Tweedledum gate definition
-        result.apply_operator(td::Op::Rz(angle / 2), qubits);
-    }
+    result.apply_operator(ops::Ph(angle / 2), qubits);
+    // NB: angle -> angle / 2 compared to ProjectQ because of Tweedledum gate definition
+    result.apply_operator(td::Op::Rz(angle / 2), qubits);
+}
 
 }  // namespace mindquantum::decompositions

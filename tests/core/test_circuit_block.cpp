@@ -86,26 +86,26 @@ static auto not_equal_initial_final_mappings(get::block_t& block) {
 // =============================================================================
 
 namespace {
-    using qubit_t = CircuitBlock::qubit_t;
+using qubit_t = CircuitBlock::qubit_t;
 
-    template <typename T>
-    struct conv_helper {
-        static constexpr auto value(T t) {
-            return qubit_t{t};
-        }
-    };
-
-    template <>
-    struct conv_helper<qubit_t> {
-        static constexpr auto value(qubit_t qubit) {
-            return qubit;
-        }
-    };
-
-    template <typename... idx_t>
-    constexpr auto make_qubits(idx_t&&... idx) {
-        return std::vector<qubit_t>{conv_helper<idx_t>::value(std::forward<idx_t>(idx))...};
+template <typename T>
+struct conv_helper {
+    static constexpr auto value(T t) {
+        return qubit_t{t};
     }
+};
+
+template <>
+struct conv_helper<qubit_t> {
+    static constexpr auto value(qubit_t qubit) {
+        return qubit;
+    }
+};
+
+template <typename... idx_t>
+constexpr auto make_qubits(idx_t&&... idx) {
+    return std::vector<qubit_t>{conv_helper<idx_t>::value(std::forward<idx_t>(idx))...};
+}
 
 }  // namespace
 
@@ -263,7 +263,7 @@ TEST_CASE("CircuitBlock/Translate IDs", "[circuit_block][core]") {
 
     SECTION("TD -> PQ") {
         std::set<unsigned int> qubit_ids;
-        for (const auto& qubit_id: td_ids) {
+        for (const auto& qubit_id : td_ids) {
             qubit_ids.emplace(block.translate_id(qubit_id));
         }
 
@@ -272,7 +272,7 @@ TEST_CASE("CircuitBlock/Translate IDs", "[circuit_block][core]") {
 
     SECTION("TD -> PQ (td::Qubit)") {
         std::set<unsigned int> qubit_ids;
-        for (const auto& qubit_id: td_ids) {
+        for (const auto& qubit_id : td_ids) {
             qubit_ids.emplace(block.translate_id_td(qubit_id));
         }
 
@@ -281,7 +281,7 @@ TEST_CASE("CircuitBlock/Translate IDs", "[circuit_block][core]") {
 
     SECTION("PQ -> TD") {
         std::set<unsigned int> qubit_ids;
-        for (const auto& qubit_id: pq_ids) {
+        for (const auto& qubit_id : pq_ids) {
             qubit_ids.emplace(static_cast<unsigned int>(block.translate_id(qubit_id)));
         }
 

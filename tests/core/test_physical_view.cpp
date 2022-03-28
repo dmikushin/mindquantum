@@ -64,42 +64,42 @@ using mindquantum::uncommitted;
 
 namespace std {
 #if HIQ_USE_CONCEPTS
-    template <typename T>
-        requires(!std::same_as<std::remove_cvref_t<T>, CircuitManager::qubit_t>)
-    bool operator==(const std::vector<CircuitManager::qubit_t>& lhs, const std::vector<T>& rhs) {
-        return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
-    }
+template <typename T>
+requires(!std::same_as<std::remove_cvref_t<T>, CircuitManager::qubit_t>) bool operator==(
+    const std::vector<CircuitManager::qubit_t>& lhs, const std::vector<T>& rhs) {
+    return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
+}
 #else
-    template <typename T, typename = std::enable_if_t<!std::is_same_v<std::remove_cvref_t<T>, CircuitManager::qubit_t>>>
-    bool operator==(const std::vector<CircuitManager::qubit_t>& lhs, const std::vector<T>& rhs) {
-        return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
-    }
+template <typename T, typename = std::enable_if_t<!std::is_same_v<std::remove_cvref_t<T>, CircuitManager::qubit_t>>>
+bool operator==(const std::vector<CircuitManager::qubit_t>& lhs, const std::vector<T>& rhs) {
+    return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
+}
 #endif  // _cpp_concepts
 }  // namespace std
 
 // =============================================================================
 
 namespace {
-    using qubit_t = CircuitManager::qubit_t;
+using qubit_t = CircuitManager::qubit_t;
 
-    template <typename T>
-    struct conv_helper {
-        static constexpr auto value(T t) {
-            return qubit_t{t};
-        }
-    };
-
-    template <>
-    struct conv_helper<qubit_t> {
-        static constexpr auto value(qubit_t qubit) {
-            return qubit;
-        }
-    };
-
-    template <typename... idx_t>
-    constexpr auto make_qubits(idx_t&&... idx) {
-        return std::vector<qubit_t>{conv_helper<idx_t>::value(std::forward<idx_t>(idx))...};
+template <typename T>
+struct conv_helper {
+    static constexpr auto value(T t) {
+        return qubit_t{t};
     }
+};
+
+template <>
+struct conv_helper<qubit_t> {
+    static constexpr auto value(qubit_t qubit) {
+        return qubit;
+    }
+};
+
+template <typename... idx_t>
+constexpr auto make_qubits(idx_t&&... idx) {
+    return std::vector<qubit_t>{conv_helper<idx_t>::value(std::forward<idx_t>(idx))...};
+}
 
 }  // namespace
 

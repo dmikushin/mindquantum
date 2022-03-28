@@ -21,100 +21,70 @@
 #include "core/circuit_manager.hpp"
 
 namespace mindquantum::details {
-    namespace impl {
-        template <bool reverse>
-        struct ForeachImpl {
-            using manager_t = CircuitManager;
-            using block_t = CircuitBlock;
+namespace impl {
+template <bool reverse>
+struct ForeachImpl {
+    using manager_t = CircuitManager;
+    using block_t = CircuitBlock;
 
-            template <typename Fn>
-            static constexpr auto run(const manager_t& manager, Fn&& fn) {
-                return manager.foreach_block(std::forward<Fn>(fn));
-            }
-            template <typename Fn>
-            static constexpr auto run(const block_t& block, Fn&& fn) {
-                return block.foreach_instruction(std::forward<Fn>(fn));
-            }
-        };
+    template <typename Fn>
+    static constexpr auto run(const manager_t& manager, Fn&& fn) {
+        return manager.foreach_block(std::forward<Fn>(fn));
+    }
+    template <typename Fn>
+    static constexpr auto run(const block_t& block, Fn&& fn) {
+        return block.foreach_instruction(std::forward<Fn>(fn));
+    }
+};
 
-        template <>
-        struct ForeachImpl<true> {
-            using manager_t = CircuitManager;
-            using block_t = CircuitBlock;
+template <>
+struct ForeachImpl<true> {
+    using manager_t = CircuitManager;
+    using block_t = CircuitBlock;
 
-            template <typename Fn>
-            static constexpr auto run(const manager_t& manager, Fn&& fn) {
-                return manager.foreach_r_block(std::forward<Fn>(fn));
-            }
-            template <typename Fn>
-            static constexpr auto run(const block_t& block, Fn&& fn) {
-                return block.foreach_r_instruction(std::forward<Fn>(fn));
-            }
-        };
-    }  // namespace impl
+    template <typename Fn>
+    static constexpr auto run(const manager_t& manager, Fn&& fn) {
+        return manager.foreach_r_block(std::forward<Fn>(fn));
+    }
+    template <typename Fn>
+    static constexpr auto run(const block_t& block, Fn&& fn) {
+        return block.foreach_r_instruction(std::forward<Fn>(fn));
+    }
+};
+}  // namespace impl
 
-    // ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 
-    class ProjectQView {
-     public:
-        using manager_t = CircuitManager;
-        using block_t = CircuitBlock;
-        using cbit_t = tweedledum::Cbit;
-        using qubit_t = tweedledum::Qubit;
-        using instruction_t = tweedledum::Instruction;
+class ProjectQView {
+ public:
+    using manager_t = CircuitManager;
+    using block_t = CircuitBlock;
+    using cbit_t = tweedledum::Cbit;
+    using qubit_t = tweedledum::Qubit;
+    using instruction_t = tweedledum::Instruction;
 
-        explicit ProjectQView(const manager_t& manager) : manager_{manager} {
-        }
+    explicit ProjectQView(const manager_t& manager) : manager_{manager} {
+    }
 
-        template <typename Fn>
-        void foreach_instruction(Fn&& fn) const {
-            foreach_<false>(std::forward<Fn>(fn));
-        }
+    template <typename Fn>
+    void foreach_instruction(Fn&& fn) const {
+        foreach_<false>(std::forward<Fn>(fn));
+    }
 
-        template <typename Fn>
-        void foreach_r_instruction(Fn&& fn) const {
-            foreach_<true>(std::forward<Fn>(fn));
-        }
+    template <typename Fn>
+    void foreach_r_instruction(Fn&& fn) const {
+        foreach_<true>(std::forward<Fn>(fn));
+    }
 
-     private:
-        template <bool reverse, typename Fn>
-        void foreach_(Fn&& fn) const {
-            static_assert(std::is_invocable_r_v<void, Fn, const instruction_t&>);
+ private:
+    template <bool reverse, typename Fn>
+    void foreach_(Fn&& fn) const {
+        static_assert(std::is_invocable_r_v<void, Fn, const instruction_t&>);
 
-            impl::ForeachImpl<reverse>::run(manager_, [fn](const block_t& block) {
-                std::vector<qubit_t> qubits;
-                std::vector<cbit_t> cbits;
-                impl::ForeachImpl<reverse>::run(block, [&fn, &block, &qubits, &cbits](const instruction_t& inst) {
-                    inst.foreach_qubit(
-                        [&qubits, &block](const qubit_t& qubit) { qubits.emplace_back(block.translate_id_td(qubit)); });
-                    inst.foreach_cbit(
-                        [&cbits, &block](const cbit_t& cbit) { cbits.emplace_back(block.translate_id_td(cbit)); });
-
-                    fn(instruction_t(inst, qubits, cbits));
-                    qubits.clear();
-                    cbits.clear();
-                });
-            });
-        }
-
-        const manager_t& manager_;
-    };
-
-    class ProjectQBlockView {
-     public:
-        using block_t = CircuitBlock;
-        using instruction_t = tweedledum::Instruction;
-        using cbit_t = tweedledum::Cbit;
-        using qubit_t = tweedledum::Qubit;
-
-        explicit ProjectQBlockView(const block_t& block) : block_{block} {
-        }
-
-        template <typename Fn>
-        void foreach_instruction(Fn&& fn) const {
+        impl::ForeachImpl<reverse>::run(manager_, [fn](const block_t& block) {
             std::vector<qubit_t> qubits;
             std::vector<cbit_t> cbits;
-            block_.foreach_instruction([&fn = fn, &block = block_, &qubits, &cbits](const instruction_t& inst) {
+            impl::ForeachImpl<reverse>::run(block, [&fn, &block, &qubits, &cbits](const instruction_t& inst) {
                 inst.foreach_qubit(
                     [&qubits, &block](const qubit_t& qubit) { qubits.emplace_back(block.translate_id_td(qubit)); });
                 inst.foreach_cbit(
@@ -124,29 +94,58 @@ namespace mindquantum::details {
                 qubits.clear();
                 cbits.clear();
             });
-        }
+        });
+    }
 
-        template <typename Fn>
-        void foreach_r_instruction(Fn&& fn) const {
-            std::vector<qubit_t> qubits;
-            std::vector<cbit_t> cbits;
-            block_.foreach_r_instruction([&fn = fn, &block = block_, &qubits, &cbits](const instruction_t& inst) {
-                inst.foreach_qubit([&wires = qubits, &block](const qubit_t& qubit) {
-                    wires.emplace_back(block.translate_id_td(qubit));
-                });
-                inst.foreach_cbit(
-                    [&wires = cbits, &block](const cbit_t& cbit) { wires.emplace_back(block.translate_id_td(cbit)); });
+    const manager_t& manager_;
+};
 
-                // TODO: Can we get rid of the temporary variable here?
-                fn(instruction_t(inst, qubits, cbits));
-                qubits.clear();
-                cbits.clear();
-            });
-        }
+class ProjectQBlockView {
+ public:
+    using block_t = CircuitBlock;
+    using instruction_t = tweedledum::Instruction;
+    using cbit_t = tweedledum::Cbit;
+    using qubit_t = tweedledum::Qubit;
 
-     private:
-        const block_t& block_;
-    };
+    explicit ProjectQBlockView(const block_t& block) : block_{block} {
+    }
+
+    template <typename Fn>
+    void foreach_instruction(Fn&& fn) const {
+        std::vector<qubit_t> qubits;
+        std::vector<cbit_t> cbits;
+        block_.foreach_instruction([&fn = fn, &block = block_, &qubits, &cbits](const instruction_t& inst) {
+            inst.foreach_qubit(
+                [&qubits, &block](const qubit_t& qubit) { qubits.emplace_back(block.translate_id_td(qubit)); });
+            inst.foreach_cbit(
+                [&cbits, &block](const cbit_t& cbit) { cbits.emplace_back(block.translate_id_td(cbit)); });
+
+            fn(instruction_t(inst, qubits, cbits));
+            qubits.clear();
+            cbits.clear();
+        });
+    }
+
+    template <typename Fn>
+    void foreach_r_instruction(Fn&& fn) const {
+        std::vector<qubit_t> qubits;
+        std::vector<cbit_t> cbits;
+        block_.foreach_r_instruction([&fn = fn, &block = block_, &qubits, &cbits](const instruction_t& inst) {
+            inst.foreach_qubit(
+                [&wires = qubits, &block](const qubit_t& qubit) { wires.emplace_back(block.translate_id_td(qubit)); });
+            inst.foreach_cbit(
+                [&wires = cbits, &block](const cbit_t& cbit) { wires.emplace_back(block.translate_id_td(cbit)); });
+
+            // TODO: Can we get rid of the temporary variable here?
+            fn(instruction_t(inst, qubits, cbits));
+            qubits.clear();
+            cbits.clear();
+        });
+    }
+
+ private:
+    const block_t& block_;
+};
 }  // namespace mindquantum::details
 
 #endif /* PROJECTQ_VIEW_HPP */

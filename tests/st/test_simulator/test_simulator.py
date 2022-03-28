@@ -14,17 +14,19 @@
 # limitations under the License.
 # ============================================================================
 """Test simulator."""
+import mindspore as ms
 import numpy as np
 from scipy.sparse import csr_matrix
-import mindspore as ms
+
 import mindquantum.core.operators as ops
-from mindquantum.simulator.simulator import Simulator
+from mindquantum import Circuit, Hamiltonian
+from mindquantum import ParameterResolver as PR
+from mindquantum import QubitOperator
+from mindquantum.algorithm import qft
 from mindquantum.core import gates as G
 from mindquantum.core.circuit import UN
-from mindquantum.algorithm import qft
 from mindquantum.framework.layer import MQAnsatzOnlyLayer
-from mindquantum import ParameterResolver as PR
-from mindquantum import Circuit, Hamiltonian, QubitOperator
+from mindquantum.simulator.simulator import Simulator
 
 
 def _test_init_reset(virtual_qc):
@@ -148,10 +150,18 @@ def _test_all_gate_with_simulator(virtual_qc):
     """
     c = generate_test_circuit()
     qs = c.get_qs(backend=virtual_qc, pr={'a': 1, 'b': 2, 'c': 3})
-    qs_exp = np.array([
-        0.09742526 + 0.00536111j, -0.17279339 - 0.32080812j, 0.03473879 - 0.22046017j, -0.0990812 + 0.05735119j,
-        -0.11858329 - 0.05715877j, 0.37406968 + 0.19326249j, 0.46926914 + 0.52135788j, -0.17429908 + 0.27887826j
-    ])
+    qs_exp = np.array(
+        [
+            0.09742526 + 0.00536111j,
+            -0.17279339 - 0.32080812j,
+            0.03473879 - 0.22046017j,
+            -0.0990812 + 0.05735119j,
+            -0.11858329 - 0.05715877j,
+            0.37406968 + 0.19326249j,
+            0.46926914 + 0.52135788j,
+            -0.17429908 + 0.27887826j,
+        ]
+    )
     assert np.allclose(qs, qs_exp)
     sim = Simulator(virtual_qc, c.n_qubits)
     ham = ops.Hamiltonian(ops.QubitOperator('Z0'))
@@ -175,12 +185,14 @@ def _test_optimization_with_custom_gate(virtual_qc):
     Description:
     Expectation:
     """
+
     def _matrix(theta):
         return np.array([[np.cos(theta / 2), -1j * np.sin(theta / 2)], [-1j * np.sin(theta / 2), np.cos(theta / 2)]])
 
     def _diff_matrix(theta):
-        return 0.5 * np.array([[-np.sin(theta / 2), -1j * np.cos(theta / 2)],
-                               [-1j * np.cos(theta / 2), -np.sin(theta / 2)]])
+        return 0.5 * np.array(
+            [[-np.sin(theta / 2), -1j * np.cos(theta / 2)], [-1j * np.cos(theta / 2), -np.sin(theta / 2)]]
+        )
 
     h = G.UnivMathGate('H', G.H.matrix())
     rx = G.gene_univ_parameterized_gate('RX', _matrix, _diff_matrix)

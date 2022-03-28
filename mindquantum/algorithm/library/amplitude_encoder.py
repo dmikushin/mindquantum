@@ -16,9 +16,12 @@
 '''Amplitude encoder for quantum machine learning'''
 
 import math
+
 import numpy as np
+
+from mindquantum.core import RY, Circuit, ParameterResolver, X
 from mindquantum.utils.type_value_check import _check_input_type
-from mindquantum.core import Circuit, ParameterResolver, X, RY
+
 
 def controlled_gate(circuit, gate, tqubit, cqubits, zero_qubit):
     '''
@@ -36,6 +39,7 @@ def controlled_gate(circuit, gate, tqubit, cqubits, zero_qubit):
     for i in range(len(cqubits)):
         if cqubits[i] < 0 or (cqubits[i] == 0 and zero_qubit == 0):
             circuit += X.on(abs(cqubits[i]))
+
 
 def amplitude_encoder(x, n_qubits):
     '''
@@ -74,7 +78,7 @@ def amplitude_encoder(x, n_qubits):
     if isinstance(x, np.ndarray):
         x = x.tolist()
     if len(x) > 2 ** n_qubits:
-        x = x[ : (2 ** n_qubits)]
+        x = x[: (2 ** n_qubits)]
     while 2 ** n_qubits != len(x):
         x.append(0)
 
@@ -84,7 +88,7 @@ def amplitude_encoder(x, n_qubits):
         tree.append(0)
     for i in range(len(x)):
         tree.append(x[i])
-    for i in range(len(x) - 2, -1 ,-1):
+    for i in range(len(x) - 2, -1, -1):
         tree[i] += math.sqrt(tree[i * 2 + 1] * tree[i * 2 + 1] + tree[i * 2 + 2] * tree[i * 2 + 2])
 
     path = [[]]

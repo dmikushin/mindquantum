@@ -27,87 +27,87 @@
 // =============================================================================
 
 namespace {
-    using namespace mindquantum::ops::parametric;
+using namespace mindquantum::ops::parametric;
 
-    class NumOne {
-     public:
-        static constexpr auto kind() {
-            return "test.num.one";
-        }
+class NumOne {
+ public:
+    static constexpr auto kind() {
+        return "test.num.one";
+    }
 
-        static constexpr auto num_targets = 1UL;
+    static constexpr auto num_targets = 1UL;
 
-        NumOne(double alpha) : alpha_(alpha) {
-        }
+    NumOne(double alpha) : alpha_(alpha) {
+    }
 
-        const auto& alpha() const {
-            return alpha_;
-        }
+    const auto& alpha() const {
+        return alpha_;
+    }
 
-     private:
-        double alpha_;
-    };
+ private:
+    double alpha_;
+};
 
-    class ParamOne : public ParametricBase<ParamOne, NumOne, real::alpha> {
-     public:
-        static constexpr auto kind() {
-            return "test.param.one";
-        }
+class ParamOne : public ParametricBase<ParamOne, NumOne, real::alpha> {
+ public:
+    static constexpr auto kind() {
+        return "test.param.one";
+    }
 
-        template <typename evald_param_t>
-        static auto to_param_type(const ParamOne& /* other */, evald_param_t&& evald_param) {
-            return ParamOne{std::forward<evald_param_t>(evald_param)};
-        }
+    template <typename evald_param_t>
+    static auto to_param_type(const ParamOne& /* other */, evald_param_t&& evald_param) {
+        return ParamOne{std::forward<evald_param_t>(evald_param)};
+    }
 
-        template <typename evald_param_t>
-        static auto to_non_param_type(const ParamOne& /* other */, evald_param_t&& evald_param) {
-            return NumOne{std::forward<evald_param_t>(evald_param)};
-        }
+    template <typename evald_param_t>
+    static auto to_non_param_type(const ParamOne& /* other */, evald_param_t&& evald_param) {
+        return NumOne{std::forward<evald_param_t>(evald_param)};
+    }
 
-        using base_t::base_t;
-    };
+    using base_t::base_t;
+};
 
-    class NumTwo {
-     public:
-        static constexpr auto kind() {
-            return "test.num.two";
-        }
+class NumTwo {
+ public:
+    static constexpr auto kind() {
+        return "test.num.two";
+    }
 
-        static constexpr auto num_targets = 1UL;
+    static constexpr auto num_targets = 1UL;
 
-        NumTwo(double alpha, double beta) : alpha_(alpha), beta_(beta) {
-        }
+    NumTwo(double alpha, double beta) : alpha_(alpha), beta_(beta) {
+    }
 
-        const auto& alpha() const {
-            return alpha_;
-        }
-        const auto& beta() const {
-            return beta_;
-        }
+    const auto& alpha() const {
+        return alpha_;
+    }
+    const auto& beta() const {
+        return beta_;
+    }
 
-     private:
-        double alpha_;
-        double beta_;
-    };
+ private:
+    double alpha_;
+    double beta_;
+};
 
-    class ParamTwo : public ParametricBase<ParamTwo, NumTwo, real::alpha, real::beta> {
-     public:
-        static constexpr auto kind() {
-            return "test.param.two";
-        }
+class ParamTwo : public ParametricBase<ParamTwo, NumTwo, real::alpha, real::beta> {
+ public:
+    static constexpr auto kind() {
+        return "test.param.two";
+    }
 
-        template <typename... evald_params_t>
-        static auto to_param_type(const ParamTwo& /* other */, evald_params_t&&... evald_params) {
-            return ParamTwo{std::forward<evald_params_t>(evald_params)...};
-        }
+    template <typename... evald_params_t>
+    static auto to_param_type(const ParamTwo& /* other */, evald_params_t&&... evald_params) {
+        return ParamTwo{std::forward<evald_params_t>(evald_params)...};
+    }
 
-        template <typename... evald_params_t>
-        static auto to_non_param_type(const ParamTwo& /* other */, evald_params_t&&... evald_params) {
-            return NumTwo{std::forward<evald_params_t>(evald_params)...};
-        }
+    template <typename... evald_params_t>
+    static auto to_non_param_type(const ParamTwo& /* other */, evald_params_t&&... evald_params) {
+        return NumTwo{std::forward<evald_params_t>(evald_params)...};
+    }
 
-        using base_t::base_t;
-    };
+    using base_t::base_t;
+};
 }  // namespace
 
 // =============================================================================

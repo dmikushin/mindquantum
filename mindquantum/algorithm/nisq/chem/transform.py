@@ -17,11 +17,16 @@ This module is to transform the fermion type operator to qubit type operator,
 thus can be simulated in quantum computer
 """
 from math import floor, log
+
 import numpy as np
 
 from mindquantum.core.operators.fermion_operator import FermionOperator
 from mindquantum.core.operators.qubit_operator import QubitOperator
-from mindquantum.core.operators.utils import count_qubits, number_operator, normal_ordered
+from mindquantum.core.operators.utils import (
+    count_qubits,
+    normal_ordered,
+    number_operator,
+)
 
 
 class Transform:
@@ -64,10 +69,10 @@ class Transform:
         0.5*a [Z0 X1] +
         -0.5*I*a [Z0 Y1]
     """
+
     def __init__(self, operator, n_qubits=None):
         if not isinstance(operator, (FermionOperator, QubitOperator)):
-            raise TypeError(
-                "Operator must be a FermionOperator or QubitOperator")
+            raise TypeError("Operator must be a FermionOperator or QubitOperator")
         if n_qubits is None:
             n_qubits = count_qubits(operator)
         if n_qubits < count_qubits(operator):
@@ -96,8 +101,7 @@ class Transform:
             QubitOperator, qubit operator after jordan_wigner transformation.
         """
         if not isinstance(self.operator, FermionOperator):
-            raise TypeError(
-                'This method can be only applied for FermionOperator.')
+            raise TypeError('This method can be only applied for FermionOperator.')
         transf_op = QubitOperator()
         for term in self.operator.terms:
             # Initialize identity matrix.
@@ -113,8 +117,7 @@ class Transform:
                 x2 = []
                 y2 = [index]
                 z2 = list(range(index))
-                transformed_term *= _transform_ladder_operator(
-                    ladder_operator, x1, y1, z1, x2, y2, z2)
+                transformed_term *= _transform_ladder_operator(ladder_operator, x1, y1, z1, x2, y2, z2)
             transf_op += transformed_term
 
         return transf_op
@@ -157,8 +160,7 @@ class Transform:
             QubitOperator, qubits operator after parity transformation.
         """
         if not isinstance(self.operator, FermionOperator):
-            raise TypeError(
-                'This method can be only applied for FermionOperator.')
+            raise TypeError('This method can be only applied for FermionOperator.')
         transf_op = QubitOperator()
         for term in self.operator.terms:
             # Initialize identity matrix.
@@ -174,8 +176,7 @@ class Transform:
                 x2 = list(range(index + 1, self.n_qubits))
                 y2 = [index]
                 z2 = []
-                transformed_term *= _transform_ladder_operator(
-                    ladder_operator, x1, y1, z1, x2, y2, z2)
+                transformed_term *= _transform_ladder_operator(ladder_operator, x1, y1, z1, x2, y2, z2)
             transf_op += transformed_term
 
         return transf_op
@@ -227,8 +228,7 @@ class Transform:
             QubitOperator, qubit operator after bravyi_kitaev transformation.
         """
         if not isinstance(self.operator, FermionOperator):
-            raise TypeError(
-                'This method can be only applied for FermionOperator.')
+            raise TypeError('This method can be only applied for FermionOperator.')
         transf_op = QubitOperator()
         for term in self.operator.terms:
             # Initialize identity matrix.
@@ -247,8 +247,7 @@ class Transform:
                 x2 = update_set - {index}
                 y2 = {index}
                 z2 = (parity_set ^ occupation_set) - {index}
-                transformed_term *= _transform_ladder_operator(
-                    ladder_operator, x1, y1, z1, x2, y2, z2)
+                transformed_term *= _transform_ladder_operator(ladder_operator, x1, y1, z1, x2, y2, z2)
             transf_op += transformed_term
 
         return transf_op
@@ -271,8 +270,7 @@ class Transform:
             QubitOperator, qubit operator after bravyi_kitaev_superfast.
         """
         if not isinstance(self.operator, FermionOperator):
-            raise TypeError(
-                'This method can be only applied for FermionOperator.')
+            raise TypeError('This method can be only applied for FermionOperator.')
         # Get operator in normal order
         fermion_operator = normal_ordered(self.operator)
 
@@ -293,8 +291,8 @@ class Transform:
         for term in fermion_operator:
             # Check whether term is already transformed
             if term not in transformed_terms:
-                at = [i for i, t in term[:len(term) // 2]]
-                a = [i for i, t in term[len(term) // 2:]]
+                at = [i for i, t in term[: len(term) // 2]]
+                a = [i for i, t in term[len(term) // 2 :]]
                 u = set(at) | set(a)
 
                 # Second term in pair to transform
@@ -303,13 +301,10 @@ class Transform:
                 # Check equality between numbers of creation and annihilation
                 # operators in term
                 if len(at) != len(a):
-                    raise ValueError(
-                        "Terms in hamiltonian must consist "
-                        "f pairs of creation/annihilation operators")
+                    raise ValueError("Terms in hamiltonian must consist " "f pairs of creation/annihilation operators")
 
                 # Check whether fermion operator is hermitian
-                if abs(fermion_operator.terms[term] -
-                       fermion_operator.terms[term_t]) > 1e-8:
+                if abs(fermion_operator.terms[term] - fermion_operator.terms[term_t]) > 1e-8:
                     raise ValueError('Fermion operator must be hermitian.')
 
                 # Case of a^i aj
@@ -317,28 +312,27 @@ class Transform:
                     # Case of number operator (i=j)
                     if len(u) == 1:
                         i = u.pop()
-                        transf_op += _transformed_number_operator(i,
-                                                                  edge_matrix,
-                                                                  edge_enum) *\
-                            fermion_operator.terms[term]
+                        transf_op += (
+                            _transformed_number_operator(i, edge_matrix, edge_enum) * fermion_operator.terms[term]
+                        )
                     # Case of excitation operator
                     else:
                         i, j = at[0]
-                        transf_op += _transformed_excitation_operator(
-                            i, j, edge_matrix,
-                            edge_enum) * fermion_operator.terms[term]
+                        transf_op += (
+                            _transformed_excitation_operator(i, j, edge_matrix, edge_enum)
+                            * fermion_operator.terms[term]
+                        )
 
                 # Case of a^i a^j ak al
                 elif len(at) == 2:
                     # Case of Coulomb/exchange operator (a^i ai a^j aj)
                     if len(u) == 2:
                         i, j = at[0], at[1]
-                        transf_op += _transformed_exchange_operator(
-                            i,
-                            j,
-                            edge_matrix,
-                            edge_enum) *\
-                            fermion_operator.terms[term] * (-1)
+                        transf_op += (
+                            _transformed_exchange_operator(i, j, edge_matrix, edge_enum)
+                            * fermion_operator.terms[term]
+                            * (-1)
+                        )
                         # -1 factor because of normal ordering (a^i a^j ai aj,
                         # for i>j)
 
@@ -347,22 +341,20 @@ class Transform:
                         i = (u - set(a)).pop()
                         j = (set(at) & set(a)).pop()
                         k = (u - set(at)).pop()
-                        transf_op += _transformed_number_excitation_operator(
-                            i,
-                            j,
-                            k,
-                            edge_matrix,
-                            edge_enum) *\
-                            fermion_operator.terms[term] * \
-                            (-1)**((i > j) ^ (j > k))
+                        transf_op += (
+                            _transformed_number_excitation_operator(i, j, k, edge_matrix, edge_enum)
+                            * fermion_operator.terms[term]
+                            * (-1) ** ((i > j) ^ (j > k))
+                        )
                         # -1 factor because of normal ordering
 
                     # Case of double excitation operator
                     elif len(u) == 4:
                         i, j, k, _ = at[0], at[1], a[0], a[1]
-                        transf_op += _transformed_double_excitation_operator(
-                            at[0], at[1], a[0], a[1], edge_matrix,
-                            edge_enum) * fermion_operator.terms[term]
+                        transf_op += (
+                            _transformed_double_excitation_operator(at[0], at[1], a[0], a[1], edge_matrix, edge_enum)
+                            * fermion_operator.terms[term]
+                        )
 
                 # Adding terms in transformed pair
                 transformed_terms.append(term)
@@ -379,11 +371,10 @@ class Transform:
             QubitOperator, qubit operator after ternary_tree transformation.
         """
         h = floor(log(2 * self.n_qubits + 1, 3))
-        d = self.n_qubits - (3**h - 1) // 2
+        d = self.n_qubits - (3 ** h - 1) // 2
 
         if not isinstance(self.operator, FermionOperator):
-            raise TypeError(
-                'This method can be only applied for FermionOperator.')
+            raise TypeError('This method can be only applied for FermionOperator.')
         transf_op = QubitOperator()
         for term in self.operator.terms:
             # Initialize identity matrix.
@@ -394,9 +385,11 @@ class Transform:
                 # Define lists of qubits to apply Pauli gates
                 index = ladder_operator[0]
 
-                p1 = ([2 * index // (3**l) % 3 for l in range(h, -1, -1)] if
-                      2 * index < 3 * d else [(2 * index - 2 * d) // (3**l) % 3
-                                              for l in range(h - 1, -1, -1)])
+                p1 = (
+                    [2 * index // (3 ** l) % 3 for l in range(h, -1, -1)]
+                    if 2 * index < 3 * d
+                    else [(2 * index - 2 * d) // (3 ** l) % 3 for l in range(h - 1, -1, -1)]
+                )
                 x1 = []
                 y1 = []
                 z1 = []
@@ -408,10 +401,11 @@ class Transform:
                     else:
                         z1 += [_get_qubit_index(p1, l)]
 
-                p2 = ([(2 * index + 1) // (3**l) % 3
-                       for l in range(h, -1, -1)] if 2 * index < 3 * d else
-                      [(2 * index + 1 - 2 * d) // (3**l) % 3
-                       for l in range(h - 1, -1, -1)])
+                p2 = (
+                    [(2 * index + 1) // (3 ** l) % 3 for l in range(h, -1, -1)]
+                    if 2 * index < 3 * d
+                    else [(2 * index + 1 - 2 * d) // (3 ** l) % 3 for l in range(h - 1, -1, -1)]
+                )
                 x2 = []
                 y2 = []
                 z2 = []
@@ -423,8 +417,7 @@ class Transform:
                     else:
                         z2 += [_get_qubit_index(p2, l)]
 
-                transformed_term *= _transform_ladder_operator(
-                    ladder_operator, x1, y1, z1, x2, y2, z2)
+                transformed_term *= _transform_ladder_operator(ladder_operator, x1, y1, z1, x2, y2, z2)
             transf_op += transformed_term
 
         return transf_op
@@ -437,8 +430,7 @@ class Transform:
             FermionOperator, fermion operator after reversed_jordan_wigner transformation.
         """
         if not isinstance(self.operator, QubitOperator):
-            raise TypeError(
-                'This method can be only applied for QubitOperator.')
+            raise TypeError('This method can be only applied for QubitOperator.')
         transf_op = FermionOperator()
 
         # Loop through terms.
@@ -451,35 +443,30 @@ class Transform:
 
                     # Handle Pauli Z.
                     if pauli_operator[1] == 'Z':
-                        transformed_pauli = FermionOperator(
-                            ()) + number_operator(None,
-                                                  pauli_operator[0], -2.)
+                        transformed_pauli = FermionOperator(()) + number_operator(None, pauli_operator[0], -2.0)
 
                     # Handle Pauli X and Y.
                     else:
-                        raising_term = FermionOperator(
-                            ((pauli_operator[0], 1), ))
-                        lowering_term = FermionOperator(
-                            ((pauli_operator[0], 0), ))
+                        raising_term = FermionOperator(((pauli_operator[0], 1),))
+                        lowering_term = FermionOperator(((pauli_operator[0], 0),))
                         if pauli_operator[1] == 'Y':
-                            raising_term *= 1.j
-                            lowering_term *= -1.j
+                            raising_term *= 1.0j
+                            lowering_term *= -1.0j
 
                         transformed_pauli = raising_term + lowering_term
 
                         # Account for the phase terms.
                         for j in reversed(range(pauli_operator[0])):
-                            z_term = QubitOperator(((j, 'Z'), ))
+                            z_term = QubitOperator(((j, 'Z'),))
                             working_term = z_term * working_term
                         term_key = list(working_term.terms)[0]
                         transformed_pauli *= working_term.terms[term_key]
-                        working_term.terms[list(working_term.terms)[0]] = 1.
+                        working_term.terms[list(working_term.terms)[0]] = 1.0
 
                     # Get next non-identity operator acting below
                     # 'working_qubit'.
                     working_qubit = pauli_operator[0] - 1
-                    for working_operator in reversed(
-                            list(working_term.terms)[0]):
+                    for working_operator in reversed(list(working_term.terms)[0]):
                         if working_operator[0] <= working_qubit:
                             pauli_operator = working_operator
                             break
@@ -494,9 +481,9 @@ class Transform:
 
 
 def _get_qubit_index(p, l):
-    n = (3**l - 1) // 2
+    n = (3 ** l - 1) // 2
     for j in range(l):
-        n += 3**(l - 1 - j) * p[j]
+        n += 3 ** (l - 1 - j) * p[j]
     return n
 
 
@@ -522,15 +509,15 @@ def _transform_ladder_operator(ladder_operator, x1, y1, z1, x2, y2, z2):
         QubitOperator
     """
     coefficient_1 = 0.5
-    coefficient_2 = -.5j if ladder_operator[1] else .5j
+    coefficient_2 = -0.5j if ladder_operator[1] else 0.5j
     transf_op_1 = QubitOperator(
-        tuple((index, 'X') for index in x1) + tuple(
-            (index, 'Y') for index in y1) + tuple(
-                (index, 'Z') for index in z1), coefficient_1)
+        tuple((index, 'X') for index in x1) + tuple((index, 'Y') for index in y1) + tuple((index, 'Z') for index in z1),
+        coefficient_1,
+    )
     transf_op_2 = QubitOperator(
-        tuple((index, 'X') for index in x2) + tuple(
-            (index, 'Y') for index in y2) + tuple(
-                (index, 'Z') for index in z2), coefficient_2)
+        tuple((index, 'X') for index in x2) + tuple((index, 'Y') for index in y2) + tuple((index, 'Z') for index in z2),
+        coefficient_2,
+    )
     return transf_op_1 + transf_op_2
 
 
@@ -671,33 +658,46 @@ def _transformed_number_operator(i, edge_matrix, edge_enum):
 def _transformed_excitation_operator(i, j, edge_matrix, edge_enum):
     """Return qubit operator based on Edge matrix for a^i aj + a^j ai term"""
     a_ij = _get_a(i, j, edge_matrix, edge_enum)
-    return (a_ij * _get_b(j, edge_matrix, edge_enum) +
-            _get_b(i, edge_matrix, edge_enum) * a_ij) * (-1j / 2)
+    return (a_ij * _get_b(j, edge_matrix, edge_enum) + _get_b(i, edge_matrix, edge_enum) * a_ij) * (-1j / 2)
 
 
 def _transformed_exchange_operator(i, j, edge_matrix, edge_enum):
     """Return qubit operator based on Edge matrix for a^i ai a^j aj"""
-    return (QubitOperator(()) - _get_b(i, edge_matrix, edge_enum)) *\
-        (QubitOperator(()) - _get_b(j, edge_matrix, edge_enum)) / 4
+    return (
+        (QubitOperator(()) - _get_b(i, edge_matrix, edge_enum))
+        * (QubitOperator(()) - _get_b(j, edge_matrix, edge_enum))
+        / 4
+    )
 
 
 def _transformed_number_excitation_operator(i, j, k, edge_matrix, edge_enum):
     """Return qubit operator based on Edge matrix for a^i a^j aj ak + a^k a^j aj ai"""
     a_ik = _get_a(i, k, edge_matrix, edge_enum)
-    return (a_ik * _get_b(k, edge_matrix, edge_enum) +
-            _get_b(i, edge_matrix, edge_enum) * a_ik) * (QubitOperator(
-                ()) - _get_b(j, edge_matrix, edge_enum)) * (-1j / 4)
+    return (
+        (a_ik * _get_b(k, edge_matrix, edge_enum) + _get_b(i, edge_matrix, edge_enum) * a_ik)
+        * (QubitOperator(()) - _get_b(j, edge_matrix, edge_enum))
+        * (-1j / 4)
+    )
 
 
-def _transformed_double_excitation_operator(i, j, k, l, edge_matrix,
-                                            edge_enum):
+def _transformed_double_excitation_operator(i, j, k, l, edge_matrix, edge_enum):
     """Return qubit operator based on Edge matrix for a^i a^j ak al"""
     b_i = _get_b(i, edge_matrix, edge_enum)
     b_j = _get_b(j, edge_matrix, edge_enum)
     b_k = _get_b(k, edge_matrix, edge_enum)
     b_l = _get_b(l, edge_matrix, edge_enum)
 
-    return _get_a(i, j, edge_matrix, edge_enum) * _get_a(k, l, edge_matrix,
-                                                         edge_enum) *\
-        (-QubitOperator(()) - (b_i * b_j + b_k * b_l) + b_i * b_k +
-         b_i * b_l + b_j * b_k + b_j * b_l + b_i * b_j * b_k * b_l) / 8
+    return (
+        _get_a(i, j, edge_matrix, edge_enum)
+        * _get_a(k, l, edge_matrix, edge_enum)
+        * (
+            -QubitOperator(())
+            - (b_i * b_j + b_k * b_l)
+            + b_i * b_k
+            + b_i * b_l
+            + b_j * b_k
+            + b_j * b_l
+            + b_i * b_j * b_k * b_l
+        )
+        / 8
+    )

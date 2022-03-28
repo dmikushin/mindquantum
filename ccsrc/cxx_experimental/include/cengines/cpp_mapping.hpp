@@ -22,28 +22,28 @@
 // clang-format on
 
 namespace mindquantum::cengines::cpp {
-    using mapping_t = std::map<unsigned int, unsigned int>;
+using mapping_t = std::map<unsigned int, unsigned int>;
 
-    class LinearMapper {
-     public:
-        DECLARE_ATTRIBUTE(mapping_t, _current_mapping);
-        DECLARE_ATTRIBUTE(unsigned int, num_qubits);
-        DECLARE_ATTRIBUTE(unsigned int, num_mappings);
-        DECLARE_ATTRIBUTE(unsigned int, storage);
+class LinearMapper {
+ public:
+    DECLARE_ATTRIBUTE(mapping_t, _current_mapping);
+    DECLARE_ATTRIBUTE(unsigned int, num_qubits);
+    DECLARE_ATTRIBUTE(unsigned int, num_mappings);
+    DECLARE_ATTRIBUTE(unsigned int, storage);
 
-        DECLARE_ATTRIBUTE(bool, cyclic);
-    };
+    DECLARE_ATTRIBUTE(bool, cyclic);
+};
 
-    class GridMapper {
-     public:
-        DECLARE_ATTRIBUTE(mapping_t, _current_mapping);
-        DECLARE_ATTRIBUTE(unsigned int, num_qubits);
-        DECLARE_ATTRIBUTE(unsigned int, num_mappings);
-        DECLARE_ATTRIBUTE(unsigned int, storage);
+class GridMapper {
+ public:
+    DECLARE_ATTRIBUTE(mapping_t, _current_mapping);
+    DECLARE_ATTRIBUTE(unsigned int, num_qubits);
+    DECLARE_ATTRIBUTE(unsigned int, num_mappings);
+    DECLARE_ATTRIBUTE(unsigned int, storage);
 
-        DECLARE_ATTRIBUTE(unsigned int, num_rows);
-        DECLARE_ATTRIBUTE(unsigned int, num_columns);
-    };
+    DECLARE_ATTRIBUTE(unsigned int, num_rows);
+    DECLARE_ATTRIBUTE(unsigned int, num_columns);
+};
 
 }  // namespace mindquantum::cengines::cpp
 

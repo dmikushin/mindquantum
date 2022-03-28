@@ -18,12 +18,16 @@
 import json
 from collections.abc import Iterable
 from copy import deepcopy
+
 import numpy as np
 import sympy as sp
+
 from mindquantum import mqbackend as mb
-from mindquantum.utils.type_value_check import _num_type
-from mindquantum.utils.type_value_check import _check_input_type
-from mindquantum.utils.type_value_check import _check_int_type
+from mindquantum.utils.type_value_check import (
+    _check_input_type,
+    _check_int_type,
+    _num_type,
+)
 
 
 class ParameterResolver(dict):
@@ -49,6 +53,7 @@ class ParameterResolver(dict):
         >>> pr.no_grad_parameters
         {'a'}
     """
+
     def __init__(self, data=None):
         if data is None:
             data = {}
@@ -83,8 +88,9 @@ class ParameterResolver(dict):
         """
         if isinstance(keys, str):
             if not isinstance(values, _num_type):
-                raise TypeError("Parameter value should be a number, but get {}, which is {}!".format(
-                    values, type(values)))
+                raise TypeError(
+                    "Parameter value should be a number, but get {}, which is {}!".format(values, type(values))
+                )
             super().__setitem__(keys, values)
             self.requires_grad_parameters.add(keys)
         elif isinstance(keys, Iterable):
@@ -379,11 +385,16 @@ class ParameterResolver(dict):
         """
         _check_pr_type(others)
         super().update(others)
-        conflict = (self.no_grad_parameters & others.requires_grad_parameters) | (others.no_grad_parameters
-                                                                                  & self.requires_grad_parameters)
+        conflict = (self.no_grad_parameters & others.requires_grad_parameters) | (
+            others.no_grad_parameters & self.requires_grad_parameters
+        )
         if conflict:
-            raise ValueError("Parameter conflict, {} require grad in some parameter \
-resolver and not require grad in other parameter resolver ".format(conflict))
+            raise ValueError(
+                "Parameter conflict, {} require grad in some parameter \
+resolver and not require grad in other parameter resolver ".format(
+                    conflict
+                )
+            )
         self.no_grad_parameters.update(others.no_grad_parameters)
         self.requires_grad_parameters.update(others.requires_grad_parameters)
 

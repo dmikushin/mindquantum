@@ -15,20 +15,25 @@
 # ============================================================================
 """Circuit module."""
 
+import copy
 from collections.abc import Iterable
 from typing import List
-import copy
+
 import numpy as np
 from rich.console import Console
+
 import mindquantum.core.gates as G
-from mindquantum.utils.type_value_check import _check_gate_type
 from mindquantum.core.parameterresolver import ParameterResolver as PR
 from mindquantum.core.parameterresolver.parameterresolver import ParameterResolver
 from mindquantum.io import bprint
 from mindquantum.io.display import brick_model
-from mindquantum.utils.type_value_check import _check_input_type
-from mindquantum.utils.type_value_check import _check_and_generate_pr_type
-from mindquantum.utils.type_value_check import _check_gate_has_obj
+from mindquantum.utils.type_value_check import (
+    _check_and_generate_pr_type,
+    _check_gate_has_obj,
+    _check_gate_type,
+    _check_input_type,
+)
+
 from .utils import apply
 
 GateSeq = List[G.BasicGate]
@@ -53,6 +58,7 @@ def _two_dim_array_to_list(data):
 
 class CollectionMap:
     """A collection container."""
+
     def __init__(self):
         self.map = {}
 
@@ -183,6 +189,7 @@ class Circuit(list):
                                 │
         q1: ────────────────────●──
     """
+
     def __init__(self, gates=None):
         list.__init__([])
         self.all_qubits = CollectionMap()
@@ -414,6 +421,7 @@ class Circuit(list):
 
     def __repr__(self):
         from mindquantum.io.display._config import _CIRCUIT_STYLE
+
         circ = self.compress()
         s = brick_model(circ, sorted(self.all_qubits.map))
         s = '\n'.join(s)
@@ -427,8 +435,8 @@ class Circuit(list):
 
     def _repr_html_(self):
         """repr for jupyter nontebook"""
-        from mindquantum.io.display._config import CIRCUIT_HTML_FORMAT
-        from mindquantum.io.display._config import _CIRCUIT_STYLE
+        from mindquantum.io.display._config import _CIRCUIT_STYLE, CIRCUIT_HTML_FORMAT
+
         console = Console(record=True)
         circ = self.compress()
         s = brick_model(circ, sorted(self.all_qubits.map))
@@ -473,13 +481,19 @@ class Circuit(list):
             else:
                 self.num_non_para_gate += 1
         if show:
-            info = bprint([
-                'Total number of gates: {}.'.format(self.num_para_gate + self.num_non_para_gate),
-                'Parameter gates: {}.'.format(self.num_para_gate), 'with {} parameters are: {}{}'.format(
-                    len(self.all_paras), ', '.join(self.all_paras.keys()[:10]),
-                    ('.' if len(self.all_paras) <= 10 else '...')), 'Number qubit of circuit: {}'.format(self.n_qubits)
-            ],
-                          title='Circuit Summary')
+            info = bprint(
+                [
+                    'Total number of gates: {}.'.format(self.num_para_gate + self.num_non_para_gate),
+                    'Parameter gates: {}.'.format(self.num_para_gate),
+                    'with {} parameters are: {}{}'.format(
+                        len(self.all_paras),
+                        ', '.join(self.all_paras.keys()[:10]),
+                        ('.' if len(self.all_paras) <= 10 else '...'),
+                    ),
+                    'Number qubit of circuit: {}'.format(self.n_qubits),
+                ],
+                title='Circuit Summary',
+            )
             for i in info:
                 print(i)
 
@@ -564,6 +578,7 @@ class Circuit(list):
         if self.has_measure_gate:
             raise ValueError("This circuit cannot have measurement gate.")
         from mindquantum.simulator import Simulator
+
         sim = Simulator(backend, self.n_qubits, seed=seed)
         m = np.array(sim.sim.get_circuit_matrix(circ.get_cpp_obj(), pr.get_cpp_obj())).T
         return m
@@ -881,6 +896,7 @@ class Circuit(list):
             maps_ctrl (Union[int, list[int]]): control qubits. Default: None.
         """
         from mindquantum import UN
+
         self += UN(gate, maps_obj, maps_ctrl)
         return self
 
@@ -896,6 +912,7 @@ class Circuit(list):
             seed (int): The random seed of simulator. Default: None
         """
         from mindquantum import Simulator
+
         sim = Simulator(backend, self.n_qubits, seed)
         sim.apply_circuit(self, pr)
         return sim.get_qs(ket)
@@ -930,10 +947,13 @@ class Circuit(list):
             style (dict, str): the style to set svg circuit. Currently, we support
                 'official', 'light' and 'dark'. Default: None.
         """
+        from mindquantum.io.display._config import (
+            _svg_config_dark,
+            _svg_config_light,
+            _svg_config_official,
+        )
         from mindquantum.io.display.circuit_svg_drawer import SVGCircuit
-        from mindquantum.io.display._config import _svg_config_dark
-        from mindquantum.io.display._config import _svg_config_light
-        from mindquantum.io.display._config import _svg_config_official
+
         supported_style = {
             'official': _svg_config_official,
             'dark': _svg_config_dark,

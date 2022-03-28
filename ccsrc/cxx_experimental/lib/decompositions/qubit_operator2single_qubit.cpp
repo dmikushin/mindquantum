@@ -22,34 +22,34 @@
 #include "ops/gates/qubit_operator.hpp"
 
 namespace mindquantum::decompositions {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    void decompose_qubitop2onequbit(circuit_t& result, const instruction_t& inst) {
-        assert(inst.kind() == "projectq.qubitoperator");
+void decompose_qubitop2onequbit(circuit_t& result, const instruction_t& inst) {
+    assert(inst.kind() == "projectq.qubitoperator");
 
-        auto qubits = inst.qubits();
-        const auto& terms = inst.cast<ops::QubitOperator>().get_terms();
-        decltype(qubits) targets(std::end(qubits) - inst.num_targets(), std::end(qubits));
+    auto qubits = inst.qubits();
+    const auto& terms = inst.cast<ops::QubitOperator>().get_terms();
+    decltype(qubits) targets(std::end(qubits) - inst.num_targets(), std::end(qubits));
 
-        // Only keep control qubits in qubits
-        qubits.resize(std::size(qubits) - inst.num_targets(), td::Qubit::invalid());
+    // Only keep control qubits in qubits
+    qubits.resize(std::size(qubits) - inst.num_targets(), td::Qubit::invalid());
 
-        qubits.push_back(targets[targets[0]]);
-        result.apply_operator(ops::Ph(std::arg(std::begin(terms)->second)), qubits);
-        qubits.pop_back();
+    qubits.push_back(targets[targets[0]]);
+    result.apply_operator(ops::Ph(std::arg(std::begin(terms)->second)), qubits);
+    qubits.pop_back();
 
-        for (auto& pauli: std::begin(terms)->first) {
-            qubits.push_back(targets[pauli.first]);
-            if (pauli.second == 'X') {
-                result.apply_operator(td::Op::X(), qubits);
-            } else if (pauli.second == 'Y') {
-                result.apply_operator(td::Op::Y(), qubits);
-            } else if (pauli.second == 'Z') {
-                result.apply_operator(td::Op::Z(), qubits);
-            } else {
-                assert(0 && "QubitOperator Pauli must be 'X', 'Y' or 'Z'");
-            }
-            qubits.pop_back();
+    for (auto& pauli : std::begin(terms)->first) {
+        qubits.push_back(targets[pauli.first]);
+        if (pauli.second == 'X') {
+            result.apply_operator(td::Op::X(), qubits);
+        } else if (pauli.second == 'Y') {
+            result.apply_operator(td::Op::Y(), qubits);
+        } else if (pauli.second == 'Z') {
+            result.apply_operator(td::Op::Z(), qubits);
+        } else {
+            assert(0 && "QubitOperator Pauli must be 'X', 'Y' or 'Z'");
         }
+        qubits.pop_back();
     }
+}
 }  // namespace mindquantum::decompositions

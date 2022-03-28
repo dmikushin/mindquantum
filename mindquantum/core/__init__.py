@@ -15,19 +15,16 @@
 # ============================================================================
 """MindQuantum core features (eDSL)"""
 
-from . import circuit
-from . import gates
+# Provide alias for convenience
+from . import circuit, gates
 from . import operators
-from . import parameterresolver
-from . import third_party
+from . import operators as ops
+from . import parameterresolver, third_party
 from .circuit import *
 from .gates import *
 from .operators import *
 from .parameterresolver import *
 from .third_party import *
-
-# Provide alias for convenience
-from . import operators as ops
 
 __all__ = []
 __all__.extend(circuit.__all__)

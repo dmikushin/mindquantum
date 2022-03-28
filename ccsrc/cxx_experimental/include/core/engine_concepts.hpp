@@ -26,15 +26,15 @@
 #include "concepts.hpp"
 
 namespace mindquantum::concepts {
-    template <typename mapper_t>
-    concept Mapper = requires(mapper_t mapper, tweedledum::Device device, tweedledum::Circuit circuit,
-                              tweedledum::Placement placement) {
-        // clang-format off
+template <typename mapper_t>
+concept Mapper = requires(mapper_t mapper, tweedledum::Device device, tweedledum::Circuit circuit,
+                          tweedledum::Placement placement) {
+    // clang-format off
           {mapper.device()} -> same_decay_as<tweedledum::Device>;
           {mapper.cold_start(device, circuit)} -> std::same_as<std::pair<tweedledum::Circuit, tweedledum::Mapping>>;
           {mapper.hot_start(device, circuit, placement)} -> std::same_as<std::pair<tweedledum::Circuit, tweedledum::Mapping>>;
-        // clang-format on
-    };
+    // clang-format on
+};
 
 }  // namespace mindquantum::concepts
 

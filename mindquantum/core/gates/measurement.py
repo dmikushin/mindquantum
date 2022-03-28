@@ -15,13 +15,18 @@
 # ============================================================================
 """Basic module for quantum gate."""
 from collections.abc import Iterable
+
 import numpy as np
 from rich.console import Console
-from mindquantum.utils.type_value_check import _check_input_type
-from mindquantum.utils.type_value_check import _check_int_type
-from mindquantum.utils.type_value_check import _check_value_should_not_less
+
 from mindquantum import mqbackend as mb
 from mindquantum.io.display import measure_text_drawer
+from mindquantum.utils.type_value_check import (
+    _check_input_type,
+    _check_int_type,
+    _check_value_should_not_less,
+)
+
 from .basic import NoneParameterGate
 
 
@@ -217,8 +222,10 @@ class MeasureResult:
             measure = [measure]
         for m in measure:
             if not isinstance(m, Measure):
-                raise ValueError("Measurement gates need to \
-be objects of class 'Measurement' ")
+                raise ValueError(
+                    "Measurement gates need to \
+be objects of class 'Measurement' "
+                )
         for m in measure:
             if m.key in self.keys:
                 raise ValueError(f"Measure key {m.key} already defined.")
@@ -310,6 +317,7 @@ be objects of class 'Measurement' ")
 
     def __repr__(self):
         from mindquantum.io.display._config import _MEA_RES_STYLE
+
         res = measure_text_drawer(self)
         res.append(self.data.__str__())
         s = '\n'.join(res)
@@ -322,8 +330,8 @@ be objects of class 'Measurement' ")
 
     def _repr_html_(self):
         """repr for jupyter notebook"""
-        from mindquantum.io.display._config import _MEA_RES_STYLE
-        from mindquantum.io.display._config import MEA_HTML_FORMAT
+        from mindquantum.io.display._config import _MEA_RES_STYLE, MEA_HTML_FORMAT
+
         res = measure_text_drawer(self)
         res.append(self.data.__str__())
         s = '\n'.join(res)

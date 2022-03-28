@@ -26,36 +26,36 @@
 #include "details/macros_conv_begin.hpp"
 
 namespace mindquantum::python::cpp {
-    //! C++ equivalent to projectq.cengines.LocalOptimizer
-    /*!
-     * This class is mainly intended as storage for the parameter of the
-     * optimization pass
-     */
-    class LocalOptimizer
-        : public cengines::cpp::LocalOptimizer
-        , public BasicEngine {
-     public:
-        DECLARE_GETTER_SETTER(unsigned int, _m);
-    };
+//! C++ equivalent to projectq.cengines.LocalOptimizer
+/*!
+ * This class is mainly intended as storage for the parameter of the
+ * optimization pass
+ */
+class LocalOptimizer
+    : public cengines::cpp::LocalOptimizer
+    , public BasicEngine {
+ public:
+    DECLARE_GETTER_SETTER(unsigned int, _m);
+};
 }  // namespace mindquantum::python::cpp
 
 namespace mindquantum::details {
-    //! Helper function to extract attribute from a local optimiser
-    bool load_optimiser(pybind11::handle src, python::cpp::LocalOptimizer& value);
+//! Helper function to extract attribute from a local optimiser
+bool load_optimiser(pybind11::handle src, python::cpp::LocalOptimizer& value);
 }  // namespace mindquantum::details
 
 namespace pybind11::detail {
-    template <>
-    struct type_caster<mindquantum::python::cpp::LocalOptimizer> {
-     public:
-        using value_type = mindquantum::python::cpp::LocalOptimizer;
+template <>
+struct type_caster<mindquantum::python::cpp::LocalOptimizer> {
+ public:
+    using value_type = mindquantum::python::cpp::LocalOptimizer;
 
-        PYBIND11_TYPE_CASTER(value_type, _("LocalOptimizer_cpp"));
+    PYBIND11_TYPE_CASTER(value_type, _("LocalOptimizer_cpp"));
 
-        bool load(handle src, bool) {
-            return mindquantum::details::load_optimiser(src, value);
-        }
-    };
+    bool load(handle src, bool) {
+        return mindquantum::details::load_optimiser(src, value);
+    }
+};
 }  // namespace pybind11::detail
 
 #include "details/macros_conv_end.hpp"

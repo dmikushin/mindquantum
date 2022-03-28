@@ -49,6 +49,7 @@ class Projector:
         >>> p
         I2 ⊗ ¦010⟩⟨010¦
     """
+
     def __init__(self, proj):
         _check_projector_str(proj)
         self.proj = proj

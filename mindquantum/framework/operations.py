@@ -14,12 +14,13 @@
 # limitations under the License.
 # ============================================================================
 """Mindspore quantum simulator operator."""
-import numpy as np
 import mindspore as ms
+import mindspore.nn as nn
+import numpy as np
 from mindspore import context
 from mindspore.ops import operations as P
-import mindspore.nn as nn
 from mindspore.ops.primitive import constexpr
+
 from mindquantum.simulator import GradOpsWrapper
 
 
@@ -28,8 +29,10 @@ def check_enc_input_shape(data, x, enc_len):
     if not isinstance(data, ms.Tensor):
         raise TypeError(f"Encoder parameter requires a Tensor but get {type(data)}")
     if len(x) != 2 or x[1] != enc_len:
-        raise ValueError(f'Encoder data requires a two dimension Tensor with second' +
-                         f' dimension should be {enc_len}, but get shape {x}')
+        raise ValueError(
+            f'Encoder data requires a two dimension Tensor with second'
+            + f' dimension should be {enc_len}, but get shape {x}'
+        )
 
 
 @constexpr
@@ -88,6 +91,7 @@ class MQOps(nn.Cell):
         Tensor(shape=[1, 1], dtype=Float32, value=
         [[ 9.78433937e-02]])
     """
+
     def __init__(self, expectation_with_grad):
         super(MQOps, self).__init__()
         _mode_check(self)
@@ -168,6 +172,7 @@ class MQN2Ops(nn.Cell):
         Tensor(shape=[1, 1], dtype=Float32, value=
         [[ 9.57333017e-03]])
     """
+
     def __init__(self, expectation_with_grad):
         super(MQN2Ops, self).__init__()
         _mode_check(self)
@@ -185,7 +190,7 @@ class MQN2Ops(nn.Cell):
         ans_data = ans_data.asnumpy()
         f, g_enc, g_ans = self.expectation_with_grad(enc_data, ans_data)
         self.f = f
-        f = ms.Tensor(np.abs(f)**2, dtype=ms.float32)
+        f = ms.Tensor(np.abs(f) ** 2, dtype=ms.float32)
         self.g_enc = g_enc
         self.g_ans = g_ans
         return f
@@ -237,6 +242,7 @@ class MQAnsatzOnlyOps(nn.Cell):
         >>> f_ms
         Tensor(shape=[1], dtype=Float32, value= [ 9.78433937e-02])
     """
+
     def __init__(self, expectation_with_grad):
         super(MQAnsatzOnlyOps, self).__init__()
         _mode_check(self)
@@ -301,6 +307,7 @@ class MQN2AnsatzOnlyOps(nn.Cell):
         >>> f_ms
         Tensor(shape=[1], dtype=Float32, value= [ 9.57333017e-03])
     """
+
     def __init__(self, expectation_with_grad):
         super(MQN2AnsatzOnlyOps, self).__init__()
         _mode_check(self)
@@ -316,7 +323,7 @@ class MQN2AnsatzOnlyOps(nn.Cell):
         x = x.asnumpy()
         f, g = self.expectation_with_grad(x)
         self.f = f[0]
-        f = ms.Tensor(np.abs(f[0])**2, dtype=ms.float32)
+        f = ms.Tensor(np.abs(f[0]) ** 2, dtype=ms.float32)
         self.g = g[0]
         return f
 
@@ -370,6 +377,7 @@ class MQEncoderOnlyOps(nn.Cell):
         [[ 9.78433937e-02],
          [ 2.72192121e-01]])
     """
+
     def __init__(self, expectation_with_grad):
         super(MQEncoderOnlyOps, self).__init__()
         _mode_check(self)
@@ -437,6 +445,7 @@ class MQN2EncoderOnlyOps(nn.Cell):
         [[ 9.57333017e-03],
          [ 7.40885586e-02]])
     """
+
     def __init__(self, expectation_with_grad):
         super(MQN2EncoderOnlyOps, self).__init__()
         _mode_check(self)
@@ -452,7 +461,7 @@ class MQN2EncoderOnlyOps(nn.Cell):
         x = x.asnumpy()
         f, g = self.expectation_with_grad(x)
         self.f = f
-        f = ms.Tensor(np.abs(f)**2, dtype=ms.float32)
+        f = ms.Tensor(np.abs(f) ** 2, dtype=ms.float32)
         self.g = g
         return f
 
@@ -464,9 +473,11 @@ class MQN2EncoderOnlyOps(nn.Cell):
 
 def _mode_check(self):
     if context.get_context('mode') != context.PYNATIVE_MODE:
-        raise RuntimeError(f'{self.__class__} is `PYNATIVE_MODE` supported only. Run command below to set context\n\
+        raise RuntimeError(
+            f'{self.__class__} is `PYNATIVE_MODE` supported only. Run command below to set context\n\
     import mindspore as ms\n\
-    ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")')
+    ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")'
+        )
 
 
 def _check_grad_ops(expectation_with_grad):

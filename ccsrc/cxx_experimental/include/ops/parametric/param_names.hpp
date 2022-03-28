@@ -23,20 +23,20 @@
 #include "ops/parametric/config.hpp"
 
 namespace mindquantum::ops::parametric {
-    namespace details {
-        struct real_tag_t {  // NOLINT(altera-struct-pack-align)
-            using type = double;
-            static auto eval(const basic_t& expr) {
-                return eval_double(*expr);
-            }
-        };
-        struct complex_tag_t {  // NOLINT(altera-struct-pack-align)
-            using type = std::complex<double>;
-            static auto eval(const basic_t& expr) {
-                return eval_complex_double(*expr);
-            }
-        };
-    }  // namespace details
+namespace details {
+struct real_tag_t {  // NOLINT(altera-struct-pack-align)
+    using type = double;
+    static auto eval(const basic_t& expr) {
+        return eval_double(*expr);
+    }
+};
+struct complex_tag_t {  // NOLINT(altera-struct-pack-align)
+    using type = std::complex<double>;
+    static auto eval(const basic_t& expr) {
+        return eval_complex_double(*expr);
+    }
+};
+}  // namespace details
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define DEFINE_PARAM_STRUCT(type, param_name)                                                                          \
@@ -45,57 +45,57 @@ namespace mindquantum::ops::parametric {
         using param_type = type;                                                                                       \
     }
 
-    namespace real {
-        DEFINE_PARAM_STRUCT(details::real_tag_t, alpha);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, beta);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, gamma);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, delta);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, epsilon);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, zeta);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, eta);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, theta);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, iota);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, kappa);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, lambda);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, mu);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, nu);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, xi);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, omicron);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, pi);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, rho);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, sigma);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, tau);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, upsilon);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, phi);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, chi);
-        DEFINE_PARAM_STRUCT(details::real_tag_t, omega);
-    }  // namespace real
+namespace real {
+DEFINE_PARAM_STRUCT(details::real_tag_t, alpha);
+DEFINE_PARAM_STRUCT(details::real_tag_t, beta);
+DEFINE_PARAM_STRUCT(details::real_tag_t, gamma);
+DEFINE_PARAM_STRUCT(details::real_tag_t, delta);
+DEFINE_PARAM_STRUCT(details::real_tag_t, epsilon);
+DEFINE_PARAM_STRUCT(details::real_tag_t, zeta);
+DEFINE_PARAM_STRUCT(details::real_tag_t, eta);
+DEFINE_PARAM_STRUCT(details::real_tag_t, theta);
+DEFINE_PARAM_STRUCT(details::real_tag_t, iota);
+DEFINE_PARAM_STRUCT(details::real_tag_t, kappa);
+DEFINE_PARAM_STRUCT(details::real_tag_t, lambda);
+DEFINE_PARAM_STRUCT(details::real_tag_t, mu);
+DEFINE_PARAM_STRUCT(details::real_tag_t, nu);
+DEFINE_PARAM_STRUCT(details::real_tag_t, xi);
+DEFINE_PARAM_STRUCT(details::real_tag_t, omicron);
+DEFINE_PARAM_STRUCT(details::real_tag_t, pi);
+DEFINE_PARAM_STRUCT(details::real_tag_t, rho);
+DEFINE_PARAM_STRUCT(details::real_tag_t, sigma);
+DEFINE_PARAM_STRUCT(details::real_tag_t, tau);
+DEFINE_PARAM_STRUCT(details::real_tag_t, upsilon);
+DEFINE_PARAM_STRUCT(details::real_tag_t, phi);
+DEFINE_PARAM_STRUCT(details::real_tag_t, chi);
+DEFINE_PARAM_STRUCT(details::real_tag_t, omega);
+}  // namespace real
 
-    namespace complex {
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, alpha);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, beta);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, gamma);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, delta);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, epsilon);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, zeta);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, eta);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, theta);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, iota);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, kappa);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, lambda);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, mu);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, nu);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, xi);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, omicron);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, pi);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, rho);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, sigma);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, tau);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, upsilon);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, phi);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, chi);
-        DEFINE_PARAM_STRUCT(details::complex_tag_t, omega);
-    }  // namespace complex
+namespace complex {
+DEFINE_PARAM_STRUCT(details::complex_tag_t, alpha);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, beta);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, gamma);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, delta);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, epsilon);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, zeta);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, eta);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, theta);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, iota);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, kappa);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, lambda);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, mu);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, nu);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, xi);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, omicron);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, pi);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, rho);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, sigma);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, tau);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, upsilon);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, phi);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, chi);
+DEFINE_PARAM_STRUCT(details::complex_tag_t, omega);
+}  // namespace complex
 
 #undef DEFINE_PARAM_STRUCT
 }  // namespace mindquantum::ops::parametric

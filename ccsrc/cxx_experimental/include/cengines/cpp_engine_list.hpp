@@ -25,13 +25,13 @@
 #include "cengines/cpp_resource_counter.hpp"
 
 namespace mindquantum::cengines {
-    namespace cpp {
-        class InstructionFilter {};
-        class TagRemover {};
-    }  // namespace cpp
+namespace cpp {
+class InstructionFilter {};
+class TagRemover {};
+}  // namespace cpp
 
-    using engine_t = std::variant<cpp::LocalOptimizer, cpp::LinearMapper, cpp::GridMapper, CppGraphMapper, CppPrinter,
-                                  ResourceCounter, cpp::TagRemover, cpp::InstructionFilter, CppDecomposer>;
+using engine_t = std::variant<cpp::LocalOptimizer, cpp::LinearMapper, cpp::GridMapper, CppGraphMapper, CppPrinter,
+                              ResourceCounter, cpp::TagRemover, cpp::InstructionFilter, CppDecomposer>;
 
 }  // namespace mindquantum::cengines
 

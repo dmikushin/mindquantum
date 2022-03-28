@@ -29,33 +29,33 @@
 
 namespace mindquantum::ops::parametric {
 #if HIQ_USE_CONCEPTS
-    template <typename T>
-    static auto to_symengine(T&& t) {
-        using type = std::remove_cvref_t<T>;
-        if constexpr (std::integral<type>) {
-            return SymEngine::integer(t);
-        } else if constexpr (std::floating_point<type>) {
-            return SymEngine::number(t);
-        } else if constexpr (traits::is_complex_v<type>) {
-            return SymEngine::complex_double(std::forward<T>(t));
-        } else {
-            return SymEngine::expand(std::forward<T>(t));
-        }
+template <typename T>
+static auto to_symengine(T&& t) {
+    using type = std::remove_cvref_t<T>;
+    if constexpr (std::integral<type>) {
+        return SymEngine::integer(t);
+    } else if constexpr (std::floating_point<type>) {
+        return SymEngine::number(t);
+    } else if constexpr (traits::is_complex_v<type>) {
+        return SymEngine::complex_double(std::forward<T>(t));
+    } else {
+        return SymEngine::expand(std::forward<T>(t));
     }
+}
 #else
-    template <typename T>
-    static auto to_symengine(T&& t) {
-        using type = std::remove_cvref_t<T>;
-        if constexpr (std::is_integral_v<type>) {
-            return SymEngine::integer(t);
-        } else if constexpr (std::is_floating_point_v<type>) {
-            return SymEngine::number(t);
-        } else if constexpr (traits::is_complex_v<type>) {
-            return SymEngine::complex_double(std::forward<T>(t));
-        } else {
-            return SymEngine::expand(std::forward<T>(t));
-        }
+template <typename T>
+static auto to_symengine(T&& t) {
+    using type = std::remove_cvref_t<T>;
+    if constexpr (std::is_integral_v<type>) {
+        return SymEngine::integer(t);
+    } else if constexpr (std::is_floating_point_v<type>) {
+        return SymEngine::number(t);
+    } else if constexpr (traits::is_complex_v<type>) {
+        return SymEngine::complex_double(std::forward<T>(t));
+    } else {
+        return SymEngine::expand(std::forward<T>(t));
     }
+}
 #endif  // HIQ_USE_CONCEPTS
 }  // namespace mindquantum::ops::parametric
 

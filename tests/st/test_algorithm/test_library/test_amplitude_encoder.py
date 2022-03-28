@@ -17,6 +17,7 @@
 from mindquantum.algorithm.library import amplitude_encoder
 from mindquantum.simulator import Simulator
 
+
 def test_amplitude_encoder():
     '''
     Feature: amplitude_encoder

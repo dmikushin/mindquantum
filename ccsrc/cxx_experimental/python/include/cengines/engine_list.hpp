@@ -26,24 +26,24 @@ CLANG_DIAG_ON("-Wdeprecated-declarations")
 #include <variant>
 
 namespace mindquantum::details {
-    //! Helper functions to extract an engine from Python
-    bool load_cengine(pybind11::handle src, cengines::engine_t& engine);
+//! Helper functions to extract an engine from Python
+bool load_cengine(pybind11::handle src, cengines::engine_t& engine);
 }  // namespace mindquantum::details
 
 // ==============================================================================
 
 namespace pybind11::detail {
-    template <>
-    struct type_caster<mindquantum::cengines::engine_t> {
-     public:
-        using value_type = mindquantum::cengines::engine_t;
+template <>
+struct type_caster<mindquantum::cengines::engine_t> {
+ public:
+    using value_type = mindquantum::cengines::engine_t;
 
-        PYBIND11_TYPE_CASTER(value_type, _("CppEngineType"));
+    PYBIND11_TYPE_CASTER(value_type, _("CppEngineType"));
 
-        bool load(handle src, bool) {
-            return mindquantum::details::load_cengine(src, value);
-        }
-    };
+    bool load(handle src, bool) {
+        return mindquantum::details::load_cengine(src, value);
+    }
+};
 }  // namespace pybind11::detail
 
 #endif /* PYTHON_ENGINE_LIST_HPP */

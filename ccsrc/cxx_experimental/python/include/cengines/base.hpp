@@ -22,31 +22,31 @@ CLANG_DIAG_OFF("-Wdeprecated-declarations")
 CLANG_DIAG_ON("-Wdeprecated-declarations")
 
 namespace mindquantum::python::cpp {
-    //! Base class for C++-only compiler engines
-    class BasicEngine {
-     public:
-        //! Receive ProjectQ commands
-        /*!
-         * This ProjectQ compiler engine is not intended to be used to do any
-         * processing from Python. Instead, it is meant as a way to
-         * print the commands inside the C++ network in the chosen format.
-         * This method therefore always throws a NotImplementedError.
-         *
-         * \throw Always throws NotImplementedError
-         */
-        void receive(pybind11::handle source);
+//! Base class for C++-only compiler engines
+class BasicEngine {
+ public:
+    //! Receive ProjectQ commands
+    /*!
+     * This ProjectQ compiler engine is not intended to be used to do any
+     * processing from Python. Instead, it is meant as a way to
+     * print the commands inside the C++ network in the chosen format.
+     * This method therefore always throws a NotImplementedError.
+     *
+     * \throw Always throws NotImplementedError
+     */
+    void receive(pybind11::handle source);
 
-        //! Send ProjectQ commands
-        /*!
-         * This ProjectQ compiler engine is not intended to be used to do any
-         * processing from Python. Instead, it is meant as a way to
-         * print the commands inside the C++ network in the chosen format.
-         * This method therefore always throws a NotImplementedError.
-         *
-         * \throw Always throws NotImplementedError
-         */
-        void send(pybind11::handle source);
-    };
+    //! Send ProjectQ commands
+    /*!
+     * This ProjectQ compiler engine is not intended to be used to do any
+     * processing from Python. Instead, it is meant as a way to
+     * print the commands inside the C++ network in the chosen format.
+     * This method therefore always throws a NotImplementedError.
+     *
+     * \throw Always throws NotImplementedError
+     */
+    void send(pybind11::handle source);
+};
 }  // namespace mindquantum::python::cpp
 
 #endif /* PYTHON_BASE_HPP */

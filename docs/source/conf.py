@@ -52,10 +52,7 @@ author = 'Huawei HiQ developers'
 # ones.
 import sphinx_rtd_theme
 
-extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.mathjax',
-    'sphinx.ext.autosummary', 'breathe'
-]
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.mathjax', 'sphinx.ext.autosummary', 'breathe']
 
 autosummary_generate = True
 
@@ -273,15 +270,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -291,8 +285,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ProjectQCXX.tex', '{} Documentation'.format(project), 'a',
-     'manual'),
+    (master_doc, 'ProjectQCXX.tex', '{} Documentation'.format(project), 'a', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -331,8 +324,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, project, '{} Documentation'.format(project),
-              [author], 1)]
+man_pages = [(master_doc, project, '{} Documentation'.format(project), [author], 1)]
 
 # If true, show URL addresses after external links.
 #
@@ -344,8 +336,7 @@ man_pages = [(master_doc, project, '{} Documentation'.format(project),
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, project, '{} Documentation'.format(project), author, project,
-     description),
+    (master_doc, project, '{} Documentation'.format(project), author, project, description),
 ]
 
 # Documents to append as an appendix to all manuals.

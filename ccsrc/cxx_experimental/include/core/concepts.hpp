@@ -27,9 +27,9 @@
 #    if !(defined __cpp_lib_concepts) || (__cpp_lib_concepts < 202002L)
 #        include <type_traits>
 namespace std {
-    // It appears that clang 11 already has std::same_as but not the others
+// It appears that clang 11 already has std::same_as but not the others
 
-    // clang-format off
+// clang-format off
      template <class T>
      concept integral = std::is_integral_v<T>;
      template <class T>
@@ -113,19 +113,19 @@ namespace std {
      //      && std::assignable_from<T&, T&>
      //      && std::assignable_from<T&, const T&>
      //      && std::assignable_from<T&, const T>;
-    // clang-format on
+// clang-format on
 }  // namespace std
 #    endif /* __cpp_lib_concepts < 202002L */
 #endif     /* __cplusplus >= 201703L */
 
 namespace mindquantum::concepts {
-    template <typename T, typename U>
-    concept same_decay_as = std::same_as<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+template <typename T, typename U>
+concept same_decay_as = std::same_as<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
 
-    template <typename T, typename... Ts>
-    concept tuple_contains = traits::tuple_contains<T, std::tuple<Ts...>>;
+template <typename T, typename... Ts>
+concept tuple_contains = traits::tuple_contains<T, std::tuple<Ts...>>;
 
-    template <typename T>
-    concept std_complex = traits::is_complex_v<T>;
+template <typename T>
+concept std_complex = traits::is_complex_v<T>;
 }  // namespace mindquantum::concepts
 #endif /* CORE_CONCEPTS_HPP */

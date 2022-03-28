@@ -15,9 +15,8 @@
 # ============================================================================
 """QASM flavors support (OpenQASM, HiQASM, etc.)"""
 
+from .hiqasm import HiQASM, random_hiqasm
 from .openqasm import OpenQASM
-from .hiqasm import random_hiqasm
-from .hiqasm import HiQASM
 
 __all__ = ['OpenQASM', 'random_hiqasm', 'HiQASM']
 

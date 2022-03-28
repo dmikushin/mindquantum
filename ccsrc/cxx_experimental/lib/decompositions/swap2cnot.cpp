@@ -21,22 +21,22 @@
 #include "decompositions.hpp"
 
 namespace mindquantum::decompositions {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    void decompose_swap2cnot(circuit_t& result, const instruction_t& inst) {
-        assert(inst.kind() == "std.swap");
+void decompose_swap2cnot(circuit_t& result, const instruction_t& inst) {
+    assert(inst.kind() == "std.swap");
 
-        auto qubits = inst.qubits();
-        decltype(qubits) targets = {inst.target(0), inst.target(1)};
-        const auto last = std::size(qubits) - 1;
+    auto qubits = inst.qubits();
+    decltype(qubits) targets = {inst.target(0), inst.target(1)};
+    const auto last = std::size(qubits) - 1;
 
-        // Keep all control qubits and swap the two target qubits
-        std::swap(qubits[last - 1], qubits[last]);
+    // Keep all control qubits and swap the two target qubits
+    std::swap(qubits[last - 1], qubits[last]);
 
-        result.apply_operator(td::Op::X(), targets);
-        result.apply_operator(td::Op::X(), qubits);
-        result.apply_operator(td::Op::X(), targets);
-    }
+    result.apply_operator(td::Op::X(), targets);
+    result.apply_operator(td::Op::X(), qubits);
+    result.apply_operator(td::Op::X(), targets);
+}
 
 }  // namespace mindquantum::decompositions
 

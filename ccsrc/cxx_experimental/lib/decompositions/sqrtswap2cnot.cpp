@@ -18,19 +18,19 @@
 #include "decompositions.hpp"
 
 namespace mindquantum::decompositions {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    void decompose_sqrtswap2cnot(circuit_t& result, const instruction_t& inst) {
-        assert(inst.kind() == "projectq.sqrtswap");
+void decompose_sqrtswap2cnot(circuit_t& result, const instruction_t& inst) {
+    assert(inst.kind() == "projectq.sqrtswap");
 
-        if (const auto& qubits = inst.qubits(); std::size(qubits) == 2) {
-            result.apply_operator(td::Op::X(), qubits);
-            const auto last = std::size(qubits) - 1;
-            result.apply_operator(td::Op::Sx(), {qubits[last], qubits[last - 1]});
-            result.apply_operator(td::Op::X(), qubits);
-        } else {
-            result.apply_operator(inst);
-        }
+    if (const auto& qubits = inst.qubits(); std::size(qubits) == 2) {
+        result.apply_operator(td::Op::X(), qubits);
+        const auto last = std::size(qubits) - 1;
+        result.apply_operator(td::Op::Sx(), {qubits[last], qubits[last - 1]});
+        result.apply_operator(td::Op::X(), qubits);
+    } else {
+        result.apply_operator(inst);
     }
+}
 
 }  // namespace mindquantum::decompositions

@@ -26,19 +26,17 @@ class BasicQubit:
         qubit_id (int): The id of this quantum qubit.
         circuit (Circuit): The quantum circuit that this qubit belongs to. Default: None.
     """
+
     def __init__(self, qubit_id, circuit=None):
         if not isinstance(qubit_id, int):
-            raise TypeError("qubit_id should be int, but get {}!".format(
-                type(qubit_id)))
+            raise TypeError("qubit_id should be int, but get {}!".format(type(qubit_id)))
         self.qubit_id = qubit_id
         if circuit is None:
             self.circuit_ = Circuit()
         elif isinstance(circuit, Circuit):
             self.circuit_ = circuit
         else:
-            raise TypeError(
-                "circuit should be a quantum circuit, but get {}!".format(
-                    type(circuit)))
+            raise TypeError("circuit should be a quantum circuit, but get {}!".format(type(circuit)))
 
     def __str__(self):
         return 'qubit_{}'.format(self.qubit_id)
@@ -62,6 +60,7 @@ class CircuitEngine:
     Note:
         For more usage, please refers to :class:`CircuitEngine.generator`
     """
+
     def __init__(self):
         self.current_id = -1
         self.qubits = []
@@ -115,6 +114,7 @@ class CircuitEngine:
             >>> print(type(ansatz))
             <class 'mindquantum.core.circuit.circuit.Circuit'>
         """
+
         def deco(fn):
             eng = CircuitEngine()
             qubits = eng.allocate_qureg(n_qubits)
@@ -126,12 +126,12 @@ class CircuitEngine:
 
 def circuit_generator(n_qubits, *args, **kwds):
     """
-        Generate quantum circuit as projectq style.
+    Generate quantum circuit as projectq style.
 
-        Args:
-            n_qubits (int): qubit number of quantum circuit.
+    Args:
+        n_qubits (int): qubit number of quantum circuit.
 
-        Note:
-            More information please refers to :class:`CircuitEngine.generator`.
+    Note:
+        More information please refers to :class:`CircuitEngine.generator`.
     """
     return CircuitEngine().generator(n_qubits, *args, **kwds)

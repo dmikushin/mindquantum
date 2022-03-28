@@ -15,9 +15,10 @@
 # ============================================================================
 """Test gate."""
 
-import pytest
 import numpy as np
+import pytest
 from scipy.linalg import expm
+
 import mindquantum.core.gates as G
 
 
@@ -28,14 +29,14 @@ def test_rotate_pauli():
     """
     gates = {
         'rx': [
-            G.RX('angle').on(0), lambda phi: np.array([[np.cos(phi / 2), -1j * np.sin(phi / 2)],
-                                                       [-1j * np.sin(phi / 2), np.cos(phi / 2)]])
+            G.RX('angle').on(0),
+            lambda phi: np.array([[np.cos(phi / 2), -1j * np.sin(phi / 2)], [-1j * np.sin(phi / 2), np.cos(phi / 2)]]),
         ],
         'ry': [
-            G.RY('angle').on(0), lambda phi: np.array([[np.cos(phi / 2), -np.sin(phi / 2)],
-                                                       [np.sin(phi / 2), np.cos(phi / 2)]])
+            G.RY('angle').on(0),
+            lambda phi: np.array([[np.cos(phi / 2), -np.sin(phi / 2)], [np.sin(phi / 2), np.cos(phi / 2)]]),
         ],
-        'rz': [G.RZ('angle').on(0), lambda phi: np.array([[np.exp(-1j * phi / 2), 0], [0, np.exp(1j * phi / 2)]])]
+        'rz': [G.RZ('angle').on(0), lambda phi: np.array([[np.exp(-1j * phi / 2), 0], [0, np.exp(1j * phi / 2)]])],
     }
     angle = 0.5
     for name, rs in gates.items():
@@ -62,18 +63,42 @@ def test_trap_ion_gate():
     """
     angle = 0.5
     xx = [
-        G.XX("angle").on((0, 1)), lambda angle: expm(-1j * angle * np.array(
-            [[0. + 0.j, 0. + 0.j, 0. + 0.j, 1. + 0.j], [0. + 0.j, 0. + 0.j, 1. + 0.j, 0. + 0.j],
-             [0. + 0.j, 1. + 0.j, 0. + 0.j, 0. + 0.j], [1. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j]]))
+        G.XX("angle").on((0, 1)),
+        lambda angle: expm(
+            -1j
+            * angle
+            * np.array(
+                [
+                    [0.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j, 1.0 + 0.0j],
+                    [0.0 + 0.0j, 0.0 + 0.0j, 1.0 + 0.0j, 0.0 + 0.0j],
+                    [0.0 + 0.0j, 1.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j],
+                    [1.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j],
+                ]
+            )
+        ),
     ]
     yy = [
-        G.YY("angle").on((0, 1)), lambda angle: expm(-1j * angle * np.array(
-            [[0. + 0.j, 0. + 0.j, 0. + 0.j, -1. + 0.j], [0. + 0.j, 0. + 0.j, 1. + 0.j, 0. + 0.j],
-             [0. + 0.j, 1. + 0.j, 0. + 0.j, 0. + 0.j], [-1. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j]]))
+        G.YY("angle").on((0, 1)),
+        lambda angle: expm(
+            -1j
+            * angle
+            * np.array(
+                [
+                    [0.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j, -1.0 + 0.0j],
+                    [0.0 + 0.0j, 0.0 + 0.0j, 1.0 + 0.0j, 0.0 + 0.0j],
+                    [0.0 + 0.0j, 1.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j],
+                    [-1.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j],
+                ]
+            )
+        ),
     ]
     zz = [
-        G.ZZ("angle").on((0, 1)), lambda angle: expm(-1j * angle * np.array([[1., 0., 0., 0.], [0., -1., 0., 0.],
-                                                                             [0., 0., -1., 0.], [0., 0., 0., 1.]]))
+        G.ZZ("angle").on((0, 1)),
+        lambda angle: expm(
+            -1j
+            * angle
+            * np.array([[1.0, 0.0, 0.0, 0.0], [0.0, -1.0, 0.0, 0.0], [0.0, 0.0, -1.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
+        ),
     ]
     for g in [xx, yy, zz]:
         assert np.allclose(g[0].matrix({'angle': angle}), g[1](angle))
@@ -88,26 +113,24 @@ def test_pauli_gate():
     gates = {
         'X': [
             G.X,
-            np.array([[0. + 0.j, 1. + 0.j], [1. + 0.j, 0. + 0.j]]),
-            lambda phi: np.array([[np.cos(phi / 2), -1j * np.sin(phi / 2)], [-1j * np.sin(phi / 2),
-                                                                             np.cos(phi / 2)]])
+            np.array([[0.0 + 0.0j, 1.0 + 0.0j], [1.0 + 0.0j, 0.0 + 0.0j]]),
+            lambda phi: np.array([[np.cos(phi / 2), -1j * np.sin(phi / 2)], [-1j * np.sin(phi / 2), np.cos(phi / 2)]]),
         ],
         'Y': [
             G.Y,
-            np.array([[0. + 0.j, 0. - 1.j], [0. + 1.j, 0. + 0.j]]),
-            lambda phi: np.array([[np.cos(phi / 2), -np.sin(phi / 2)], [np.sin(phi / 2),
-                                                                        np.cos(phi / 2)]])
+            np.array([[0.0 + 0.0j, 0.0 - 1.0j], [0.0 + 1.0j, 0.0 + 0.0j]]),
+            lambda phi: np.array([[np.cos(phi / 2), -np.sin(phi / 2)], [np.sin(phi / 2), np.cos(phi / 2)]]),
         ],
         'Z': [
             G.Z,
-            np.array([[1. + 0.j, 0. + 0.j], [0. + 0.j, -1. + 0.j]]),
-            lambda phi: np.array([[np.exp(-1j * phi / 2), 0], [0, np.exp(1j * phi / 2)]])
-        ]
+            np.array([[1.0 + 0.0j, 0.0 + 0.0j], [0.0 + 0.0j, -1.0 + 0.0j]]),
+            lambda phi: np.array([[np.exp(-1j * phi / 2), 0], [0, np.exp(1j * phi / 2)]]),
+        ],
     }
     angle = 0.5
     for name, ps in gates.items():
         assert np.allclose(ps[0].matrix(), ps[1])
-        assert np.allclose((ps[0]**angle).matrix(), ps[2](angle * np.pi))
+        assert np.allclose((ps[0] ** angle).matrix(), ps[2](angle * np.pi))
 
 
 def test_identity():
@@ -115,7 +138,7 @@ def test_identity():
     Description: Test identity
     Expectation:
     """
-    assert np.allclose(G.I.matrix(), np.array([[1. + 0.j, 0. + 0.j], [0. + 0.j, 1. + 0.j]]))
+    assert np.allclose(G.I.matrix(), np.array([[1.0 + 0.0j, 0.0 + 0.0j], [0.0 + 0.0j, 1.0 + 0.0j]]))
 
 
 def test_hadamard():
@@ -123,8 +146,9 @@ def test_hadamard():
     Description: Test hadamard
     Expectation:
     """
-    assert np.allclose(G.H.matrix(),
-                       np.array([[0.70710678 + 0.j, 0.70710678 + 0.j], [0.70710678 + 0.j, -0.70710678 + 0.j]]))
+    assert np.allclose(
+        G.H.matrix(), np.array([[0.70710678 + 0.0j, 0.70710678 + 0.0j], [0.70710678 + 0.0j, -0.70710678 + 0.0j]])
+    )
 
 
 def test_power_ops():
@@ -144,8 +168,15 @@ def test_swap():
     """
     assert np.allclose(
         G.SWAP.matrix(),
-        np.array([[1. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j], [0. + 0.j, 0. + 0.j, 1. + 0.j, 0. + 0.j],
-                  [0. + 0.j, 1. + 0.j, 0. + 0.j, 0. + 0.j], [0. + 0.j, 0. + 0.j, 0. + 0.j, 1. + 0.j]]))
+        np.array(
+            [
+                [1.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j],
+                [0.0 + 0.0j, 0.0 + 0.0j, 1.0 + 0.0j, 0.0 + 0.0j],
+                [0.0 + 0.0j, 1.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j],
+                [0.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j, 1.0 + 0.0j],
+            ]
+        ),
+    )
 
 
 def test_univ_mat_gate():

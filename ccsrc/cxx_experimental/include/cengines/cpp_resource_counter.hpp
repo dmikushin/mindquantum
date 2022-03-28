@@ -22,30 +22,30 @@
 #include <tweedledum/IR/Circuit.h>
 
 namespace mindquantum::cengines {
-    //! C++ equivalent to projectq.backends.ResourceCounter
-    /*!
-     * Prints all gate classes and specific gates it encountered
-     * (cumulative over several flushes)
-     */
-    struct ResourceCounter {
-        using param_t = std::optional<double>;
-        using ctrl_count_t = std::size_t;
-        using class_desc_t = std::pair<std::string_view, ctrl_count_t>;
-        using gate_desc_t = std::tuple<std::string_view, param_t, ctrl_count_t>;
+//! C++ equivalent to projectq.backends.ResourceCounter
+/*!
+ * Prints all gate classes and specific gates it encountered
+ * (cumulative over several flushes)
+ */
+struct ResourceCounter {
+    using param_t = std::optional<double>;
+    using ctrl_count_t = std::size_t;
+    using class_desc_t = std::pair<std::string_view, ctrl_count_t>;
+    using gate_desc_t = std::tuple<std::string_view, param_t, ctrl_count_t>;
 
-        void add_gate_count(std::string_view kind, param_t param, std::size_t n_controls, std::size_t count);
+    void add_gate_count(std::string_view kind, param_t param, std::size_t n_controls, std::size_t count);
 
-        //! Add gates in Network to gate (class) counts
-        void add_gate_counts(const tweedledum::Circuit& network);
+    //! Add gates in Network to gate (class) counts
+    void add_gate_counts(const tweedledum::Circuit& network);
 
-        // TODO: calculate max_width properly!
-        std::size_t max_width_;
-        std::map<class_desc_t, std::size_t> gate_class_counts_;
-        std::map<gate_desc_t, std::size_t> gate_counts_;
+    // TODO: calculate max_width properly!
+    std::size_t max_width_;
+    std::map<class_desc_t, std::size_t> gate_class_counts_;
+    std::map<gate_desc_t, std::size_t> gate_counts_;
 
-        // Used for Python interactions
-        void* origin_;
-    };
+    // Used for Python interactions
+    void* origin_;
+};
 
 }  // namespace mindquantum::cengines
 

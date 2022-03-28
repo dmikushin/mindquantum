@@ -16,12 +16,10 @@
 """Mindspore quantum simulator layer."""
 import mindspore as ms
 import mindspore.nn as nn
-from mindspore.common.parameter import Parameter
 from mindspore.common.initializer import initializer
-from .operations import MQOps
-from .operations import MQN2Ops
-from .operations import MQAnsatzOnlyOps
-from .operations import MQN2AnsatzOnlyOps
+from mindspore.common.parameter import Parameter
+
+from .operations import MQAnsatzOnlyOps, MQN2AnsatzOnlyOps, MQN2Ops, MQOps
 
 
 class MQLayer(nn.Cell):
@@ -79,6 +77,7 @@ class MQLayer(nn.Cell):
         Tensor(shape=[1, 1], dtype=Float32, value=
         [[-9.98333842e-02]])
     """
+
     def __init__(self, expectation_with_grad, weight='normal'):
         super(MQLayer, self).__init__()
         self.evolution = MQOps(expectation_with_grad)
@@ -148,6 +147,7 @@ class MQN2Layer(nn.Cell):
         Tensor(shape=[1, 1], dtype=Float32, value=
         [[ 3.80662982e-07]])
     """
+
     def __init__(self, expectation_with_grad, weight='normal'):
         super(MQN2Layer, self).__init__()
         self.evolution = MQN2Ops(expectation_with_grad)
@@ -208,6 +208,7 @@ class MQAnsatzOnlyLayer(nn.Cell):
         >>> net()
         Tensor(shape=[1], dtype=Float32, value= [-9.99999166e-01])
     """
+
     def __init__(self, expectation_with_grad, weight='normal'):
         super(MQAnsatzOnlyLayer, self).__init__()
         self.evolution = MQAnsatzOnlyOps(expectation_with_grad)
@@ -272,6 +273,7 @@ class MQN2AnsatzOnlyLayer(nn.Cell):
         >>> net()
         Tensor(shape=[1], dtype=Float32, value= [ 1.56737148e-08])
     """
+
     def __init__(self, expectation_with_grad, weight='normal'):
         super(MQN2AnsatzOnlyLayer, self).__init__()
         self.evolution = MQN2AnsatzOnlyOps(expectation_with_grad)

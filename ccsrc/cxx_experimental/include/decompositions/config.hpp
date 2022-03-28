@@ -26,45 +26,45 @@
 #include "core/config.hpp"
 
 namespace mindquantum::decompositions {
-    using num_target_t = uint32_t;
-    using num_control_t = int32_t;
-    using num_param_t = uint32_t;
+using num_target_t = uint32_t;
+using num_control_t = int32_t;
+using num_param_t = uint32_t;
 
-    //! Constant representing no constraints on the number of target qubits
-    static constexpr auto any_target = num_target_t(0);
+//! Constant representing no constraints on the number of target qubits
+static constexpr auto any_target = num_target_t(0);
 
-    //! Constant representing no constraints on the number of control qubits
-    static constexpr auto any_control = num_control_t(-1);
+//! Constant representing no constraints on the number of control qubits
+static constexpr auto any_control = num_control_t(-1);
 
-    using circuit_t = tweedledum::Circuit;
-    using instruction_t = tweedledum::Instruction;
-    using operator_t = tweedledum::Operator;
-    using qubit_t = tweedledum::Qubit;
-    using qubits_t = std::vector<qubit_t>;
-    using cbit_t = tweedledum::Cbit;
-    using cbits_t = std::vector<cbit_t>;
+using circuit_t = tweedledum::Circuit;
+using instruction_t = tweedledum::Instruction;
+using operator_t = tweedledum::Operator;
+using qubit_t = tweedledum::Qubit;
+using qubits_t = std::vector<qubit_t>;
+using cbit_t = tweedledum::Cbit;
+using cbits_t = std::vector<cbit_t>;
 }  // namespace mindquantum::decompositions
 
 namespace mindquantum::traits {
-    //! Type traits class to calculate control qubit related constants
-    template <decompositions::num_control_t num_controls_>
-    struct controls {
-        /*!
-         * Number of controls qubits to be used when decomposing a gate. This constant is required to calculate which
-         * control qubits are "free" control qubits and which ones are actually required as part of the decomposition
-         * rule of a gate.
-         *
-         * e.g. (a) the X -> H Z H decomposition has no constraint -> 0
-         *      (b) the CX -> H CZ H decomposition is constrained to 1 control qubit -> 1
-         *
-         *      -> applying (a) to CCX would therefore have 2 "free" control qubits
-         *      -> applying (b) to CCX would therefore have 1 "free" control qubit and 1 control qubit used in the
-         *         decomposition rule
-         */
-        static constexpr auto num_controls_for_decomp = (num_controls_ == decompositions::any_control)
-                                                            ? decompositions::num_control_t(0)
-                                                            : num_controls_;
-    };
+//! Type traits class to calculate control qubit related constants
+template <decompositions::num_control_t num_controls_>
+struct controls {
+    /*!
+     * Number of controls qubits to be used when decomposing a gate. This constant is required to calculate which
+     * control qubits are "free" control qubits and which ones are actually required as part of the decomposition
+     * rule of a gate.
+     *
+     * e.g. (a) the X -> H Z H decomposition has no constraint -> 0
+     *      (b) the CX -> H CZ H decomposition is constrained to 1 control qubit -> 1
+     *
+     *      -> applying (a) to CCX would therefore have 2 "free" control qubits
+     *      -> applying (b) to CCX would therefore have 1 "free" control qubit and 1 control qubit used in the
+     *         decomposition rule
+     */
+    static constexpr auto num_controls_for_decomp = (num_controls_ == decompositions::any_control)
+                                                        ? decompositions::num_control_t(0)
+                                                        : num_controls_;
+};
 }  // namespace mindquantum::traits
 
 #endif /* DECOMPOSITIONS_CONFIG_HPP */

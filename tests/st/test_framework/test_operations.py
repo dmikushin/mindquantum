@@ -14,10 +14,10 @@
 # limitations under the License.
 # ============================================================================
 """Test QNN operations."""
-import numpy as np
 import mindspore as ms
-from mindquantum import Circuit, Simulator, Hamiltonian, QubitOperator
-from mindquantum import MQAnsatzOnlyOps
+import numpy as np
+
+from mindquantum import Circuit, Hamiltonian, MQAnsatzOnlyOps, QubitOperator, Simulator
 from mindquantum.core import gates as G
 
 ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")

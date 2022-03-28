@@ -15,12 +15,13 @@
 #   limitations under the License.
 """This module provide some useful function related to operators"""
 
-import projectq.ops as pjops
 import openfermion.ops as ofops
+import projectq.ops as pjops
+
 from mindquantum.core.operators.fermion_operator import FermionOperator
-from mindquantum.core.operators.qubit_operator import QubitOperator
-from mindquantum.core.operators.qubit_excitation_operator import QubitExcitationOperator
 from mindquantum.core.operators.polynomial_tensor import PolynomialTensor
+from mindquantum.core.operators.qubit_excitation_operator import QubitExcitationOperator
+from mindquantum.core.operators.qubit_operator import QubitOperator
 
 
 def count_qubits(operator):
@@ -52,19 +53,23 @@ def count_qubits(operator):
         2
     """
     # Handle FermionOperator.
-    valueable_type = (FermionOperator, QubitOperator, QubitExcitationOperator,
-                      ofops.FermionOperator, ofops.QubitOperator,
-                      pjops.QubitOperator)
+    valueable_type = (
+        FermionOperator,
+        QubitOperator,
+        QubitExcitationOperator,
+        ofops.FermionOperator,
+        ofops.QubitOperator,
+        pjops.QubitOperator,
+    )
     if isinstance(operator, valueable_type):
         num_qubits = 0
         for term in operator.terms:
             # a tuple compose of single (qubit_index,operator) subterms
             if term == ():
-                qubit_index = (0, )
+                qubit_index = (0,)
             else:
                 qubit_index, _ = zip(*term)
-            num_qubits = max(max(qubit_index) + 1,
-                             num_qubits)  # index start with 0
+            num_qubits = max(max(qubit_index) + 1, num_qubits)  # index start with 0
         return num_qubits
 
     if isinstance(operator, PolynomialTensor):
@@ -100,9 +105,7 @@ def commutator(left_operator, right_operator):
         raise TypeError('operator_a and operator_b are not of the same type.')
     valueable_type = (QubitOperator, FermionOperator, QubitExcitationOperator)
     if not isinstance(left_operator, valueable_type):
-        raise TypeError(
-            "Operator should be QubitOperator, FermionOperator or QubitExcitationOperator."
-        )
+        raise TypeError("Operator should be QubitOperator, FermionOperator or QubitExcitationOperator.")
 
     result = left_operator * right_operator
     result -= right_operator * left_operator
@@ -129,9 +132,8 @@ def _normal_ordered_term(term, coefficient):
                 # If indice are same, employ the anti-commutation relationship
                 # And generate the new term
                 if left_sub_term[0] == right_sub_term[0]:
-                    new_term = term[:(j - 1)] + term[(j + 1):]
-                    ordered_term += _normal_ordered_term(
-                        new_term, -coefficient)
+                    new_term = term[: (j - 1)] + term[(j + 1) :]
+                    ordered_term += _normal_ordered_term(new_term, -coefficient)
             # Deal with the case with same operator
             elif left_sub_term[1] == right_sub_term[1]:
                 # If indice are same,evaluate it to zero.
@@ -196,7 +198,7 @@ def get_fermion_operator(operator):
     raise TypeError("Unsupported type of oeprator {}".format(operator))
 
 
-def number_operator(n_modes=None, mode=None, coefficient=1.):
+def number_operator(n_modes=None, mode=None, coefficient=1.0):
     """
     Return a fermionic number operator for the reverse_jordan_wigner transform.
 
@@ -222,8 +224,7 @@ def number_operator(n_modes=None, mode=None, coefficient=1.):
         1.0 [3^ 3]
     """
     if (mode is None and n_modes is None) or (not mode is None and not n_modes is None):
-        raise ValueError(
-            "Please provide only one parameter between n_modes and mode.")
+        raise ValueError("Please provide only one parameter between n_modes and mode.")
 
     operator = FermionOperator()
     if mode is None:
@@ -258,8 +259,7 @@ def hermitian_conjugated(operator):
         conjugate_operator = FermionOperator()
         for term, coefficient in operator.terms.items():
             # reverse the order and change the action from 0(1) to 1(0)
-            conjugate_term = tuple([(index, 1 - op)
-                                    for (index, op) in reversed(term)])
+            conjugate_term = tuple([(index, 1 - op) for (index, op) in reversed(term)])
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
     # Handle QubitOperator
@@ -273,14 +273,12 @@ def hermitian_conjugated(operator):
         conjugate_operator = QubitExcitationOperator()
         for term, coefficient in operator.terms.items():
             # reverse the order and change the action from 0(1) to 1(0)
-            conjugate_term = tuple([(index, 1 - op)
-                                    for (index, op) in reversed(term)])
+            conjugate_term = tuple([(index, 1 - op) for (index, op) in reversed(term)])
             conjugate_operator.terms[conjugate_term] = coefficient.conjugate()
 
     # Unsupported type
     else:
-        raise TypeError('Taking the hermitian conjugate of a {} is not '
-                        'supported.'.format(type(operator).__name__))
+        raise TypeError('Taking the hermitian conjugate of a {} is not ' 'supported.'.format(type(operator).__name__))
 
     return conjugate_operator
 

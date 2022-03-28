@@ -19,28 +19,28 @@
 #include "cengines/cpp_engine_list.hpp"
 
 namespace mindquantum::python::cpp {
-    //! Class that only exists for compatibility with ProjectQ
-    /*!
-     * Behaviour: Does nothing
-     *
-     * \note Using `CppDecomposer` instead of this class is recommended
-     */
-    class InstructionFilter
-        : public BasicEngine
-        , public cengines::cpp::InstructionFilter {};
+//! Class that only exists for compatibility with ProjectQ
+/*!
+ * Behaviour: Does nothing
+ *
+ * \note Using `CppDecomposer` instead of this class is recommended
+ */
+class InstructionFilter
+    : public BasicEngine
+    , public cengines::cpp::InstructionFilter {};
 }  // namespace mindquantum::python::cpp
 
 namespace pybind11::detail {
-    template <>
-    struct type_caster<mindquantum::python::cpp::InstructionFilter> {
-     public:
-        using value_type = mindquantum::python::cpp::InstructionFilter;
+template <>
+struct type_caster<mindquantum::python::cpp::InstructionFilter> {
+ public:
+    using value_type = mindquantum::python::cpp::InstructionFilter;
 
-        PYBIND11_TYPE_CASTER(value_type, _("CppOnlyInstructionFilter"));
+    PYBIND11_TYPE_CASTER(value_type, _("CppOnlyInstructionFilter"));
 
-        bool load(handle src, bool) {
-            return true;
-        }
-    };
+    bool load(handle src, bool) {
+        return true;
+    }
+};
 }  // namespace pybind11::detail
 #endif /* INSTRUCTION_FILTER_HPP */

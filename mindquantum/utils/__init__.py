@@ -15,11 +15,7 @@
 # ============================================================================
 """Utils"""
 
-from .f import mod
-from .f import normalize
-from .f import random_state
-from .f import ket_string
-from .f import random_circuit
+from .f import ket_string, mod, normalize, random_circuit, random_state
 
 __all__ = ['mod', 'normalize', 'random_state', 'ket_string', 'random_circuit']
 __all__.sort()

@@ -15,9 +15,9 @@
 # ============================================================================
 """Tests for the qUCCSD generator and related functions"""
 
+from mindquantum.algorithm.nisq.chem import quccsd_generator
 from mindquantum.core.operators import TimeEvolution
 from mindquantum.core.operators.utils import count_qubits
-from mindquantum.algorithm.nisq.chem import quccsd_generator
 
 
 def test_quccsd():
@@ -27,9 +27,20 @@ def test_quccsd():
     """
     h2_quccsd = quccsd_generator(4, 2)
     h2_quccsd_terms = set(list(h2_quccsd.terms))
-    h2_quccsd_terms_check = set([((3, 1), (0, 0)), ((3, 1), (1, 0)), ((1, 1), (2, 0)), ((1, 1), (3, 0)),
-                                 ((2, 1), (0, 0)), ((2, 1), (1, 0)), ((0, 1), (2, 0)), ((0, 1), (3, 0)),
-                                 ((3, 1), (2, 1), (1, 0), (0, 0)), ((1, 1), (0, 1), (3, 0), (2, 0))])
+    h2_quccsd_terms_check = set(
+        [
+            ((3, 1), (0, 0)),
+            ((3, 1), (1, 0)),
+            ((1, 1), (2, 0)),
+            ((1, 1), (3, 0)),
+            ((2, 1), (0, 0)),
+            ((2, 1), (1, 0)),
+            ((0, 1), (2, 0)),
+            ((0, 1), (3, 0)),
+            ((3, 1), (2, 1), (1, 0), (0, 0)),
+            ((1, 1), (0, 1), (3, 0), (2, 0)),
+        ]
+    )
     assert h2_quccsd_terms == h2_quccsd_terms_check
 
     lih_quccsd = quccsd_generator(12, 4)

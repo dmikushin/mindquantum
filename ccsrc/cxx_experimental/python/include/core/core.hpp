@@ -18,13 +18,13 @@
 #include "core/cpp_core.hpp"
 
 namespace mindquantum::python {
-    class CppCore : public core::CppCore {
-     public:
-        using base_t = core::CppCore;
-        using base_t::CppCore;
+class CppCore : public core::CppCore {
+ public:
+    using base_t = core::CppCore;
+    using base_t::CppCore;
 
-        void flush();
-    };
+    void flush();
+};
 }  // namespace mindquantum::python
 
 #endif /* CORE_HPP */

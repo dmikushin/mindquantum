@@ -30,7 +30,7 @@ def _find_qubit_id(cmd):
         raise ValueError(f"Parsing failed for cmd {cmd}")
     idx = []
     for l, r in zip(left, right):
-        idx.append(int(cmd[l + 1:r]))
+        idx.append(int(cmd[l + 1 : r]))
     return idx
 
 
@@ -40,7 +40,7 @@ def _extr_parameter(cmd):
     r = cmd.find(')')
     if l == -1 or r == -1:
         raise ValueError(f"no parameter found in cmd {cmd}")
-    all_expre = cmd[l + 1:r]
+    all_expre = cmd[l + 1 : r]
     all_expre = all_expre.split(',')
     out = []
     for expre in all_expre:
@@ -63,6 +63,7 @@ def _extr_parameter(cmd):
 def u3(theta, psi, lambd, q):
     """decomp u3 gate"""
     from mindquantum import Circuit
+
     circ = Circuit().rz(psi + 3 * np.pi, q)
     circ.rx(np.pi / 2, q).rz(theta + np.pi, q)
     circ.rx(np.pi / 2, q).rz(lambd, q)
@@ -72,13 +73,14 @@ def u3(theta, psi, lambd, q):
 def u1(lambd, q):
     """openqasm u1 gate"""
     from mindquantum import Circuit
+
     return Circuit().rz(lambd, q)
 
 
 def isgateinstance(gate, gates):
     """Check whether gate is any instance of supported gate type"""
     if isinstance(gates, list):
-        gates = (gates, )
+        gates = (gates,)
     for gate_test in gates:
         for g in gate_test:
             if isinstance(gate, g):
@@ -100,8 +102,10 @@ class OpenQASM:
         >>> circuit_str[47:60]
         'rx(0.3) q[0];'
     """
+
     def __init__(self):
         from mindquantum import Circuit
+
         self.circuit = Circuit()
         self.cmds = []
 
@@ -124,6 +128,7 @@ class OpenQASM:
         """
         from mindquantum import gates as G
         from mindquantum.core import Circuit
+
         if not isinstance(circuit, Circuit):
             raise TypeError(f"circuit requires Circuit, but get {type(circuit)}.")
         if not isinstance(version, str):
@@ -189,6 +194,7 @@ class OpenQASM:
             TypeError: if `version` is not a str.
         """
         from mindquantum.core import Circuit
+
         if not isinstance(file_name, str):
             raise TypeError(f'file_name requires a str, but get {type(file_name)}')
         if not isinstance(circuit, Circuit):
@@ -240,6 +246,7 @@ class OpenQASM:
         """
         from mindquantum import Circuit
         from mindquantum.core.circuit import controlled
+
         self.circuit = Circuit()
         for cmd in cmds:
             q = _find_qubit_id(cmd)

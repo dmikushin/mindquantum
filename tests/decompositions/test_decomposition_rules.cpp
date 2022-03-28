@@ -53,39 +53,39 @@ namespace rules = mindquantum::decompositions::rules;
 // ==============================================================================
 
 namespace {
-    using mindquantum::decompositions::operator_t;
-    using mindquantum::decompositions::qubit_t;
+using mindquantum::decompositions::operator_t;
+using mindquantum::decompositions::qubit_t;
 
-    template <typename... args_t>
-    auto make_ops_array(args_t&&... args) {
-        return std::array<operator_t, sizeof...(args_t)>{std::forward<args_t>(args)...};
-    }
+template <typename... args_t>
+auto make_ops_array(args_t&&... args) {
+    return std::array<operator_t, sizeof...(args_t)>{std::forward<args_t>(args)...};
+}
 
-    template <typename... args_t>
-    auto make_int_array(args_t&&... args) {
-        return std::array<int, sizeof...(args_t)>{std::forward<args_t>(args)...};
-    }
+template <typename... args_t>
+auto make_int_array(args_t&&... args) {
+    return std::array<int, sizeof...(args_t)>{std::forward<args_t>(args)...};
+}
 
-    template <typename... args_t>
-    auto make_idx_vector(args_t&&... args) {
-        return std::vector<uint16_t>{std::forward<args_t>(args)...};
-    }
+template <typename... args_t>
+auto make_idx_vector(args_t&&... args) {
+    return std::vector<uint16_t>{std::forward<args_t>(args)...};
+}
 
-    template <typename... idx_t>
-    auto make_qubits(idx_t&&... idx) {
-        return std::vector<qubit_t>{qubit_t(std::forward<idx_t>(idx))...};
-    }
+template <typename... idx_t>
+auto make_qubits(idx_t&&... idx) {
+    return std::vector<qubit_t>{qubit_t(std::forward<idx_t>(idx))...};
+}
 }  // namespace
 
 // =============================================================================
 
 namespace SymEngine {
-    auto operator==(const SymEngine::Basic& a, const SymEngine::Number& b) {
-        return eq(a, b);
-    }
-    auto operator==(const SymEngine::Basic& a, const SymEngine::Basic& b) {
-        return eq(a, b);
-    }
+auto operator==(const SymEngine::Basic& a, const SymEngine::Number& b) {
+    return eq(a, b);
+}
+auto operator==(const SymEngine::Basic& a, const SymEngine::Basic& b) {
+    return eq(a, b);
+}
 }  // namespace SymEngine
 
 // =============================================================================

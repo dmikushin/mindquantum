@@ -22,35 +22,35 @@
 #include "projectq_view.hpp"
 
 namespace mindquantum::details {
-    class PhysicalView {
-     public:
-        using manager_t = CircuitManager;
-        using block_t = CircuitBlock;
+class PhysicalView {
+ public:
+    using manager_t = CircuitManager;
+    using block_t = CircuitBlock;
 
-        PhysicalView(const manager_t& manager) : manager_{manager} {
+    PhysicalView(const manager_t& manager) : manager_{manager} {
+    }
+
+    template <typename Fn>
+    void foreach_instruction(Fn&& fn) const {
+        if (manager_.has_mapping()) {
+            manager_.foreach_block([fn](const block_t& block) { block.foreach_instruction(fn); });
+        } else {
+            ProjectQView(manager_).foreach_instruction(fn);
         }
+    }
 
-        template <typename Fn>
-        void foreach_instruction(Fn&& fn) const {
-            if (manager_.has_mapping()) {
-                manager_.foreach_block([fn](const block_t& block) { block.foreach_instruction(fn); });
-            } else {
-                ProjectQView(manager_).foreach_instruction(fn);
-            }
+    template <typename Fn>
+    void foreach_r_instruction(Fn&& fn) const {
+        if (manager_.has_mapping()) {
+            manager_.foreach_r_block([fn](const block_t& block) { block.foreach_r_instruction(fn); });
+        } else {
+            ProjectQView(manager_).foreach_r_instruction(fn);
         }
+    }
 
-        template <typename Fn>
-        void foreach_r_instruction(Fn&& fn) const {
-            if (manager_.has_mapping()) {
-                manager_.foreach_r_block([fn](const block_t& block) { block.foreach_r_instruction(fn); });
-            } else {
-                ProjectQView(manager_).foreach_r_instruction(fn);
-            }
-        }
-
-     private:
-        const manager_t& manager_;
-    };
+ private:
+    const manager_t& manager_;
+};
 }  // namespace mindquantum::details
 
 #endif /* PHYSICAL_VIEW_HPP */

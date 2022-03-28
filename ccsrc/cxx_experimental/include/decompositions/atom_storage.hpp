@@ -36,163 +36,163 @@ class UnitTestAccessor;
 
 namespace mindquantum::concepts {
 #if HIQ_USE_CONCEPTS
-    template <typename atom_t>
-    concept atom_compatible_t = requires(atom_t) {
-        // clang-format off
+template <typename atom_t>
+concept atom_compatible_t = requires(atom_t) {
+    // clang-format off
         { atom_t::kind() } -> std::same_as<std::string_view>;
         { atom_t::num_controls() } -> std::same_as<decompositions::num_control_t>;
-        // clang-format on
-    };
+    // clang-format on
+};
 #else
-    template <typename operator_t, typename = void>
-    struct atom_compatible_t : std::false_type {};
+template <typename operator_t, typename = void>
+struct atom_compatible_t : std::false_type {};
 
-    template <typename operator_t>
-    struct atom_compatible_t<
-        operator_t, std::void_t<std::tuple<decltype(operator_t::kind()), decltype(operator_t::num_controls())>>>
-        : std::true_type {};
+template <typename operator_t>
+struct atom_compatible_t<operator_t,
+                         std::void_t<std::tuple<decltype(operator_t::kind()), decltype(operator_t::num_controls())>>>
+    : std::true_type {};
 #endif  // HIQ_USE_CONCEPTS
 }  // namespace mindquantum::concepts
 
 namespace mindquantum::decompositions {
-    namespace details {
-        template <typename T>
-        struct is_pair : std::false_type {};
+namespace details {
+template <typename T>
+struct is_pair : std::false_type {};
 
-        template <typename T, typename U>
-        struct is_pair<std::pair<T, U>> : std::true_type {};
+template <typename T, typename U>
+struct is_pair<std::pair<T, U>> : std::true_type {};
 
-        struct atom_less {
-            using is_transparent = void;
+struct atom_less {
+    using is_transparent = void;
 
-            template <typename T, typename U,
-                      typename = std::enable_if_t<!is_pair<std::remove_cvref_t<T>>::value
-                                                  && !is_pair<std::remove_cvref_t<U>>::value>>
-            constexpr auto operator()(T&& lhs, U&& rhs) const {
-                return std::forward<T>(lhs) < std::forward<U>(rhs);
-            }
+    template <typename T, typename U,
+              typename
+              = std::enable_if_t<!is_pair<std::remove_cvref_t<T>>::value && !is_pair<std::remove_cvref_t<U>>::value>>
+    constexpr auto operator()(T&& lhs, U&& rhs) const {
+        return std::forward<T>(lhs) < std::forward<U>(rhs);
+    }
 
-            template <typename T, typename U, typename V>
-            constexpr auto operator()(const std::pair<T, V>& lhs, const std::pair<U, V>& rhs) const {
-                if (lhs.first < rhs.first) {
-                    return true;
-                }
-                return (lhs.first == rhs.first) && (lhs.second < rhs.second);
-            }
-        };
-
-        template <typename T, typename U, typename V>
-        constexpr auto kind_lookup(const T& lhs, const std::pair<U, V>& rhs) {
-            return lhs < rhs.first;
+    template <typename T, typename U, typename V>
+    constexpr auto operator()(const std::pair<T, V>& lhs, const std::pair<U, V>& rhs) const {
+        if (lhs.first < rhs.first) {
+            return true;
         }
-    }  // namespace details
+        return (lhs.first == rhs.first) && (lhs.second < rhs.second);
+    }
+};
 
-    class AtomStorage {
-     public:
-        using atom_t = DecompositionAtom;
-        using map_t = std::map<std::pair<std::string, num_control_t>, atom_t, details::atom_less>;
+template <typename T, typename U, typename V>
+constexpr auto kind_lookup(const T& lhs, const std::pair<U, V>& rhs) {
+    return lhs < rhs.first;
+}
+}  // namespace details
 
-        // Read-only accessors
+class AtomStorage {
+ public:
+    using atom_t = DecompositionAtom;
+    using map_t = std::map<std::pair<std::string, num_control_t>, atom_t, details::atom_less>;
 
-        //! Return the number of decomposition atoms in the storage
-        /*!
-         * \return Pointer to inserted element, pointer to compatible element or nullptr.
-         */
-        HIQ_NODISCARD auto size() const noexcept {
-            // TODO(dnguyen): take general decompositions into account? If not need to change name!
-            return std::size(atoms_);
-        }
+    // Read-only accessors
 
-        //! Check whether a matching (gate) atom can be found in the storage
-        /*!
-         * The comparison is performed based on the value of \c o_atom_t::num_controls(), \c o_atom_t::name(), as well
-         * as taking \c o_atom_t::kinds_t into account. The matching for the kind is performed by calling \c
-         * atom->is_kind(type::kind()) for each operator contained in \c o_atom_t::kinds_t.
-         *
-         * \tparam o_atom_t Type of atom to look for
-         * \return True/false depending on whether the atom can be found or not
-         * \sa has_atom(std::string_view kind, num_control_t num_controls, std::string_view name) const noexcept
-         */
-        template <typename o_atom_t>
-        HIQ_NODISCARD bool has_atom() const noexcept;
+    //! Return the number of decomposition atoms in the storage
+    /*!
+     * \return Pointer to inserted element, pointer to compatible element or nullptr.
+     */
+    HIQ_NODISCARD auto size() const noexcept {
+        // TODO(dnguyen): take general decompositions into account? If not need to change name!
+        return std::size(atoms_);
+    }
 
-        //! Check whether a matching (gate) atom can be found in the storage
-        /*!
-         * \note This method does not take general decompositions into account.
-         *
-         * \param kind Kind of atom to look for
-         * \param num_controls Number of control the atom must be constrained by
-         * \param name Name of atom to look for
-         * \return True/false depending on whether the atom can be found or not
-         */
-        template <typename o_atom_t, typename... operator_t>
-        HIQ_NODISCARD bool has_atom(num_control_t num_controls, std::string_view name) const noexcept;
+    //! Check whether a matching (gate) atom can be found in the storage
+    /*!
+     * The comparison is performed based on the value of \c o_atom_t::num_controls(), \c o_atom_t::name(), as well
+     * as taking \c o_atom_t::kinds_t into account. The matching for the kind is performed by calling \c
+     * atom->is_kind(type::kind()) for each operator contained in \c o_atom_t::kinds_t.
+     *
+     * \tparam o_atom_t Type of atom to look for
+     * \return True/false depending on whether the atom can be found or not
+     * \sa has_atom(std::string_view kind, num_control_t num_controls, std::string_view name) const noexcept
+     */
+    template <typename o_atom_t>
+    HIQ_NODISCARD bool has_atom() const noexcept;
 
-        //! Look for a suitable decomposition atom within the storage
-        /*!
-         * \param inst An instruction
-         * \return Pointer to atom if any, \c nullptr otherwise
-         */
-        HIQ_NODISCARD atom_t* get_atom_for(const instruction_t& inst) noexcept;
+    //! Check whether a matching (gate) atom can be found in the storage
+    /*!
+     * \note This method does not take general decompositions into account.
+     *
+     * \param kind Kind of atom to look for
+     * \param num_controls Number of control the atom must be constrained by
+     * \param name Name of atom to look for
+     * \return True/false depending on whether the atom can be found or not
+     */
+    template <typename o_atom_t, typename... operator_t>
+    HIQ_NODISCARD bool has_atom(num_control_t num_controls, std::string_view name) const noexcept;
 
-        // Read-write accessors
+    //! Look for a suitable decomposition atom within the storage
+    /*!
+     * \param inst An instruction
+     * \return Pointer to atom if any, \c nullptr otherwise
+     */
+    HIQ_NODISCARD atom_t* get_atom_for(const instruction_t& inst) noexcept;
 
-        //! Inserts a new element, constructed in-place with the given args or returns an existing compatible atom
-        /*!
-         * This is different from add_or_return_atom in the sense that it does not enforce an exact match for the atom.
-         *
-         * \tparam o_atom_t Type of atom to insert/return
-         * \tparam kind_idx If the atom has multiple element in its kinds_t tuple, this is the index of the type in that
-         *                  tuple to use to register the atom inside the storage.
-         * \return Pointer to inserted element, pointer to compatible element.
-         */
-        template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
-        HIQ_NODISCARD atom_t* add_or_compatible_atom(args_t&&... args);
+    // Read-write accessors
 
-        //! Inserts a new element, constructed in-place with the given args or returns an existing one
-        /*!
-         * This is different from add_or_compatible_atom in that it looks for an exact match.
-         *
-         * \tparam o_atom_t Type of atom to insert/return
-         * \tparam kind_idx If the atom has multiple element in its kinds_t tuple, this is the index of the type in that
-         *                  tuple to use to register the atom inside the storage.
-         * \return Pointer to inserted element, pointer to compatible element.
-         */
-        template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
-        HIQ_NODISCARD atom_t* add_or_return_atom(args_t&&... args);
+    //! Inserts a new element, constructed in-place with the given args or returns an existing compatible atom
+    /*!
+     * This is different from add_or_return_atom in the sense that it does not enforce an exact match for the atom.
+     *
+     * \tparam o_atom_t Type of atom to insert/return
+     * \tparam kind_idx If the atom has multiple element in its kinds_t tuple, this is the index of the type in that
+     *                  tuple to use to register the atom inside the storage.
+     * \return Pointer to inserted element, pointer to compatible element.
+     */
+    template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
+    HIQ_NODISCARD atom_t* add_or_compatible_atom(args_t&&... args);
 
-        //! Inserts or replaces a new element, constructed in-place with the given args
-        /*!
-         * \tparam o_atom_t Type of atom to insert/replace
-         * \tparam kind_idx If the atom has multiple element in its kinds_t tuple, this is the index of the type in that
-         *                  tuple to use to register the atom inside the storage.
-         * \return Pointer to inserted element, pointer to compatible element or nullptr.
-         */
-        template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
-        HIQ_NODISCARD atom_t* add_or_replace_atom(args_t&&... args);
+    //! Inserts a new element, constructed in-place with the given args or returns an existing one
+    /*!
+     * This is different from add_or_compatible_atom in that it looks for an exact match.
+     *
+     * \tparam o_atom_t Type of atom to insert/return
+     * \tparam kind_idx If the atom has multiple element in its kinds_t tuple, this is the index of the type in that
+     *                  tuple to use to register the atom inside the storage.
+     * \return Pointer to inserted element, pointer to compatible element.
+     */
+    template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
+    HIQ_NODISCARD atom_t* add_or_return_atom(args_t&&... args);
 
-     private:
+    //! Inserts or replaces a new element, constructed in-place with the given args
+    /*!
+     * \tparam o_atom_t Type of atom to insert/replace
+     * \tparam kind_idx If the atom has multiple element in its kinds_t tuple, this is the index of the type in that
+     *                  tuple to use to register the atom inside the storage.
+     * \return Pointer to inserted element, pointer to compatible element or nullptr.
+     */
+    template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
+    HIQ_NODISCARD atom_t* add_or_replace_atom(args_t&&... args);
+
+ private:
 #ifdef UNIT_TESTS
-        friend class ::UnitTestAccessor;
+    friend class ::UnitTestAccessor;
 #endif  // UNIT_TESTS
 
-        template <typename o_atom_t, typename ctrl_comp_t, std::size_t kind_idx = 0, typename... args_t>
-        HIQ_NODISCARD atom_t* add_or_non_replace_atom_(args_t&&... args);
+    template <typename o_atom_t, typename ctrl_comp_t, std::size_t kind_idx = 0, typename... args_t>
+    HIQ_NODISCARD atom_t* add_or_non_replace_atom_(args_t&&... args);
 
-        template <typename, typename>
-        struct has_atom_helper_;
+    template <typename, typename>
+    struct has_atom_helper_;
 
-        template <typename o_atom_t, typename... operators_t>
-        struct has_atom_helper_<o_atom_t, std::tuple<operators_t...>> {
-            static constexpr auto apply(const AtomStorage& storage, num_control_t num_controls, std::string_view name) {
-                return storage.has_atom<o_atom_t, operators_t...>(num_controls, name);
-            }
-        };
-
-        map_t atoms_;
-
-        // TODO(dnguyen): add vector of atoms for non-gate decompositions
+    template <typename o_atom_t, typename... operators_t>
+    struct has_atom_helper_<o_atom_t, std::tuple<operators_t...>> {
+        static constexpr auto apply(const AtomStorage& storage, num_control_t num_controls, std::string_view name) {
+            return storage.has_atom<o_atom_t, operators_t...>(num_controls, name);
+        }
     };
+
+    map_t atoms_;
+
+    // TODO(dnguyen): add vector of atoms for non-gate decompositions
+};
 }  // namespace mindquantum::decompositions
 
 #include "decompositions/atom_storage.tpp"

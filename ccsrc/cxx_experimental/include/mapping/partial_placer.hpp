@@ -23,25 +23,25 @@
 #include <tweedledum/Target/Placement.h>
 
 namespace mindquantum::mapping {
-    class PartialPlacer {
-     public:
-        using qubit_t = tweedledum::Qubit;
-        using device_t = tweedledum::Device;
-        using placement_t = tweedledum::Placement;
+class PartialPlacer {
+ public:
+    using qubit_t = tweedledum::Qubit;
+    using device_t = tweedledum::Device;
+    using placement_t = tweedledum::Placement;
 
-        //! Constructor
-        PartialPlacer(const device_t& device, placement_t& placement);
+    //! Constructor
+    PartialPlacer(const device_t& device, placement_t& placement);
 
-        //! Execute placing algorithm
-        /*!
-         * \note This placer should only be run **before** any operations have been added to the mapped circuit.
-         */
-        void run(const std::vector<qubit_t>& new_qubits);
+    //! Execute placing algorithm
+    /*!
+     * \note This placer should only be run **before** any operations have been added to the mapped circuit.
+     */
+    void run(const std::vector<qubit_t>& new_qubits);
 
-     private:
-        const device_t& device_;
-        placement_t& placement_;
-    };
+ private:
+    const device_t& device_;
+    placement_t& placement_;
+};
 
 }  // namespace mindquantum::mapping
 

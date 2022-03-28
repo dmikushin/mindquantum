@@ -33,103 +33,103 @@
 
 namespace mindquantum::decompositions {
 #if __cplusplus > 201703L
-    template <typename derived_t, typename kinds_t, DecompositionRuleParam param, typename... atoms_t>
-    class GateDecompositionRule;
+template <typename derived_t, typename kinds_t, DecompositionRuleParam param, typename... atoms_t>
+class GateDecompositionRule;
 #else
-    template <typename derived_t, typename kinds_t, uint32_t, num_control_t, uint32_t, typename... atoms_t>
-    class GateDecompositionRuleCXX17;
+template <typename derived_t, typename kinds_t, uint32_t, num_control_t, uint32_t, typename... atoms_t>
+class GateDecompositionRuleCXX17;
 #endif  // __cplusplus > 201703L
 }  // namespace mindquantum::decompositions
 
 namespace mindquantum::traits {
-    // Automatic type conversion utilities
+// Automatic type conversion utilities
 #if HIQ_USE_CONCEPTS
-    template <typename atom_t>
-    struct atom_traits;
+template <typename atom_t>
+struct atom_traits;
 
-    template <concepts::ParametricGate gate_t>
-    struct atom_traits<gate_t> {
-        using type = decompositions::ParametricSimpleAtom<gate_t>;
-    };
-    template <concepts::NonParametricGate gate_t>
-    struct atom_traits<gate_t> {
-        using type = decompositions::TrivialSimpleAtom<gate_t>;
-    };
+template <concepts::ParametricGate gate_t>
+struct atom_traits<gate_t> {
+    using type = decompositions::ParametricSimpleAtom<gate_t>;
+};
+template <concepts::NonParametricGate gate_t>
+struct atom_traits<gate_t> {
+    using type = decompositions::TrivialSimpleAtom<gate_t>;
+};
 #else
-    namespace details {
-        template <typename T, typename = void>
-        struct helper : std::false_type {};
+namespace details {
+template <typename T, typename = void>
+struct helper : std::false_type {};
 
-        template <typename T>
-        struct helper<T, std::void_t<decltype(std::declval<T>().params())>> : std::true_type {};
-    }  // namespace details
+template <typename T>
+struct helper<T, std::void_t<decltype(std::declval<T>().params())>> : std::true_type {};
+}  // namespace details
 
-    template <typename atom_t>
-    struct atom_traits {
-        using type = std::conditional_t<details::helper<atom_t>::value, decompositions::ParametricSimpleAtom<atom_t>,
-                                        decompositions::TrivialSimpleAtom<atom_t>>;
-    };
+template <typename atom_t>
+struct atom_traits {
+    using type = std::conditional_t<details::helper<atom_t>::value, decompositions::ParametricSimpleAtom<atom_t>,
+                                    decompositions::TrivialSimpleAtom<atom_t>>;
+};
 #endif
 
 #if __cplusplus > 201703L
-    template <typename derived_t, typename kinds_t, decompositions::DecompositionRuleParam param, typename... atoms_t>
-    struct atom_traits<decompositions::GateDecompositionRule<derived_t, kinds_t, param, atoms_t...>> {
-        using type = decompositions::GateDecompositionRule<derived_t, kinds_t, param, atoms_t...>;
-    };
+template <typename derived_t, typename kinds_t, decompositions::DecompositionRuleParam param, typename... atoms_t>
+struct atom_traits<decompositions::GateDecompositionRule<derived_t, kinds_t, param, atoms_t...>> {
+    using type = decompositions::GateDecompositionRule<derived_t, kinds_t, param, atoms_t...>;
+};
 #else
-    template <typename derived_t, typename kinds_t, uint32_t num_targets, decompositions::num_control_t num_controls,
-              uint32_t num_params, typename... atoms_t>
-    struct atom_traits<decompositions::GateDecompositionRuleCXX17<derived_t, kinds_t, num_targets, num_controls,
-                                                                  num_params, kinds_t, atoms_t...>> {
-        using type = decompositions::GateDecompositionRuleCXX17<derived_t, kinds_t, num_targets, num_controls,
-                                                                num_params, kinds_t, atoms_t...>;
-    };
+template <typename derived_t, typename kinds_t, uint32_t num_targets, decompositions::num_control_t num_controls,
+          uint32_t num_params, typename... atoms_t>
+struct atom_traits<decompositions::GateDecompositionRuleCXX17<derived_t, kinds_t, num_targets, num_controls, num_params,
+                                                              kinds_t, atoms_t...>> {
+    using type = decompositions::GateDecompositionRuleCXX17<derived_t, kinds_t, num_targets, num_controls, num_params,
+                                                            kinds_t, atoms_t...>;
+};
 #endif  // __cplusplus > 201703L
 
-    template <typename operator_t, uint32_t num_targets, decompositions::num_control_t num_controls>
-    struct atom_traits<decompositions::TrivialAtom<operator_t, num_targets, num_controls>> {
-        using type = decompositions::TrivialAtom<operator_t, num_targets, num_controls>;
-    };
+template <typename operator_t, uint32_t num_targets, decompositions::num_control_t num_controls>
+struct atom_traits<decompositions::TrivialAtom<operator_t, num_targets, num_controls>> {
+    using type = decompositions::TrivialAtom<operator_t, num_targets, num_controls>;
+};
 
-    template <typename operator_t, uint32_t num_targets, decompositions::num_control_t num_controls>
-    struct atom_traits<decompositions::ParametricAtom<operator_t, num_targets, num_controls>> {
-        using type = decompositions::ParametricAtom<operator_t, num_targets, num_controls>;
-    };
+template <typename operator_t, uint32_t num_targets, decompositions::num_control_t num_controls>
+struct atom_traits<decompositions::ParametricAtom<operator_t, num_targets, num_controls>> {
+    using type = decompositions::ParametricAtom<operator_t, num_targets, num_controls>;
+};
 
-    // -------------------------------------------------------------------------
-    // Helper traits to handle atoms that do not provide atom_t::is_applicable
+// -------------------------------------------------------------------------
+// Helper traits to handle atoms that do not provide atom_t::is_applicable
 
-    template <typename atom_t, typename = void>
-    struct has_is_applicable : std::false_type {};
+template <typename atom_t, typename = void>
+struct has_is_applicable : std::false_type {};
 
-    template <typename atom_t>
-    struct has_is_applicable<atom_t, std::void_t<decltype(std::declval<atom_t>().is_applicable_impl(
-                                         std::declval<decompositions::instruction_t>()))>> : std::true_type {};
+template <typename atom_t>
+struct has_is_applicable<atom_t, std::void_t<decltype(std::declval<atom_t>().is_applicable_impl(
+                                     std::declval<decompositions::instruction_t>()))>> : std::true_type {};
 
-    template <typename atom_t>
-    inline constexpr auto has_is_applicable_v = has_is_applicable<atom_t>::value;
+template <typename atom_t>
+inline constexpr auto has_is_applicable_v = has_is_applicable<atom_t>::value;
 }  // namespace mindquantum::traits
 
 namespace mindquantum::decompositions::details {
-    template <std::size_t idx, typename elem_t, typename tuple_t>
-    constexpr auto index_in_tuple_fn()
+template <std::size_t idx, typename elem_t, typename tuple_t>
+constexpr auto index_in_tuple_fn()
 #if HIQ_USE_CONCEPTS
-        requires(idx < std::tuple_size_v<tuple_t> /* if this fails, elem_t is not in tuple_t */)
+    requires(idx < std::tuple_size_v<tuple_t> /* if this fails, elem_t is not in tuple_t */)
 #endif  // HIQ_USE_CONCEPTS
-    {
+{
 #if !HIQ_USE_CONCEPTS
-        static_assert(idx < std::tuple_size_v<tuple_t>, "The element is not in the tuple!");
+    static_assert(idx < std::tuple_size_v<tuple_t>, "The element is not in the tuple!");
 #endif  // !HIQ_USE_CONCEPTS
-        using tuple_elem_t = typename std::tuple_element_t<idx, tuple_t>;
-        if constexpr (std::is_same_v<elem_t, tuple_elem_t>) {
-            return idx;
-        } else {
-            return index_in_tuple_fn<idx + 1, elem_t, tuple_t>();
-        }
+    using tuple_elem_t = typename std::tuple_element_t<idx, tuple_t>;
+    if constexpr (std::is_same_v<elem_t, tuple_elem_t>) {
+        return idx;
+    } else {
+        return index_in_tuple_fn<idx + 1, elem_t, tuple_t>();
     }
+}
 
-    template <typename elem_t, typename tuple_t>
-    inline constexpr auto index_in_tuple = index_in_tuple_fn<0, elem_t, tuple_t>();
+template <typename elem_t, typename tuple_t>
+inline constexpr auto index_in_tuple = index_in_tuple_fn<0, elem_t, tuple_t>();
 }  // namespace mindquantum::decompositions::details
 
 #endif /* DECOMPOSITION_RULES_TRAITS_HPP */

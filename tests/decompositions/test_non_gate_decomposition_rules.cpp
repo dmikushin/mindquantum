@@ -33,23 +33,23 @@ namespace decompositions = mindquantum::decompositions;
 // =============================================================================
 
 namespace {
-    class AllToXAndY : public decompositions::NonGateDecompositionRule<AllToXAndY, ops::X> {
-     public:
-        using base_t::base_t;
+class AllToXAndY : public decompositions::NonGateDecompositionRule<AllToXAndY, ops::X> {
+ public:
+    using base_t::base_t;
 
-        static constexpr auto kind() noexcept {
-            return ops::X::kind();
-        }
+    static constexpr auto kind() noexcept {
+        return ops::X::kind();
+    }
 
-        static constexpr auto name() noexcept {
-            return "CNOT2CZ"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "CNOT2CZ"sv;
+    }
 
-        void apply_impl(decompositions::circuit_t& circuit, const decompositions::instruction_t& inst) {
-            atom<ops::X>()->apply(circuit, ops::X{}, inst.qubits());
-            atom<ops::Y>()->apply(circuit, ops::Y{}, inst.qubits());
-        }
-    };
+    void apply_impl(decompositions::circuit_t& circuit, const decompositions::instruction_t& inst) {
+        atom<ops::X>()->apply(circuit, ops::X{}, inst.qubits());
+        atom<ops::Y>()->apply(circuit, ops::Y{}, inst.qubits());
+    }
+};
 }  // namespace
 
 // -----------------------------------------------------------------------------

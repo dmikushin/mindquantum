@@ -35,56 +35,55 @@ CLANG_DIAG_ON("-Wdeprecated-declarations");
 // clang-format: on
 
 namespace mindquantum::python {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    class Command : public ops::Command {
-     public:
-        void set_qubits(const qureg_t& qubits) {
-            qubits_ = qubits;
-        }
+class Command : public ops::Command {
+ public:
+    void set_qubits(const qureg_t& qubits) {
+        qubits_ = qubits;
+    }
 
-        void set_control_qubits(const qureg_t& qubits) {
-            control_qubits_ = qubits;
-        }
+    void set_control_qubits(const qureg_t& qubits) {
+        control_qubits_ = qubits;
+    }
 
-        void set_gate(const gate_t& operation) {
-            operation_ = std::make_unique<td::Operator>(operation);
-        }
-    };
+    void set_gate(const gate_t& operation) {
+        operation_ = std::make_unique<td::Operator>(operation);
+    }
+};
 
 }  // namespace mindquantum::python
 
 // ==============================================================================
 
 namespace mindquantum::details {
-    //! Helper function to extract attributes from a Python Command object
-    bool load_command(pybind11::handle src, python::Command& cmd);
+//! Helper function to extract attributes from a Python Command object
+bool load_command(pybind11::handle src, python::Command& cmd);
 
-    //! Helper function to extract attributes from a Python gate object
-    tweedledum::Operator load_gate(PyObject* src, std::size_t n_targets, std::size_t n_controls,
-                                   bool is_dagger = false);
+//! Helper function to extract attributes from a Python gate object
+tweedledum::Operator load_gate(PyObject* src, std::size_t n_targets, std::size_t n_controls, bool is_dagger = false);
 
 }  // namespace mindquantum::details
 
 // ==============================================================================
 
 namespace pybind11::detail {
-    template <>
-    struct type_caster<mindquantum::ops::Command> {
-     public:
-        using value_type = mindquantum::ops::Command;
+template <>
+struct type_caster<mindquantum::ops::Command> {
+ public:
+    using value_type = mindquantum::ops::Command;
 
-        PYBIND11_TYPE_CASTER(value_type, _("Command"));
+    PYBIND11_TYPE_CASTER(value_type, _("Command"));
 
-        bool load(handle src, bool) {
-            mindquantum::python::Command cmd;
-            auto ok = mindquantum::details::load_command(src, cmd);
-            if (ok) {
-                value = std::move(cmd);
-            }
-            return ok;
+    bool load(handle src, bool) {
+        mindquantum::python::Command cmd;
+        auto ok = mindquantum::details::load_command(src, cmd);
+        if (ok) {
+            value = std::move(cmd);
         }
-    };
+        return ok;
+    }
+};
 }  // namespace pybind11::detail
 
 #include "details/macros_conv_end.hpp"

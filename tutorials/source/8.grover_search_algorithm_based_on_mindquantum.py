@@ -35,7 +35,7 @@ def bitphaseflip_operator(phase_inversion_qubit, n_qubits):
 
 
 import mindquantum as mq
-from mindquantum import Circuit, UN, H, Z
+from mindquantum import UN, Circuit, H, Z
 from mindquantum.simulator import Simulator
 
 n_qubits = 3
@@ -67,8 +67,7 @@ print(int('100', 2))
 n_qubits = 3
 sim1 = Simulator('projectq', n_qubits)
 
-operator1 = bitphaseflip_operator([i for i in range(1, pow(2, n_qubits))],
-                                  n_qubits)
+operator1 = bitphaseflip_operator([i for i in range(1, pow(2, n_qubits))], n_qubits)
 
 circuit1 = Circuit()
 circuit1 += UN(H, n_qubits)
@@ -84,8 +83,7 @@ print(sim1.get_qs(True))
 def G(phase_inversion_qubit, n_qubits):
     operator = bitphaseflip_operator(phase_inversion_qubit, n_qubits)
     operator += UN(H, n_qubits)
-    operator += bitphaseflip_operator([i for i in range(1, pow(2, n_qubits))],
-                                      n_qubits)
+    operator += bitphaseflip_operator([i for i in range(1, pow(2, n_qubits))], n_qubits)
     operator += UN(H, n_qubits)
     return operator
 
@@ -96,7 +94,7 @@ from numpy import pi, sqrt
 n_qubits = 3
 phase_inversion_qubit = [2]
 
-N = 2**(n_qubits)
+N = 2 ** (n_qubits)
 M = len(phase_inversion_qubit)
 
 r = int(pi / 4 * sqrt(N / M))
@@ -128,7 +126,7 @@ print(int('010', 2))
 n_qubits = 5
 phase_inversion_qubit = [5, 11]
 
-N = 2**(n_qubits)
+N = 2 ** (n_qubits)
 M = len(phase_inversion_qubit)
 
 r = int(pi / 4 * sqrt(N / M))

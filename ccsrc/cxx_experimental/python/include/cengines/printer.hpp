@@ -23,17 +23,17 @@
 void init_printer(pybind11::module& module);
 
 namespace mindquantum::python {
-    class CommandPrinter
-        : public cengines::CppPrinter
-        , public cpp::BasicEngine {
-     public:
-        CommandPrinter() : cengines::CppPrinter(language_t::projectq) {
-        }
-        CommandPrinter(language_t language) : cengines::CppPrinter(language) {
-        }
-        CommandPrinter(std::string_view language) : cengines::CppPrinter(language) {
-        }
-    };
+class CommandPrinter
+    : public cengines::CppPrinter
+    , public cpp::BasicEngine {
+ public:
+    CommandPrinter() : cengines::CppPrinter(language_t::projectq) {
+    }
+    CommandPrinter(language_t language) : cengines::CppPrinter(language) {
+    }
+    CommandPrinter(std::string_view language) : cengines::CppPrinter(language) {
+    }
+};
 }  // namespace mindquantum::python
 
 #endif /* PYTHON_PRINTER_HPP */

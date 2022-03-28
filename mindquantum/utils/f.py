@@ -16,11 +16,15 @@
 """Useful functions"""
 
 import fractions
+
 import numpy as np
-from .type_value_check import _check_input_type
-from .type_value_check import _check_int_type
-from .type_value_check import _check_value_should_not_less
-from .type_value_check import _check_value_should_between_close_set
+
+from .type_value_check import (
+    _check_input_type,
+    _check_int_type,
+    _check_value_should_between_close_set,
+    _check_value_should_not_less,
+)
 
 
 def random_circuit(n_qubits, gate_num, sd_rate=0.5, ctrl_rate=0.2, seed=None):
@@ -41,20 +45,21 @@ def random_circuit(n_qubits, gate_num, sd_rate=0.5, ctrl_rate=0.2, seed=None):
               │        │            │            │
         q2: ──●────────●────────RZ(-2.42)────────●───────
     """
-    from mindquantum import Circuit
     import mindquantum.core.gates as G
+    from mindquantum import Circuit
+
     _check_int_type('n_qubits', n_qubits)
     _check_int_type('gate_num', gate_num)
     _check_input_type('sd_rate', float, sd_rate)
     _check_input_type('ctrl_rate', float, ctrl_rate)
     if seed is None:
-        seed = np.random.randint(1, 2**23)
+        seed = np.random.randint(1, 2 ** 23)
     _check_int_type('seed', seed)
     _check_value_should_not_less('n_qubits', 1, n_qubits)
     _check_value_should_not_less('gate_num', 1, gate_num)
     _check_value_should_between_close_set('sd_rate', 0, 1, sd_rate)
     _check_value_should_between_close_set('ctrl_rate', 0, 1, ctrl_rate)
-    _check_value_should_between_close_set('seed', 0, 2**32 - 1, seed)
+    _check_value_should_between_close_set('seed', 0, 2 ** 32 - 1, seed)
     if n_qubits == 1:
         sd_rate = 1
         ctrl_rate = 0

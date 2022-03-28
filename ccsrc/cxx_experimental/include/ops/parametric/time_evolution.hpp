@@ -22,76 +22,76 @@
 #include "ops/parametric/param_names.hpp"
 
 namespace mindquantum::ops::parametric {
-    class TimeEvolution : public ParametricBase<TimeEvolution, ops::TimeEvolution, real::alpha> {
-     public:
-        using operator_t = tweedledum::Operator;
-        using parent_t = ParametricBase<TimeEvolution, ops::TimeEvolution, real::alpha>;
-        using self_t = TimeEvolution;
+class TimeEvolution : public ParametricBase<TimeEvolution, ops::TimeEvolution, real::alpha> {
+ public:
+    using operator_t = tweedledum::Operator;
+    using parent_t = ParametricBase<TimeEvolution, ops::TimeEvolution, real::alpha>;
+    using self_t = TimeEvolution;
 
-        using typename parent_t::non_param_type;
-        using typename parent_t::subs_map_t;
+    using typename parent_t::non_param_type;
+    using typename parent_t::subs_map_t;
 
-        using non_const_num_targets = void;
+    using non_const_num_targets = void;
 
-        static constexpr std::string_view kind() {
-            return "projectq.param.timeevolution";
+    static constexpr std::string_view kind() {
+        return "projectq.param.timeevolution";
+    }
+
+    //! Constructor
+    /*!
+     * Overload required in some cases for metaprogramming with operators.
+     */
+    template <typename param_t>
+    TimeEvolution(uint32_t num_targets, QubitOperator hamiltonian, param_t&& param)
+        : TimeEvolution(hamiltonian, std::forward<param_t>(param)) {
+        assert(num_targets == hamiltonian.num_targets());
+    }
+
+    //! Constructor
+    template <typename param_t>
+    TimeEvolution(QubitOperator hamiltonian, param_t&& param)
+        : ParametricBase<TimeEvolution, ops::TimeEvolution, real::alpha>(hamiltonian.num_targets(),
+                                                                         std::forward<param_t>(param))
+        , hamiltonian_(std::move(hamiltonian)) {
+    }
+
+    //! Get the adjoint of an \c TimeEvolution gate instance
+    HIQ_NODISCARD auto adjoint() const noexcept {
+        auto params = base_t::params_;
+        for (auto& param : params) {
+            param = expand(SymEngine::neg(param));
         }
 
-        //! Constructor
-        /*!
-         * Overload required in some cases for metaprogramming with operators.
-         */
-        template <typename param_t>
-        TimeEvolution(uint32_t num_targets, QubitOperator hamiltonian, param_t&& param)
-            : TimeEvolution(hamiltonian, std::forward<param_t>(param)) {
-            assert(num_targets == hamiltonian.num_targets());
-        }
+        return self_t{hamiltonian_.num_targets(), hamiltonian_, std::move(params)};
+    }
 
-        //! Constructor
-        template <typename param_t>
-        TimeEvolution(QubitOperator hamiltonian, param_t&& param)
-            : ParametricBase<TimeEvolution, ops::TimeEvolution, real::alpha>(hamiltonian.num_targets(),
-                                                                             std::forward<param_t>(param))
-            , hamiltonian_(std::move(hamiltonian)) {
-        }
+    bool operator==(const self_t& other) const {
+        return hamiltonian_ == other.hamiltonian_ && this->parent_t::operator==(other);
+    }
 
-        //! Get the adjoint of an \c TimeEvolution gate instance
-        HIQ_NODISCARD auto adjoint() const noexcept {
-            auto params = base_t::params_;
-            for (auto& param: params) {
-                param = expand(SymEngine::neg(param));
-            }
+    template <typename evaluated_param_t>
+    HIQ_NODISCARD static auto to_param_type(const self_t& self, evaluated_param_t&& evaluated_param) {
+        return self_t{self.hamiltonian_, std::forward<evaluated_param_t>(evaluated_param)};
+    }
 
-            return self_t{hamiltonian_.num_targets(), hamiltonian_, std::move(params)};
-        }
+    template <typename evaluated_param_t>
+    HIQ_NODISCARD static auto to_non_param_type(const self_t& self, evaluated_param_t&& evaluated_param) {
+        return non_param_type{self.hamiltonian_, std::forward<evaluated_param_t>(evaluated_param)};
+    }
 
-        bool operator==(const self_t& other) const {
-            return hamiltonian_ == other.hamiltonian_ && this->parent_t::operator==(other);
-        }
+    // -------------------------------------------------------------------
 
-        template <typename evaluated_param_t>
-        HIQ_NODISCARD static auto to_param_type(const self_t& self, evaluated_param_t&& evaluated_param) {
-            return self_t{self.hamiltonian_, std::forward<evaluated_param_t>(evaluated_param)};
-        }
+    HIQ_NODISCARD const QubitOperator& get_hamiltonian() const {
+        return hamiltonian_;
+    }
 
-        template <typename evaluated_param_t>
-        HIQ_NODISCARD static auto to_non_param_type(const self_t& self, evaluated_param_t&& evaluated_param) {
-            return non_param_type{self.hamiltonian_, std::forward<evaluated_param_t>(evaluated_param)};
-        }
+    HIQ_NODISCARD const auto& get_time() const {
+        return param(0);
+    }
 
-        // -------------------------------------------------------------------
-
-        HIQ_NODISCARD const QubitOperator& get_hamiltonian() const {
-            return hamiltonian_;
-        }
-
-        HIQ_NODISCARD const auto& get_time() const {
-            return param(0);
-        }
-
-     private:
-        QubitOperator hamiltonian_;
-    };
+ private:
+    QubitOperator hamiltonian_;
+};
 }  // namespace mindquantum::ops::parametric
 
 #endif /* PARAM_TIME_EVOLUTION_HPP */

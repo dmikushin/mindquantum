@@ -15,8 +15,9 @@
 # ============================================================================
 """Text draw a circuit"""
 import numpy as np
-from ._config import _text_drawer_config
+
 from ._config import _DAGGER_MASK as _dm
+from ._config import _text_drawer_config
 
 
 def _get_qubit_range(gate):
@@ -32,6 +33,7 @@ def _get_qubit_range(gate):
 def brick_model(circ, qubits_name=None):
     """Split a circuit into layers."""
     from mindquantum import gates as G
+
     n = circ.n_qubits
     if qubits_name is None:
         qubits_name = list(range(n))
@@ -69,6 +71,7 @@ def _single_gate_drawer(gate):
     """_single_gate_drawer"""
     from mindquantum import gates as G
     from mindquantum.core.gates.basic import HERMITIAN_PROPERTIES
+
     if isinstance(gate, G.CNOTGate):
         gate = G.X.on(*gate.obj_qubits)
     main_text = gate.name
@@ -103,6 +106,7 @@ def _single_gate_drawer(gate):
 def _single_block_drawer(block, n_qubits):
     """single block drawer"""
     from mindquantum import gates as G
+
     v_n = _text_drawer_config['v_n']
     text_gates = {}
     if isinstance(block[0], G.BarrierGate):

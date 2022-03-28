@@ -15,10 +15,12 @@
 # ============================================================================
 """This module is generated the Fermion Operator"""
 
-import json
 import ast
+import json
+
 from mindquantum.core.parameterresolver import ParameterResolver as PR
 from mindquantum.utils.type_value_check import _check_input_type, _check_int_type
+
 from ._base_operator import _Operator
 
 
@@ -35,9 +37,13 @@ def _check_valid_fermion_operator_term(term):
                         raise ValueError('Invalid fermion operator term {}'.format(t))
         if isinstance(term, tuple):
             for t in term:
-                if len(t) != 2 or not isinstance(t[0], int) or not isinstance(t[1], int) or t[0] < 0 or t[1] not in [
-                        0, 1
-                ]:
+                if (
+                    len(t) != 2
+                    or not isinstance(t[0], int)
+                    or not isinstance(t[1], int)
+                    or t[0] < 0
+                    or t[1] not in [0, 1]
+                ):
                     raise ValueError('Invalid fermion operator term {}'.format(t))
 
 
@@ -122,17 +128,23 @@ class FermionOperator(_Operator):
             if len(sub_term) >= 2:
                 if '^' in sub_term:
                     operator = '^'
-                    index = int(sub_term[:sub_term.index(operator)])
+                    index = int(sub_term[: sub_term.index(operator)])
                 else:
                     operator = ''
                     index = int(sub_term)
 
             if operator not in self.operators:
-                raise ValueError('Invalid type of operator {}.'
-                                 'The Fermion operator should be one of this {}'.format(operator, self.operators))
+                raise ValueError(
+                    'Invalid type of operator {}.'
+                    'The Fermion operator should be one of this {}'.format(operator, self.operators)
+                )
             if index < 0:
-                raise ValueError("Invalid index {}.The qubit index should be\
-                    non negative integer".format(self.operators))
+                raise ValueError(
+                    "Invalid index {}.The qubit index should be\
+                    non negative integer".format(
+                        self.operators
+                    )
+                )
             terms_to_tuple.append((index, map_operator_to_integer_rep(operator)))
             # check the commutate terms with same index in the list and
             # replace it with the corresponding commutation relationship
@@ -281,10 +293,14 @@ class FermionOperator(_Operator):
             if isinstance(v, (complex, int, float)):
                 value_list[j] = str(v)
             elif isinstance(v, PR):
-                value_list[j] = (v.dumps(None))
+                value_list[j] = v.dumps(None)
             else:
-                raise ValueError("Coefficient must be a complex/int/float type or a ParameterResolver, \
-                    but get {}.".format(type(v)))
+                raise ValueError(
+                    "Coefficient must be a complex/int/float type or a ParameterResolver, \
+                    but get {}.".format(
+                        type(v)
+                    )
+                )
 
         dic = dict(zip(key_list, value_list))
         dic['__class__'] = self.__class__.__name__
@@ -370,7 +386,7 @@ def _normal_ordered_term(term, coefficient):
                 # If indice are same, employ the anti-commutation relationship
                 # And generate the new term
                 if left_sub_term[0] == right_sub_term[0]:
-                    new_term = term[:(j - 1)] + term[(j + 1):]
+                    new_term = term[: (j - 1)] + term[(j + 1) :]
                     ordered_term += _normal_ordered_term(new_term, -1 * coefficient)
             elif left_sub_term[1] == right_sub_term[1]:
                 # If indice are same,evaluate it to zero.

@@ -19,10 +19,12 @@
 #   Apache 2.0 license.
 """This is the module for the Qubit Operator. """
 
-import json
 import ast
+import json
+
 from mindquantum.core.parameterresolver import ParameterResolver as PR
 from mindquantum.utils.type_value_check import _check_input_type, _check_int_type
+
 from ._base_operator import _Operator
 
 EQ_TOLERANCE = 1e-8
@@ -30,22 +32,22 @@ EQ_TOLERANCE = 1e-8
 # Define products of all Pauli operators for symbolic multiplication.
 # Note can translate all the lowercase to uppercase 'i'->'I'
 _PAULI_OPERATOR_PRODUCTS = {
-    ('I', 'I'): (1., 'I'),
-    ('I', 'X'): (1., 'X'),
-    ('I', 'Y'): (1., 'Y'),
-    ('I', 'Z'): (1., 'Z'),
-    ('X', 'I'): (1., 'X'),
-    ('X', 'X'): (1., 'I'),
-    ('X', 'Y'): (1.j, 'Z'),
-    ('X', 'Z'): (-1.j, 'Y'),
-    ('Y', 'I'): (1., 'Y'),
-    ('Y', 'X'): (-1.j, 'Z'),
-    ('Y', 'Y'): (1., 'I'),
-    ('Y', 'Z'): (1.j, 'X'),
-    ('Z', 'I'): (1., 'Z'),
-    ('Z', 'X'): (1.j, 'Y'),
-    ('Z', 'Y'): (-1.j, 'X'),
-    ('Z', 'Z'): (1.0, 'I')
+    ('I', 'I'): (1.0, 'I'),
+    ('I', 'X'): (1.0, 'X'),
+    ('I', 'Y'): (1.0, 'Y'),
+    ('I', 'Z'): (1.0, 'Z'),
+    ('X', 'I'): (1.0, 'X'),
+    ('X', 'X'): (1.0, 'I'),
+    ('X', 'Y'): (1.0j, 'Z'),
+    ('X', 'Z'): (-1.0j, 'Y'),
+    ('Y', 'I'): (1.0, 'Y'),
+    ('Y', 'X'): (-1.0j, 'Z'),
+    ('Y', 'Y'): (1.0, 'I'),
+    ('Y', 'Z'): (1.0j, 'X'),
+    ('Z', 'I'): (1.0, 'Z'),
+    ('Z', 'X'): (1.0j, 'Y'),
+    ('Z', 'Y'): (-1.0j, 'X'),
+    ('Z', 'Z'): (1.0, 'I'),
 }
 
 
@@ -107,6 +109,7 @@ class QubitOperator(_Operator):
         >>> ham_para.subs({'x':1.2})
         1.2 [X0 Y3]
     """
+
     __hash__ = None
 
     def __init__(self, term=None, coefficient=1.0):
@@ -155,11 +158,17 @@ class QubitOperator(_Operator):
             operator = sub_term[0]
             index = sub_term[1:]
             if operator.upper() not in self.operators:
-                raise ValueError('Invalid type of operator {}.'
-                                 'The Qubit Pauli operator should be one of this {}'.format(operator, self.operators))
+                raise ValueError(
+                    'Invalid type of operator {}.'
+                    'The Qubit Pauli operator should be one of this {}'.format(operator, self.operators)
+                )
             if not index.isdigit() or int(index) < 0:
-                raise ValueError("Invalid index {}.The qubit index should be\
-                    nonnegative integer".format(self.operators))
+                raise ValueError(
+                    "Invalid index {}.The qubit index should be\
+                    nonnegative integer".format(
+                        self.operators
+                    )
+                )
 
             terms_to_tuple.append((int(index), operator))
             terms_to_tuple = sorted(terms_to_tuple, key=lambda item: item[0])
@@ -207,7 +216,7 @@ class QubitOperator(_Operator):
         return out
 
     def _simplify(self, terms, coefficient=1.0):
-        r""" Simplify the list by using the commuation and
+        r"""Simplify the list by using the commuation and
         anti-commutation relationship.
 
         Args:
@@ -324,10 +333,14 @@ class QubitOperator(_Operator):
             if isinstance(v, (complex, int, float)):
                 value_list[j] = str(v)
             elif isinstance(v, PR):
-                value_list[j] = (v.dumps(None))
+                value_list[j] = v.dumps(None)
             else:
-                raise ValueError("Coefficient must be a complex/int/float type or a ParameterResolver, \
-                    but get {}.".format(type(v)))
+                raise ValueError(
+                    "Coefficient must be a complex/int/float type or a ParameterResolver, \
+                    but get {}.".format(
+                        type(v)
+                    )
+                )
 
         dic = dict(zip(key_list, value_list))
         dic['__class__'] = self.__class__.__name__

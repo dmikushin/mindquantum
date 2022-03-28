@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 import time
-import numpy as np
-from mindquantum.core import QubitOperator
-import mindspore.ops as ops
+
 import mindspore.dataset as ds
-from mindspore import nn
+import mindspore.ops as ops
+import numpy as np
+from mindspore import Model, nn
 from mindspore.train.callback import LossMonitor
-from mindspore import Model
+
+from mindquantum import RX, RY, UN, Circuit, H, Hamiltonian, X
+from mindquantum.core import QubitOperator
 from mindquantum.framework import MQLayer
-from mindquantum import Hamiltonian, Circuit, RX, RY, X, H, UN
 
 
 def GenerateWordDictAndSample(corpus, window=2):
@@ -44,9 +45,9 @@ def GenerateEncoderCircuit(n_qubits, prefix=''):
 
 GenerateEncoderCircuit(3, prefix='e')
 
+from mindspore import Tensor, context
+
 from mindquantum.simulator import Simulator
-from mindspore import context
-from mindspore import Tensor
 
 n_qubits = 3
 label = 2
@@ -62,7 +63,7 @@ print("Encoder circuit is: \n", encoder)
 print("Encoder parameter names are: \n", encoder_params_names)
 
 state = encoder.get_qs(pr=dict(zip(encoder_params_names, label_array)))
-amp = np.round(np.abs(state)**2, 3)
+amp = np.round(np.abs(state) ** 2, 3)
 
 print("Amplitude of quantum state is: \n", amp)
 print("Label in quantum state is: ", np.argmax(amp))
@@ -131,14 +132,13 @@ def QEmbedding(num_embedding, embedding_dim, window, layers, n_threads):
         circ += ansatz
         encoder_param_name.extend(encoder.params_name)
         ansatz_param_name.extend(ansatz.params_name)
-    grad_ops = Simulator('projectq',
-                         circ.n_qubits).get_expectation_with_grad(hams, circ, None, None, encoder_param_name,
-                                                                  ansatz_param_name, n_threads)
+    grad_ops = Simulator('projectq', circ.n_qubits).get_expectation_with_grad(
+        hams, circ, None, None, encoder_param_name, ansatz_param_name, n_threads
+    )
     return MQLayer(grad_ops)
 
 
 class CBOW(nn.Cell):
-
     def __init__(self, num_embedding, embedding_dim, window, layers, n_threads, hidden_dim):
         super(CBOW, self).__init__()
         self.embedding = QEmbedding(num_embedding, embedding_dim, window, layers, n_threads)
@@ -155,7 +155,6 @@ class CBOW(nn.Cell):
 
 
 class LossMonitorWithCollection(LossMonitor):
-
     def __init__(self, per_print_times=1):
         super(LossMonitorWithCollection, self).__init__(per_print_times)
         self.loss = []
@@ -190,19 +189,23 @@ class LossMonitorWithCollection(LossMonitor):
         cur_step_in_epoch = (cb_params.cur_step_num - 1) % cb_params.batch_num + 1
 
         if isinstance(loss, float) and (np.isnan(loss) or np.isinf(loss)):
-            raise ValueError("epoch: {} step: {}. Invalid loss, terminating training.".format(
-                cb_params.cur_epoch_num, cur_step_in_epoch))
+            raise ValueError(
+                "epoch: {} step: {}. Invalid loss, terminating training.".format(
+                    cb_params.cur_epoch_num, cur_step_in_epoch
+                )
+            )
         self.loss.append(loss)
         if self._per_print_times != 0 and cb_params.cur_step_num % self._per_print_times == 0:
-            print("\repoch: %+3s step: %+3s time: %5.5s, loss is %5.5s" %
-                  (cb_params.cur_epoch_num, cur_step_in_epoch, time.time() - self.epoch_begin_time, loss),
-                  flush=True,
-                  end='')
+            print(
+                "\repoch: %+3s step: %+3s time: %5.5s, loss is %5.5s"
+                % (cb_params.cur_epoch_num, cur_step_in_epoch, time.time() - self.epoch_begin_time, loss),
+                flush=True,
+                end='',
+            )
 
 
 import mindspore as ms
-from mindspore import context
-from mindspore import Tensor
+from mindspore import Tensor, context
 
 context.set_context(mode=context.PYNATIVE_MODE, device_target="CPU")
 corpus = """We are about to study the idea of a computational process.
@@ -238,7 +241,6 @@ net.embedding.weight.asnumpy()
 
 
 class CBOWClassical(nn.Cell):
-
     def __init__(self, num_embedding, embedding_dim, window, hidden_dim):
         super(CBOWClassical, self).__init__()
         self.dim = 2 * window * embedding_dim

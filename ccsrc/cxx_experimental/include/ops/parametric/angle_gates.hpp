@@ -41,32 +41,32 @@ namespace mindquantum::ops::parametric {
         }                                                                                                              \
     }
 
-    DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Ph, ops::Ph, "projectq.param.ph", 2);
-    DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(P, tweedledum::Op::P, "projectq.param.p", 2);
-    DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Rx, tweedledum::Op::Rx, "projectq.param.rx", 4);
-    DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Rxx, tweedledum::Op::Rxx, "projectq.param.rxx", 4);
-    DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Ry, tweedledum::Op::Ry, "projectq.param.ry", 4);
-    DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Ryy, tweedledum::Op::Ryy, "projectq.param.ryy", 4);
-    DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Rz, tweedledum::Op::Rz, "projectq.param.rz", 4);
-    DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Rzz, tweedledum::Op::Rzz, "projectq.param.rzz", 4);
+DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Ph, ops::Ph, "projectq.param.ph", 2);
+DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(P, tweedledum::Op::P, "projectq.param.p", 2);
+DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Rx, tweedledum::Op::Rx, "projectq.param.rx", 4);
+DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Rxx, tweedledum::Op::Rxx, "projectq.param.rxx", 4);
+DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Ry, tweedledum::Op::Ry, "projectq.param.ry", 4);
+DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Ryy, tweedledum::Op::Ryy, "projectq.param.ryy", 4);
+DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Rz, tweedledum::Op::Rz, "projectq.param.rz", 4);
+DEFINE_PARAMETRIC_ANGLE_GATE_CLASS(Rzz, tweedledum::Op::Rzz, "projectq.param.rzz", 4);
 
-    static_assert(Ph::num_targets == 1);
-    static_assert(P::num_targets == 1);
-    static_assert(Rx::num_targets == 1);
-    static_assert(Ry::num_targets == 1);
-    static_assert(Rz::num_targets == 1);
-    static_assert(Rxx::num_targets == 2);
-    static_assert(Ryy::num_targets == 2);
-    static_assert(Rzz::num_targets == 2);
+static_assert(Ph::num_targets == 1);
+static_assert(P::num_targets == 1);
+static_assert(Rx::num_targets == 1);
+static_assert(Ry::num_targets == 1);
+static_assert(Rz::num_targets == 1);
+static_assert(Rxx::num_targets == 2);
+static_assert(Ryy::num_targets == 2);
+static_assert(Rzz::num_targets == 2);
 
-    static_assert(Ph::has_const_num_targets);
-    static_assert(P::has_const_num_targets);
-    static_assert(Rx::has_const_num_targets);
-    static_assert(Ry::has_const_num_targets);
-    static_assert(Rz::has_const_num_targets);
-    static_assert(Rxx::has_const_num_targets);
-    static_assert(Ryy::has_const_num_targets);
-    static_assert(Rzz::has_const_num_targets);
+static_assert(Ph::has_const_num_targets);
+static_assert(P::has_const_num_targets);
+static_assert(Rx::has_const_num_targets);
+static_assert(Ry::has_const_num_targets);
+static_assert(Rz::has_const_num_targets);
+static_assert(Rxx::has_const_num_targets);
+static_assert(Ryy::has_const_num_targets);
+static_assert(Rzz::has_const_num_targets);
 
 #undef DEFINE_PARAMETRIC_ANGLE_GATE_CLASS
 }  // namespace mindquantum::ops::parametric

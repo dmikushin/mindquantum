@@ -15,12 +15,15 @@
 # ============================================================================
 """hiqqasm"""
 import numpy as np
-from mindquantum.utils.type_value_check import _check_input_type
-from mindquantum.utils.type_value_check import _check_int_type
-from mindquantum.utils.type_value_check import _check_value_should_not_less
-from mindquantum.utils.type_value_check import _check_seed
-from .openqasm import _find_qubit_id
-from .openqasm import u3
+
+from mindquantum.utils.type_value_check import (
+    _check_input_type,
+    _check_int_type,
+    _check_seed,
+    _check_value_should_not_less,
+)
+
+from .openqasm import _find_qubit_id, u3
 
 HIQASM_GATE_SET = {
     '0.1': {
@@ -122,8 +125,10 @@ class HiQASM:
                           │      │
         q1: ──────────────●────ZZ(π)──
     """
+
     def __init__(self):
         from mindquantum import Circuit
+
         self.circuit = Circuit()
         self.cmds = []
 
@@ -168,6 +173,7 @@ class HiQASM:
         """
         from mindquantum import gates as G
         from mindquantum.core import Circuit
+
         _check_input_type("circuit", Circuit, circuit)
         _check_input_type("version", str, version)
         if version == '0.1':
@@ -209,6 +215,7 @@ class HiQASM:
     def _to_string_non_parametric(self, gate, ctrl_qubits, obj_qubits, version):
         """Conversion of simple gates to string"""
         from mindquantum.core import gates as G
+
         n_ctrl_qubits = len(ctrl_qubits)
 
         if isinstance(gate, G.XGate):
@@ -258,6 +265,7 @@ class HiQASM:
     def _to_string_parametric(self, gate, ctrl_qubits, obj_qubits, version):
         """Conversion of parametric gates to string"""
         from mindquantum.core import gates as G
+
         n_ctrl_qubits = len(ctrl_qubits)
 
         if isinstance(gate, (G.RX, G.RY, G.RZ)):
@@ -267,7 +275,8 @@ class HiQASM:
                 self.cmds.append(f'C{gate.name} q[{ctrl_qubits[0]}],q[{obj_qubits[0]}] {gate.coeff}')
             elif n_ctrl_qubits == 2:
                 self.cmds.append(
-                    f'CC{gate.name} q[{ctrl_qubits[0]}],q[{ctrl_qubits[1]}],q[{obj_qubits[0]}] {gate.coeff}')
+                    f'CC{gate.name} q[{ctrl_qubits[0]}],q[{ctrl_qubits[1]}],q[{obj_qubits[0]}] {gate.coeff}'
+                )
             else:
                 _not_implement(version, gate)
         elif isinstance(gate, (G.XX, G.YY, G.ZZ)):
@@ -329,6 +338,7 @@ class HiQASM:
             TypeError: if `version` is not a str.
         """
         from mindquantum.core import Circuit
+
         _check_input_type('file_name', str, file_name)
         _check_input_type('circuit', Circuit, circuit)
         _check_input_type('version', str, version)
@@ -339,8 +349,9 @@ class HiQASM:
 
     def _trans_v01(self, cmds, n_qubits):
         """Trans method for hiqasm version 0.1"""
-        from mindquantum import Circuit
         import mindquantum.core.gates as G
+        from mindquantum import Circuit
+
         self.circuit = Circuit()
         for cmd in cmds:
             q = _find_qubit_id(cmd)
@@ -385,6 +396,7 @@ class HiQASM:
     def _trans_v01_single_qubit(self, cmd, qubit):
         """Trans method for hiqasm version 0.1 (single-qubit gates)"""
         from mindquantum.core import gates as G
+
         if cmd.startswith('H '):
             self.circuit.h(qubit)
         elif cmd.startswith('X '):

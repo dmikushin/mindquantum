@@ -16,10 +16,10 @@
 #define CPP_OPTIMISATION_HPP
 
 namespace mindquantum::cengines::cpp {
-    class LocalOptimizer {
-     public:
-        unsigned int _m_;
-    };
+class LocalOptimizer {
+ public:
+    unsigned int _m_;
+};
 }  // namespace mindquantum::cengines::cpp
 
 #endif /* CPP_OPTIMISATION_HPP */

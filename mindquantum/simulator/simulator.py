@@ -14,22 +14,23 @@
 # limitations under the License.
 # ============================================================================
 """Simulator."""
-from mindquantum.core.gates.basic import BasicGate
 import numpy as np
+
+from mindquantum import mqbackend as mb
 from mindquantum.core.circuit import Circuit
+from mindquantum.core.gates import BarrierGate, Measure, MeasureResult
+from mindquantum.core.gates.basic import BasicGate
 from mindquantum.core.operators import Hamiltonian
 from mindquantum.core.operators.hamiltonian import MODE
 from mindquantum.core.parameterresolver import ParameterResolver
-from mindquantum.core.gates import MeasureResult
-from mindquantum.core.gates import Measure
-from mindquantum.core.gates import BarrierGate
 from mindquantum.utils import ket_string
-from mindquantum import mqbackend as mb
-from mindquantum.utils.type_value_check import _check_input_type
-from mindquantum.utils.type_value_check import _check_int_type
-from mindquantum.utils.type_value_check import _check_value_should_not_less
-from mindquantum.utils.type_value_check import _check_and_generate_pr_type
-from mindquantum.utils.type_value_check import _check_seed
+from mindquantum.utils.type_value_check import (
+    _check_and_generate_pr_type,
+    _check_input_type,
+    _check_int_type,
+    _check_seed,
+    _check_value_should_not_less,
+)
 
 SUPPORTED_SIMULATOR = ['projectq']
 
@@ -71,12 +72,13 @@ class Simulator:
         >>> sim.get_qs()
         array([0.5+0.j, 0.5+0.j, 0.5+0.j, 0.5+0.j])
     """
+
     def __init__(self, backend, n_qubits, seed=None):
         _check_input_type('backend', str, backend)
         _check_int_type('n_qubits', n_qubits)
         _check_value_should_not_less('n_qubits', 0, n_qubits)
         if seed is None:
-            seed = np.random.randint(1, 2**23)
+            seed = np.random.randint(1, 2 ** 23)
         _check_seed(seed)
         if backend not in SUPPORTED_SIMULATOR:
             raise ValueError(f"backend {backend} not supported, now we support {SUPPORTED_SIMULATOR}!")
@@ -229,7 +231,8 @@ class Simulator:
             pr = ParameterResolver()
         if circuit.has_measure_gate:
             samples = np.array(
-                self.sim.apply_circuit_with_measure(circuit.get_cpp_obj(), pr.get_cpp_obj(), res.keys_map))
+                self.sim.apply_circuit_with_measure(circuit.get_cpp_obj(), pr.get_cpp_obj(), res.keys_map)
+            )
             samples = samples.reshape((1, -1))
             res.collect_data(samples)
             return res
@@ -306,8 +309,9 @@ class Simulator:
             sim.set_qs(self.get_qs())
             sim.apply_circuit(circuit.remove_measure(), pr)
             circuit = Circuit(circuit.all_measures.keys())
-        samples = np.array(sim.sim.sampling(circuit.get_cpp_obj(), pr.get_cpp_obj(), shots, res.keys_map,
-                                            seed)).reshape((shots, -1))
+        samples = np.array(
+            sim.sim.sampling(circuit.get_cpp_obj(), pr.get_cpp_obj(), shots, res.keys_map, seed)
+        ).reshape((shots, -1))
         res.collect_data(samples)
         return res
 
@@ -428,16 +432,18 @@ class Simulator:
         n_qubits = int(n_qubits)
         if self.n_qubits != n_qubits:
             raise ValueError(f"{n_qubits} qubits vec does not match with simulation qubits ({self.n_qubits})")
-        self.sim.set_qs(quantum_state / np.sqrt(np.sum(np.abs(quantum_state)**2)))
+        self.sim.set_qs(quantum_state / np.sqrt(np.sum(np.abs(quantum_state) ** 2)))
 
-    def get_expectation_with_grad(self,
-                                  hams,
-                                  circ_right,
-                                  circ_left=None,
-                                  simulator_left=None,
-                                  encoder_params_name=None,
-                                  ansatz_params_name=None,
-                                  parallel_worker=None):
+    def get_expectation_with_grad(
+        self,
+        hams,
+        circ_right,
+        circ_left=None,
+        simulator_left=None,
+        encoder_params_name=None,
+        ansatz_params_name=None,
+        parallel_worker=None,
+    ):
         r"""
         Get a function that return the forward value and gradient w.r.t circuit parameters.
         This method is designed to calculate the expectation and its gradient shown as below.
@@ -511,11 +517,15 @@ class Simulator:
         if simulator_left is not None:
             _check_input_type("simulator_left", Simulator, simulator_left)
             if self.backend != simulator_left.backend:
-                raise ValueError(f"simulator_left should have the same backend as this simulator, \
-which is {self.backend}, but get {simulator_left.backend}")
+                raise ValueError(
+                    f"simulator_left should have the same backend as this simulator, \
+which is {self.backend}, but get {simulator_left.backend}"
+                )
             if self.n_qubits != simulator_left.n_qubits:
-                raise ValueError(f"simulator_left should have the same n_qubits as this simulator, \
-which is {self.n_qubits}, but get {simulator_left.n_qubits}")
+                raise ValueError(
+                    f"simulator_left should have the same n_qubits as this simulator, \
+which is {self.n_qubits}, but get {simulator_left.n_qubits}"
+                )
             non_hermitian = True
         if non_hermitian and simulator_left is None:
             simulator_left = self
@@ -576,32 +586,46 @@ which is {self.n_qubits}, but get {simulator_left.n_qubits}")
                 inputs0 = np.array([[]])
                 inputs1 = inputs[0]
             if non_hermitian:
-                f_g1_g2 = self.sim.non_hermitian_measure_with_grad([i.get_cpp_obj() for i in hams],
-                                                                   [i.get_cpp_obj(hermitian=True) for i in hams],
-                                                                   circ_left.get_cpp_obj(),
-                                                                   circ_left.get_cpp_obj(hermitian=True),
-                                                                   circ_right.get_cpp_obj(),
-                                                                   circ_right.get_cpp_obj(hermitian=True), inputs0,
-                                                                   inputs1, encoder_params_name, ansatz_params_name,
-                                                                   batch_threads, mea_threads, simulator_left.sim)
+                f_g1_g2 = self.sim.non_hermitian_measure_with_grad(
+                    [i.get_cpp_obj() for i in hams],
+                    [i.get_cpp_obj(hermitian=True) for i in hams],
+                    circ_left.get_cpp_obj(),
+                    circ_left.get_cpp_obj(hermitian=True),
+                    circ_right.get_cpp_obj(),
+                    circ_right.get_cpp_obj(hermitian=True),
+                    inputs0,
+                    inputs1,
+                    encoder_params_name,
+                    ansatz_params_name,
+                    batch_threads,
+                    mea_threads,
+                    simulator_left.sim,
+                )
             else:
-                f_g1_g2 = self.sim.hermitian_measure_with_grad([i.get_cpp_obj()
-                                                                for i in hams], circ_right.get_cpp_obj(),
-                                                               circ_right.get_cpp_obj(hermitian=True), inputs0, inputs1,
-                                                               encoder_params_name, ansatz_params_name, batch_threads,
-                                                               mea_threads)
+                f_g1_g2 = self.sim.hermitian_measure_with_grad(
+                    [i.get_cpp_obj() for i in hams],
+                    circ_right.get_cpp_obj(),
+                    circ_right.get_cpp_obj(hermitian=True),
+                    inputs0,
+                    inputs1,
+                    encoder_params_name,
+                    ansatz_params_name,
+                    batch_threads,
+                    mea_threads,
+                )
             res = np.array(f_g1_g2)
             if version == 'both':
                 f = res[:, :, 0]
-                g1 = res[:, :, 1:1 + len(encoder_params_name)]
-                g2 = res[:, :, 1 + len(encoder_params_name):]
+                g1 = res[:, :, 1 : 1 + len(encoder_params_name)]
+                g2 = res[:, :, 1 + len(encoder_params_name) :]
                 return f, g1, g2
             f = res[:, :, 0]
             g = res[:, :, 1:]
             return f, g
 
-        grad_wrapper = GradOpsWrapper(grad_ops, hams, circ_right, circ_left, encoder_params_name, ansatz_params_name,
-                                      parallel_worker)
+        grad_wrapper = GradOpsWrapper(
+            grad_ops, hams, circ_right, circ_left, encoder_params_name, ansatz_params_name, parallel_worker
+        )
         s = f'{self.n_qubits} qubit' + ('' if self.n_qubits == 1 else 's')
         s += f' {self.backend} VQA Operator'
         grad_wrapper.set_str(s)
@@ -615,8 +639,10 @@ def _check_encoder(data, encoder_params_size):
     if len(data_shape) != 2:
         raise ValueError("encoder data requires a two dimension numpy array")
     if data_shape[1] != encoder_params_size:
-        raise ValueError(f"encoder parameters size do not match with encoder parameters name,\
-need {encoder_params_size} but get {data_shape[1]}.")
+        raise ValueError(
+            f"encoder parameters size do not match with encoder parameters name,\
+need {encoder_params_size} but get {data_shape[1]}."
+        )
 
 
 def _check_ansatz(data, ansatz_params_size):
@@ -627,8 +653,10 @@ def _check_ansatz(data, ansatz_params_size):
     if len(data_shape) != 1:
         raise ValueError("ansatz data requires a one dimension numpy array")
     if data_shape[0] != ansatz_params_size:
-        raise ValueError(f"ansatz parameters size do not match with ansatz parameters name,\
-need {ansatz_params_size} but get {data_shape[0]}")
+        raise ValueError(
+            f"ansatz parameters size do not match with ansatz parameters name,\
+need {ansatz_params_size} but get {data_shape[0]}"
+        )
 
 
 def _thread_balance(n_prs, n_meas, parallel_worker):
@@ -652,8 +680,10 @@ def _check_hamiltonian_qubits_number(hamiltonian, sim_qubits):
     """check hamiltonian qubits number"""
     if hamiltonian.how_to != MODE['origin']:
         if hamiltonian.n_qubits != sim_qubits:
-            raise ValueError(f"Hamiltonian qubits is {hamiltonian.n_qubits}, not match \
-with simulator qubits number {sim_qubits}")
+            raise ValueError(
+                f"Hamiltonian qubits is {hamiltonian.n_qubits}, not match \
+with simulator qubits number {sim_qubits}"
+            )
     else:
         if hamiltonian.n_qubits > sim_qubits:
             raise ValueError(f"Hamiltonian qubits is {hamiltonian.n_qubits}, which is bigger than simulator qubits.")
@@ -674,6 +704,7 @@ class GradOpsWrapper:
         ansatz_params_name (list[str]): The ansatz parameters name.
         parallel_worker (int): The number of parallel worker to run the batch.
     """
+
     def __init__(self, grad_ops, hams, circ_right, circ_left, encoder_params_name, ansatz_params_name, parallel_worker):
         self.grad_ops = grad_ops
         self.hams = hams

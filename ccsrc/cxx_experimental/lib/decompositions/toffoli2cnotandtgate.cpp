@@ -19,32 +19,32 @@
 #include "decompositions.hpp"
 
 namespace mindquantum::decompositions {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    void decompose_toffoli2cnotandtgate(circuit_t& result, const instruction_t& inst) {
-        assert(inst.kind() == "std.x");
+void decompose_toffoli2cnotandtgate(circuit_t& result, const instruction_t& inst) {
+    assert(inst.kind() == "std.x");
 
-        if (const auto& qubits = inst.qubits(); std::size(qubits) == 3) {
-            const auto &c1 = qubits[0], c2 = qubits[1];
-            const auto& target = qubits[2];
+    if (const auto& qubits = inst.qubits(); std::size(qubits) == 3) {
+        const auto &c1 = qubits[0], c2 = qubits[1];
+        const auto& target = qubits[2];
 
-            result.apply_operator(td::Op::H(), {target});
-            result.apply_operator(td::Op::X(), {c1, target});
-            result.apply_operator(td::Op::T(), {c1});
-            result.apply_operator(td::Op::Tdg(), {target});
-            result.apply_operator(td::Op::X(), {c2, target});
-            result.apply_operator(td::Op::X(), {c2, c1});
-            result.apply_operator(td::Op::Tdg(), {c1});
-            result.apply_operator(td::Op::T(), {target});
-            result.apply_operator(td::Op::X(), {c2, c1});
-            result.apply_operator(td::Op::X(), {c1, target});
-            result.apply_operator(td::Op::Tdg(), {target});
-            result.apply_operator(td::Op::X(), {c2, target});
-            result.apply_operator(td::Op::T(), {target});
-            result.apply_operator(td::Op::T(), {c2});
-            result.apply_operator(td::Op::H(), {target});
-        } else {
-            result.apply_operator(inst);
-        }
+        result.apply_operator(td::Op::H(), {target});
+        result.apply_operator(td::Op::X(), {c1, target});
+        result.apply_operator(td::Op::T(), {c1});
+        result.apply_operator(td::Op::Tdg(), {target});
+        result.apply_operator(td::Op::X(), {c2, target});
+        result.apply_operator(td::Op::X(), {c2, c1});
+        result.apply_operator(td::Op::Tdg(), {c1});
+        result.apply_operator(td::Op::T(), {target});
+        result.apply_operator(td::Op::X(), {c2, c1});
+        result.apply_operator(td::Op::X(), {c1, target});
+        result.apply_operator(td::Op::Tdg(), {target});
+        result.apply_operator(td::Op::X(), {c2, target});
+        result.apply_operator(td::Op::T(), {target});
+        result.apply_operator(td::Op::T(), {c2});
+        result.apply_operator(td::Op::H(), {target});
+    } else {
+        result.apply_operator(inst);
     }
+}
 }  // namespace mindquantum::decompositions

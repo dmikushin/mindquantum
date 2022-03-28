@@ -16,15 +16,19 @@
 """MaxCut ansatz."""
 
 import numpy as np
-from mindquantum.core.gates import H, RX, ZZ
-from mindquantum.core.circuit import Circuit, UN
-from mindquantum.core.operators import QubitOperator
+
+from mindquantum.core.circuit import UN, Circuit
 from mindquantum.core.circuit.utils import CPN
+from mindquantum.core.gates import RX, ZZ, H
+from mindquantum.core.operators import QubitOperator
 from mindquantum.simulator import Simulator
-from mindquantum.utils.type_value_check import _check_int_type
-from mindquantum.utils.type_value_check import _check_value_should_between_close_set
-from mindquantum.utils.type_value_check import _check_input_type
-from mindquantum.utils.type_value_check import _check_value_should_not_less
+from mindquantum.utils.type_value_check import (
+    _check_input_type,
+    _check_int_type,
+    _check_value_should_between_close_set,
+    _check_value_should_not_less,
+)
+
 from .._ansatz import Ansatz
 
 
@@ -201,8 +205,12 @@ class MaxCutAnsatz(Ansatz):
                     raise ValueError(f'Invalid partition, node {n} not in partition.')
                 if n in partition[0] and n in partition[1]:
                     raise ValueError(f'Invalid partition, node {n} in both side of cut.')
-            if (node_left in partition[0] and node_right in partition[1]
-                    or node_left in partition[1] and node_right in partition[0]):
+            if (
+                node_left in partition[0]
+                and node_right in partition[1]
+                or node_left in partition[1]
+                and node_right in partition[0]
+            ):
                 cut_value += 1
         return cut_value
 

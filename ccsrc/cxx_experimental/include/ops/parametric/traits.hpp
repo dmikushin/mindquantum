@@ -20,17 +20,17 @@
 #include "ops/parametric/config.hpp"
 
 namespace mindquantum::traits {
-    template <typename ref_kind_t, typename... kinds_t>
-    static constexpr bool kind_match(ref_kind_t&& ref_kind, kinds_t&&... kinds)
+template <typename ref_kind_t, typename... kinds_t>
+static constexpr bool kind_match(ref_kind_t&& ref_kind, kinds_t&&... kinds)
 #if HIQ_USE_CONCEPTS
-        requires(sizeof...(kinds_t) > 0)
+    requires(sizeof...(kinds_t) > 0)
 #endif  // HIQ_USE_CONCEPTS
-    {
+{
 #if !HIQ_USE_CONCEPTS
-        static_assert(sizeof...(kinds_t) > 0);
+    static_assert(sizeof...(kinds_t) > 0);
 #endif  // HIQ_USE_CONCEPTS
-        return ((ref_kind == kinds) || ...);
-    }
+    return ((ref_kind == kinds) || ...);
+}
 }  // namespace mindquantum::traits
 
 #endif /* PARAMETRIC_TRAITS_HPP */

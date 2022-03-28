@@ -16,8 +16,8 @@
 #define TYPES_HPP
 
 namespace mindquantum::mapping {
-    struct sabre_config {};
-    struct jit_config {};
+struct sabre_config {};
+struct jit_config {};
 }  // namespace mindquantum::mapping
 
 #endif /* TYPES_HPP */

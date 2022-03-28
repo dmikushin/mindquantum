@@ -26,11 +26,11 @@
 #include "core/config.hpp"
 
 namespace mindquantum::ops::parametric {
-    using subs_map_t = SymEngine::map_basic_basic;
-    using basic_t = SymEngine::RCP<const SymEngine::Basic>;
-    using double_list_t = std::vector<double>;
-    using param_list_t = SymEngine::vec_basic;
-    using gate_param_t = std::variant<std::monostate, double, double_list_t, param_list_t>;
+using subs_map_t = SymEngine::map_basic_basic;
+using basic_t = SymEngine::RCP<const SymEngine::Basic>;
+using double_list_t = std::vector<double>;
+using param_list_t = SymEngine::vec_basic;
+using gate_param_t = std::variant<std::monostate, double, double_list_t, param_list_t>;
 }  // namespace mindquantum::ops::parametric
 
 #endif /* OPS_CONFIG_HPP */

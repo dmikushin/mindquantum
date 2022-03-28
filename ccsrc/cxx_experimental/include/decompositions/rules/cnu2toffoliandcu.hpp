@@ -26,65 +26,65 @@
 #include "ops/parametric/angle_gates.hpp"
 
 namespace mindquantum::decompositions::rules {
-    class CNu2ToffoliAndCu : public decompositions::NonGateDecompositionRule<CNu2ToffoliAndCu, atoms::C<ops::X, 2>> {
-     public:
-        using base_t::base_t;
+class CNu2ToffoliAndCu : public decompositions::NonGateDecompositionRule<CNu2ToffoliAndCu, atoms::C<ops::X, 2>> {
+ public:
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "CNu2ToffoliAndCu"sv;
+    static constexpr auto name() noexcept {
+        return "CNu2ToffoliAndCu"sv;
+    }
+
+    HIQ_NODISCARD static bool is_applicable(const decompositions::instruction_t& inst) {
+        return inst.num_controls() > 2 || (inst.num_controls() == 2 && inst.kind() != ops::X::kind());
+    }
+
+    void apply_impl(circuit_t& circuit, const instruction_t& inst, const qubits_t& qubits) {
+        const auto& kind = inst.kind();
+        auto n_controls = inst.num_controls();
+
+        qubits_t controls;
+        std::copy(begin(qubits), begin(qubits) + n_controls, std::back_inserter(controls));
+
+        qubits_t targets;
+        std::copy(begin(qubits) + n_controls, end(qubits), std::back_inserter(targets));
+
+        const auto is_x_larger_than_toffoli = kind == ops::X::kind() && n_controls > 2;
+        if (is_x_larger_than_toffoli) {
+            --n_controls;
         }
 
-        HIQ_NODISCARD static bool is_applicable(const decompositions::instruction_t& inst) {
-            return inst.num_controls() > 2 || (inst.num_controls() == 2 && inst.kind() != ops::X::kind());
+        qubits_t ancillae;
+        for (auto i(0UL); i < n_controls - 1; ++i) {
+            ancillae.emplace_back(circuit.create_qubit());
         }
 
-        void apply_impl(circuit_t& circuit, const instruction_t& inst, const qubits_t& qubits) {
-            const auto& kind = inst.kind();
-            auto n_controls = inst.num_controls();
-
-            qubits_t controls;
-            std::copy(begin(qubits), begin(qubits) + n_controls, std::back_inserter(controls));
-
-            qubits_t targets;
-            std::copy(begin(qubits) + n_controls, end(qubits), std::back_inserter(targets));
-
-            const auto is_x_larger_than_toffoli = kind == ops::X::kind() && n_controls > 2;
-            if (is_x_larger_than_toffoli) {
-                --n_controls;
+        HIQ_WITH_COMPUTE(circuit, compute) {
+            atom<atoms::C<ops::X, 2>>()->apply(compute, ops::X{}, {controls[0], controls[1], ancillae[0]});
+            for (auto ctrl_idx(2UL); ctrl_idx < n_controls; ++ctrl_idx) {
+                atom<atoms::C<ops::X, 2>>()->apply(
+                    compute, ops::X{}, {controls[ctrl_idx], ancillae[ctrl_idx - 2], ancillae[ctrl_idx - 1]});
             }
-
-            qubits_t ancillae;
-            for (auto i(0UL); i < n_controls - 1; ++i) {
-                ancillae.emplace_back(circuit.create_qubit());
-            }
-
-            HIQ_WITH_COMPUTE(circuit, compute) {
-                atom<atoms::C<ops::X, 2>>()->apply(compute, ops::X{}, {controls[0], controls[1], ancillae[0]});
-                for (auto ctrl_idx(2UL); ctrl_idx < n_controls; ++ctrl_idx) {
-                    atom<atoms::C<ops::X, 2>>()->apply(
-                        compute, ops::X{}, {controls[ctrl_idx], ancillae[ctrl_idx - 2], ancillae[ctrl_idx - 1]});
-                }
-            }
-            HIQ_WITH_COMPUTE_END
-
-            qubits_t ctrls{ancillae.back()};
-
-            if (is_x_larger_than_toffoli) {
-                ctrls.emplace_back(controls.back());
-            }
-
-            HIQ_WITH_CONTROL(circuit, controlled, ctrls) {
-                const auto new_inst = instruction_t{inst, targets, {}};
-                if (auto* atom{storage().get_atom_for(new_inst)}; atom) {
-                    atom->apply(circuit, new_inst);
-                } else {
-                    controlled.apply_operator(new_inst);
-                }
-            }
-
-            // Automatic uncompute
         }
-    };
+        HIQ_WITH_COMPUTE_END
+
+        qubits_t ctrls{ancillae.back()};
+
+        if (is_x_larger_than_toffoli) {
+            ctrls.emplace_back(controls.back());
+        }
+
+        HIQ_WITH_CONTROL(circuit, controlled, ctrls) {
+            const auto new_inst = instruction_t{inst, targets, {}};
+            if (auto* atom{storage().get_atom_for(new_inst)}; atom) {
+                atom->apply(circuit, new_inst);
+            } else {
+                controlled.apply_operator(new_inst);
+            }
+        }
+
+        // Automatic uncompute
+    }
+};
 }  // namespace mindquantum::decompositions::rules
 
 #endif /* DECOMPOSITION_RULE_CNU2TOFFOLIANDCU_HPP */

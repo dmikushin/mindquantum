@@ -24,42 +24,42 @@
 #include <tweedledum/IR/OperatorTraits.h>
 
 namespace mindquantum::ops {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    class DaggerOperation {
-     public:
-        template <typename OpT>
-        explicit DaggerOperation(OpT&& op) : op_(std::forward<OpT>(op)) {
+class DaggerOperation {
+ public:
+    template <typename OpT>
+    explicit DaggerOperation(OpT&& op) : op_(std::forward<OpT>(op)) {
+    }
+
+    static constexpr std::string_view kind() {
+        return "projectq.daggeroperation";
+    }
+
+    uint32_t num_targets() const {
+        return op_.num_targets();
+    }
+
+    td::Operator adjoint() const {
+        return op_;
+    }
+
+    std::optional<td::UMatrix> matrix() const {
+        const auto m = op_.matrix();
+        if (m) {
+            return m.value().inverse();
+        } else {
+            return std::nullopt;
         }
+    }
 
-        static constexpr std::string_view kind() {
-            return "projectq.daggeroperation";
-        }
+    bool operator==(const DaggerOperation& other) const {
+        return op_ == other.op_;
+    }
 
-        uint32_t num_targets() const {
-            return op_.num_targets();
-        }
-
-        td::Operator adjoint() const {
-            return op_;
-        }
-
-        std::optional<td::UMatrix> matrix() const {
-            const auto m = op_.matrix();
-            if (m) {
-                return m.value().inverse();
-            } else {
-                return std::nullopt;
-            }
-        }
-
-        bool operator==(const DaggerOperation& other) const {
-            return op_ == other.op_;
-        }
-
-     private:
-        td::Operator op_;
-    };
+ private:
+    td::Operator op_;
+};
 }  // namespace mindquantum::ops
 
 #endif /* DAGGER_OP_HPP */

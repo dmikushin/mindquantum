@@ -21,18 +21,18 @@
 #include <symengine/expression.h>
 
 namespace Catch {
-    template <>
-    struct StringMaker<SymEngine::RCP<const SymEngine::Basic>> {
-        static std::string convert(const SymEngine::RCP<const SymEngine::Basic>& a) {
-            return str(*a);
-        }
-    };
-    template <>
-    struct StringMaker<SymEngine::Expression> {
-        static std::string convert(const SymEngine::Expression& e) {
-            return str(e);
-        }
-    };
+template <>
+struct StringMaker<SymEngine::RCP<const SymEngine::Basic>> {
+    static std::string convert(const SymEngine::RCP<const SymEngine::Basic>& a) {
+        return str(*a);
+    }
+};
+template <>
+struct StringMaker<SymEngine::Expression> {
+    static std::string convert(const SymEngine::Expression& e) {
+        return str(e);
+    }
+};
 }  // namespace Catch
 
 struct Equals : Catch::MatcherBase<std::vector<SymEngine::RCP<const SymEngine::Basic>>> {

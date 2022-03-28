@@ -39,64 +39,64 @@ void init_resource_counter(pybind11::module& m);
 // =============================================================================
 
 namespace mindquantum::details {
-    //! Interface with Python ResourceCounter (internal use only)
-    class RCPseudoGate {
-        using param_t = std::optional<double>;
+//! Interface with Python ResourceCounter (internal use only)
+class RCPseudoGate {
+    using param_t = std::optional<double>;
 
-     public:
-        RCPseudoGate() : param_{}, kind_{} {
-        }
-        RCPseudoGate(std::string_view kind) : param_{}, kind_(kind) {
-        }
-        RCPseudoGate(std::string_view kind, param_t param) : param_(param), kind_(kind) {
-        }
+ public:
+    RCPseudoGate() : param_{}, kind_{} {
+    }
+    RCPseudoGate(std::string_view kind) : param_{}, kind_(kind) {
+    }
+    RCPseudoGate(std::string_view kind, param_t param) : param_(param), kind_(kind) {
+    }
 
-        std::string to_string() const;
+    std::string to_string() const;
 
-     private:
-        param_t param_;
-        std::string kind_;
-    };
+ private:
+    param_t param_;
+    std::string kind_;
+};
 }  // namespace mindquantum::details
 
 namespace mindquantum::python {
-    //! C++ equivalent to projectq.backends.ResourceCounter
-    /*!
-     * Prints all gate classes and specific gates it encountered
-     * (cumulative over several flushes)
-     */
-    class ResourceCounter : public cengines::ResourceCounter {
-     public:
-        //! Write statistics data back to Python
-        void write_data_to_python() const;
+//! C++ equivalent to projectq.backends.ResourceCounter
+/*!
+ * Prints all gate classes and specific gates it encountered
+ * (cumulative over several flushes)
+ */
+class ResourceCounter : public cengines::ResourceCounter {
+ public:
+    //! Write statistics data back to Python
+    void write_data_to_python() const;
 
-        void set_origin(const pybind11::handle& origin) {
-            origin_ = origin.ptr();
-        }
-    };
+    void set_origin(const pybind11::handle& origin) {
+        origin_ = origin.ptr();
+    }
+};
 }  // namespace mindquantum::python
 
 // ==============================================================================
 
 namespace mindquantum::details {
-    //! Helper function to extract attributes common to all mappers
-    bool load_resource_counter(pybind11::handle src, python::ResourceCounter& value);
+//! Helper function to extract attributes common to all mappers
+bool load_resource_counter(pybind11::handle src, python::ResourceCounter& value);
 }  // namespace mindquantum::details
 
 // ==============================================================================
 
 namespace pybind11::detail {
-    template <>
-    struct type_caster<mindquantum::python::ResourceCounter> {
-     public:
-        using value_type = mindquantum::python::ResourceCounter;
+template <>
+struct type_caster<mindquantum::python::ResourceCounter> {
+ public:
+    using value_type = mindquantum::python::ResourceCounter;
 
-        PYBIND11_TYPE_CASTER(value_type, _("ResourceCounter"));
+    PYBIND11_TYPE_CASTER(value_type, _("ResourceCounter"));
 
-        bool load(handle src, bool) {
-            return mindquantum::details::load_resource_counter(src, value);
-        }
-    };
+    bool load(handle src, bool) {
+        return mindquantum::details::load_resource_counter(src, value);
+    }
+};
 }  // namespace pybind11::detail
 
 #include "details/macros_conv_end.hpp"

@@ -75,7 +75,7 @@ class Fusion {
     }
 
     void insert(Matrix matrix, IndexVector index_list, IndexVector const& ctrl_list = {}) {
-        for (const auto& idx: index_list)
+        for (const auto& idx : index_list)
             set_.emplace(idx);
 
         handle_controls(matrix, index_list, ctrl_list);
@@ -86,7 +86,7 @@ class Fusion {
 #ifdef MEASURE_TIMINGS
         const auto start = std::chrono::high_resolution_clock::now();
 #endif  // MEASURE_TIMINGS
-        for (const auto& idx: set_)
+        for (const auto& idx : set_)
             index_list.push_back(idx);
 
         std::size_t N = num_qubits();
@@ -101,7 +101,7 @@ class Fusion {
         for (std::size_t i = 0; i < (1UL << N); ++i)
             M[i][i] = 1.;
 
-        for (auto& item: items_) {
+        for (auto& item : items_) {
             auto const& idx = item.get_indices();
             IndexVector idx2mat(idx.size());
 
@@ -139,7 +139,7 @@ class Fusion {
 #endif  // MEASURE_TIMINGS
 
         ctrl_list.reserve(ctrl_set_.size());
-        for (const auto& ctrl: ctrl_set_)
+        for (const auto& ctrl : ctrl_set_)
             ctrl_list.push_back(ctrl);
 
 #ifdef MEASURE_TIMINGS
@@ -181,7 +181,7 @@ class Fusion {
         // --> need to be removed from the global mask and the controls
         // incorporated into the old commands (the ones already in the list).
 
-        for (const auto& ctrlIdx: ctrlList) {
+        for (const auto& ctrlIdx : ctrlList) {
             if (ctrl_set_.count(ctrlIdx) == 0) {  // need to either add it to the list or to the
                                                   // command
                 if (items_.size() > 0) {          // add it to the command
@@ -197,12 +197,12 @@ class Fusion {
         if (unhandled_ctrl.size() > 0) {
             IndexVector new_ctrls;
             new_ctrls.reserve(unhandled_ctrl.size());
-            for (const auto& idx: unhandled_ctrl) {
+            for (const auto& idx : unhandled_ctrl) {
                 new_ctrls.push_back(idx);
                 ctrl_set_.erase(idx);
                 set_.insert(idx);
             }
-            for (auto& item: items_)
+            for (auto& item : items_)
                 add_controls(item.get_matrix(), item.get_indices(), new_ctrls);
         }
     }

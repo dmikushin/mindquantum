@@ -16,15 +16,20 @@
 """Max-2-SAT ansatz."""
 
 from math import copysign as sign
+
 import numpy as np
-from mindquantum.core.circuit import Circuit, UN
+
+from mindquantum.core.circuit import UN, Circuit
 from mindquantum.core.circuit.utils import CPN
+from mindquantum.core.gates import RX, H
+from mindquantum.core.operators import QubitOperator, TimeEvolution
 from mindquantum.simulator import Simulator
-from mindquantum.utils.type_value_check import _check_int_type
-from mindquantum.utils.type_value_check import _check_value_should_between_close_set
-from mindquantum.utils.type_value_check import _check_input_type
-from mindquantum.core.gates import H, RX
-from mindquantum.core.operators import TimeEvolution, QubitOperator
+from mindquantum.utils.type_value_check import (
+    _check_input_type,
+    _check_int_type,
+    _check_value_should_between_close_set,
+)
+
 from .._ansatz import Ansatz
 
 
@@ -107,6 +112,7 @@ class Max2SATAnsatz(Ansatz):
         sat value: 2
         sat value: 1
     """
+
     def __init__(self, clauses, depth=1):
         if not isinstance(depth, int):
             raise TypeError(f"depth requires a int, but get {type(depth)}")
@@ -121,10 +127,15 @@ class Max2SATAnsatz(Ansatz):
         """Build hc circuit."""
         ham = QubitOperator()
         for clause in clauses:
-            ham += (sign(1, clause[0]) * QubitOperator(f'Z{abs(clause[0]) - 1}', 'beta') +
-                    sign(1, clause[1]) * QubitOperator(f'Z{abs(clause[1]) - 1}', 'beta')) / 4
-            ham += (sign(1, clause[0]) * sign(1, clause[1]) *
-                    QubitOperator(f'Z{abs(clause[0]) - 1} Z{abs(clause[1]) - 1}', 'beta')) / 4
+            ham += (
+                sign(1, clause[0]) * QubitOperator(f'Z{abs(clause[0]) - 1}', 'beta')
+                + sign(1, clause[1]) * QubitOperator(f'Z{abs(clause[1]) - 1}', 'beta')
+            ) / 4
+            ham += (
+                sign(1, clause[0])
+                * sign(1, clause[1])
+                * QubitOperator(f'Z{abs(clause[0]) - 1} Z{abs(clause[1]) - 1}', 'beta')
+            ) / 4
         return TimeEvolution(ham).circuit
 
     def _build_hb(self, clauses):
@@ -142,22 +153,27 @@ class Max2SATAnsatz(Ansatz):
         """
         qo = QubitOperator()
         for clause in self.clauses:
-            qo += (QubitOperator('') + sign(1, clause[0]) * QubitOperator(f'Z{abs(clause[0]) - 1}') +
-                   sign(1, clause[1]) * QubitOperator(f'Z{abs(clause[1]) - 1}') + sign(1, clause[0]) *
-                   sign(1, clause[1]) * QubitOperator(f'Z{abs(clause[0]) - 1} Z{abs(clause[1]) - 1}')) / 4
+            qo += (
+                QubitOperator('')
+                + sign(1, clause[0]) * QubitOperator(f'Z{abs(clause[0]) - 1}')
+                + sign(1, clause[1]) * QubitOperator(f'Z{abs(clause[1]) - 1}')
+                + sign(1, clause[0])
+                * sign(1, clause[1])
+                * QubitOperator(f'Z{abs(clause[0]) - 1} Z{abs(clause[1]) - 1}')
+            ) / 4
         return qo
 
     def get_sat(self, max_n, weight):
         """
-            Get the strings of this max-2-sat problem.
+        Get the strings of this max-2-sat problem.
 
-            Args:
-                max_n (int): how many strings you want.
-                weight (Union[ParameterResolver, dict, numpy.ndarray, list, numbers.Number]): parameter
-                    value for Max-2-SAT ansatz.
+        Args:
+            max_n (int): how many strings you want.
+            weight (Union[ParameterResolver, dict, numpy.ndarray, list, numbers.Number]): parameter
+                value for Max-2-SAT ansatz.
 
-            Returns:
-                list, a list of strings.
+        Returns:
+            list, a list of strings.
         """
         _check_int_type('max_n', max_n)
         _check_value_should_between_close_set('max_n', 1, 1 << self._circuit.n_qubits, max_n)

@@ -20,32 +20,32 @@
 #include "ops/meta/dagger.hpp"
 
 namespace mindquantum::ops {
-    class QFT {
-     public:
-        using non_const_num_targets = void;
+class QFT {
+ public:
+    using non_const_num_targets = void;
 
-        static constexpr std::string_view kind() {
-            return "projectq.qft";
-        }
+    static constexpr std::string_view kind() {
+        return "projectq.qft";
+    }
 
-        explicit QFT(uint32_t num_targets) : num_targets_(num_targets) {
-        }
+    explicit QFT(uint32_t num_targets) : num_targets_(num_targets) {
+    }
 
-        td::Operator adjoint() const {
-            return DaggerOperation(*this);
-        }
+    td::Operator adjoint() const {
+        return DaggerOperation(*this);
+    }
 
-        uint32_t num_targets() const {
-            return num_targets_;
-        }
+    uint32_t num_targets() const {
+        return num_targets_;
+    }
 
-        bool operator==(const QFT& other) const {
-            return num_targets_ == other.num_targets_;
-        }
+    bool operator==(const QFT& other) const {
+        return num_targets_ == other.num_targets_;
+    }
 
-     private:
-        uint32_t num_targets_;
-    };
+ private:
+    uint32_t num_targets_;
+};
 }  // namespace mindquantum::ops
 
 #endif /* QFT_HPP */

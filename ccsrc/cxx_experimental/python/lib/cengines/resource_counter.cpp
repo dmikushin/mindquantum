@@ -61,13 +61,13 @@ std::string mindquantum::details::RCPseudoGate::to_string() const {
 
 void mindquantum::python::ResourceCounter::write_data_to_python() const {
     auto gate_class_counts = py::dict();
-    for (const auto& [gate_class_desc, count]: gate_class_counts_) {
+    for (const auto& [gate_class_desc, count] : gate_class_counts_) {
         const auto& [kind, n_controls] = gate_class_desc;
         gate_class_counts[py::make_tuple(to_string(kind), n_controls)] = py::int_(count);
     }
 
     auto gate_counts = py::dict();
-    for (const auto& [gate_desc, count]: gate_counts_) {
+    for (const auto& [gate_desc, count] : gate_counts_) {
         const auto& [kind, param, n_controls] = gate_desc;
         gate_counts[py::make_tuple(details::RCPseudoGate(to_string(kind), param), n_controls)] = py::int_(count);
     }

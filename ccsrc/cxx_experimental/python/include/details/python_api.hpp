@@ -18,27 +18,27 @@
 #include <pybind11/pybind11.h>
 
 namespace mindquantum::details {
-    class PythonScopeGuard {
-     public:
-        PythonScopeGuard(PyObject* obj) : obj_(obj) {
+class PythonScopeGuard {
+ public:
+    PythonScopeGuard(PyObject* obj) : obj_(obj) {
+    }
+    ~PythonScopeGuard() {
+        if (obj_ != NULL) {
+            Py_DECREF(obj_);
         }
-        ~PythonScopeGuard() {
-            if (obj_ != NULL) {
-                Py_DECREF(obj_);
-            }
-        }
+    }
 
-        operator bool() {
-            return obj_ != NULL;
-        }
+    operator bool() {
+        return obj_ != NULL;
+    }
 
-        operator PyObject*() {
-            return obj_;
-        }
+    operator PyObject*() {
+        return obj_;
+    }
 
-     private:
-        PyObject* obj_;
-    };
+ private:
+    PyObject* obj_;
+};
 }  // namespace mindquantum::details
 
 #endif /* PYTHON_API_HPP */

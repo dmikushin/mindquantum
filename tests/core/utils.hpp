@@ -45,9 +45,9 @@ class InstructionPtrRange : public Catch::MatcherBase<Range> {
     virtual std::string describe() const override {
         std::ostringstream ss;
         ss << "Instructions equal. Reference value: ";
-        for (const auto& inst: range_) {
+        for (const auto& inst : range_) {
             ss << "(" << inst->kind() << ": ";
-            for (const auto& qubit: inst->qubits()) {
+            for (const auto& qubit : inst->qubits()) {
                 ss << unsigned(qubit) << ", ";
             }
             ss << "), ";

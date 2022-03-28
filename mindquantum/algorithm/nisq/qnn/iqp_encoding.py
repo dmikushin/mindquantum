@@ -16,12 +16,15 @@
 """General IQP Encoding."""
 
 import numpy as np
-from mindquantum.core.circuit import Circuit, UN
-from mindquantum.core.gates import IntrinsicOneParaGate, H, X, RZ, BARRIER
+
 from mindquantum.algorithm.nisq._ansatz import Ansatz
-from mindquantum.utils.type_value_check import _check_input_type
-from mindquantum.utils.type_value_check import _check_int_type
-from mindquantum.utils.type_value_check import _check_value_should_not_less
+from mindquantum.core.circuit import UN, Circuit
+from mindquantum.core.gates import BARRIER, RZ, H, IntrinsicOneParaGate, X
+from mindquantum.utils.type_value_check import (
+    _check_input_type,
+    _check_int_type,
+    _check_value_should_not_less,
+)
 
 
 def _check_intrinsconeparagate(msg, gate_type):
@@ -112,13 +115,15 @@ class IQPEncoding(Ansatz):
         if len(output.shape) == 1:
             if output.shape[0] != self.n_feature:
                 raise ValueError(
-                    f"This iqp encoding requires {self.n_feature} features, but data has {output.shape[0]} features")
+                    f"This iqp encoding requires {self.n_feature} features, but data has {output.shape[0]} features"
+                )
             output = np.append(output, output[:-1] * output[1:])
             return output
         if len(output.shape) == 2:
             if output.shape[1] != self.n_feature:
                 raise ValueError(
-                    f"This iqp encoding requires {self.n_feature} features, but data has {output.shape[1]} features")
+                    f"This iqp encoding requires {self.n_feature} features, but data has {output.shape[1]} features"
+                )
             output = np.append(output, output[:, :-1] * output[:, 1:], axis=1)
             return output
         raise ValueError(f"data need a one or two dimension array, but get dimension of {data.shape}")

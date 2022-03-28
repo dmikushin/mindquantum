@@ -14,21 +14,32 @@
 # limitations under the License.
 # ============================================================================
 """SVG module."""
-from abc import ABC, abstractmethod
 import copy
+from abc import ABC, abstractmethod
+
 import numpy as np
 
+from mindquantum.core.circuit import Circuit
+from mindquantum.core.gates import (
+    BarrierGate,
+    CNOTGate,
+    IntrinsicOneParaGate,
+    Measure,
+    SGate,
+    SWAPGate,
+    TGate,
+    XGate,
+)
 from mindquantum.io.display._config import _DAGGER_MASK
 from mindquantum.utils.f import _common_exp
-from mindquantum.core.gates import CNOTGate, BarrierGate, Measure, SWAPGate, XGate
-from mindquantum.core.gates import IntrinsicOneParaGate, TGate, SGate
-from mindquantum.core.circuit import Circuit
 from mindquantum.utils.type_value_check import _check_input_type
+
 
 class BaseComponent(ABC):
     """
     BaseComponent
     """
+
     def __init__(self, tag):
         self.head = f"<{tag}"
         self.tail = "/>"
@@ -108,6 +119,7 @@ class HasStroke(BaseComponent):
     """
     A svg component that has stroke related property.
     """
+
     def stroke(self, stroke):
         """
         set stroke.
@@ -142,6 +154,7 @@ class HasFill(HasStroke):
     """
     A svg component that has fill property
     """
+
     def fill(self, fill):
         """
         set fill.
@@ -177,6 +190,7 @@ class HasXY(BaseComponent):
     """
     A svg component that has x and y property.
     """
+
     def x(self, x):
         """
         change x
@@ -212,6 +226,7 @@ class Line(HasStroke):
     """
     SVG line component.
     """
+
     def __init__(self, x1, x2, y1, y2):
         super().__init__('line')
         self.x1(x1)
@@ -294,6 +309,7 @@ class Rect(HasFill, HasXY):
     """
     SVG rectangle component.
     """
+
     def __init__(self, x, y, width, height):
         super().__init__('rect')
         self.x(x)
@@ -374,6 +390,7 @@ class Text(HasXY, HasFill):
     """
     SVG text component.
     """
+
     def __init__(self, x, y, text):
         super().__init__('text')
         self.x(x)
@@ -466,6 +483,7 @@ class Text(HasXY, HasFill):
 
 class Path(HasFill):
     """svg path component"""
+
     def __init__(self, points):
         super().__init__('path')
         self.points = np.array(points).astype(float)
@@ -531,6 +549,7 @@ class Path(HasFill):
 
 class Arc(HasFill):
     """Arc component of svg"""
+
     def __init__(self, r):
         super().__init__('path')
         self.center = np.array([r, r])
@@ -582,6 +601,7 @@ class Arc(HasFill):
 
 class Circle(HasFill):
     """Circle component of svg"""
+
     def __init__(self, cx, cy, r):
         super().__init__('circle')
         self.cx(cx)
@@ -640,6 +660,7 @@ class Circle(HasFill):
 
 class SVGContainer:
     """Container that contain any kinds of svg component, even its self."""
+
     def __init__(self, svg_config):
         self.svg_config = svg_config
         self.element = []
@@ -717,14 +738,18 @@ class SVGContainer:
 
 class ObjDots(SVGContainer):
     """SVG dots on object qubits for multiply qubits gate that act on discontinue qubits."""
+
     def __init__(self, obj_qubits, width, svg_config):
         super().__init__(svg_config)
         self.obj_qubits = obj_qubits
         min_obj = min(obj_qubits)
         if max(obj_qubits) - min(obj_qubits) + 1 != len(obj_qubits):
             for obj in obj_qubits:
-                dot = Circle(0, (obj - min_obj) * self.svg_config['circuit_line_distance'] +
-                             self.svg_config['gate_size'] / 2, self.svg_config['obj_dot_r'])
+                dot = Circle(
+                    0,
+                    (obj - min_obj) * self.svg_config['circuit_line_distance'] + self.svg_config['gate_size'] / 2,
+                    self.svg_config['obj_dot_r'],
+                )
                 dot.fill('black')
                 self.add(dot)
                 self.add(copy.deepcopy(dot).shift(width, 0))
@@ -732,21 +757,28 @@ class ObjDots(SVGContainer):
 
 class CtrlDots(SVGContainer):
     """SVG dot for control qubits."""
+
     def __init__(self, obj_qubits, ctrl_qubits, svg_config):
         super().__init__(svg_config)
         if ctrl_qubits:
             min_obj = min(obj_qubits)
             for ctrl in ctrl_qubits:
-                ctrl_dot = Circle(0, (ctrl - min_obj) * self.svg_config['circuit_line_distance'] +
-                                  self.svg_config['gate_size'] / 2, self.svg_config['ctrl_dot_r']).fill('black')
+                ctrl_dot = Circle(
+                    0,
+                    (ctrl - min_obj) * self.svg_config['circuit_line_distance'] + self.svg_config['gate_size'] / 2,
+                    self.svg_config['ctrl_dot_r'],
+                ).fill('black')
                 self.add(ctrl_dot)
             min_ctrl = min(ctrl_qubits + [min_obj])
             max_ctrl = max(ctrl_qubits + [min_obj])
-            line = Line(0, 0, 0,
-                        (max_ctrl - min_ctrl) * self.svg_config['circuit_line_distance']).stroke('black').stroke_width(
-                            self.svg_config['ctrl_line_stroke_width'])
+            line = (
+                Line(0, 0, 0, (max_ctrl - min_ctrl) * self.svg_config['circuit_line_distance'])
+                .stroke('black')
+                .stroke_width(self.svg_config['ctrl_line_stroke_width'])
+            )
             line.shift(
-                0, self.svg_config['gate_size'] / 2 + (min_ctrl - min_obj) * self.svg_config['circuit_line_distance'])
+                0, self.svg_config['gate_size'] / 2 + (min_ctrl - min_obj) * self.svg_config['circuit_line_distance']
+            )
             self.add(line)
 
 
@@ -754,9 +786,10 @@ class SVGBasicGate(SVGContainer):
     """
     Basic style for quantum gate.
     """
+
     def __init__(self, g, svg_config):
         super().__init__(svg_config)
-        self.name = g.str[:g.str.find('(')]
+        self.name = g.str[: g.str.find('(')]
         self.has_dag_mask = False
         if self.name.endswith(_DAGGER_MASK):
             self.name = self.name[:-1]
@@ -777,8 +810,12 @@ class SVGBasicGate(SVGContainer):
 
     def create_n_qubits_rect(self, n_qubits):
         """Create n qubits rectangle."""
-        rect = Rect(0, 0, self.svg_config['gate_size'],
-                    self.svg_config['gate_size'] + (n_qubits - 1) * self.svg_config['circuit_line_distance'])
+        rect = Rect(
+            0,
+            0,
+            self.svg_config['gate_size'],
+            self.svg_config['gate_size'] + (n_qubits - 1) * self.svg_config['circuit_line_distance'],
+        )
         rect.chamfer(self.svg_config['gate_chamfer'])
         rect.stroke(self.svg_config['npg_stroke'])
         rect.stroke_width(self.svg_config['gate_stroke_width'])
@@ -827,6 +864,7 @@ def get_bound_color(svg_config, fill, stroke):
 
 class SVGGate(SVGBasicGate):
     """SVG Gate."""
+
     def __init__(self, g, svg_config):
         super().__init__(g, svg_config)
         self.rect = self.create_n_qubits_rect(g.n_qubits)
@@ -858,14 +896,18 @@ class SVGGate(SVGBasicGate):
 
 class SVGSWAPGate(SVGBasicGate):
     """Style for swap gate."""
+
     def __init__(self, g, svg_config):
         super().__init__(g, svg_config)
         self.rect1 = SWAPIcon(svg_config)
         self.rect2 = SWAPIcon(svg_config)
         self.rect2.shift(0, (max(self.obj_qubits) - min(self.obj_qubits)) * self.svg_config['circuit_line_distance'])
         color = get_bound_color(self.svg_config, self.svg_config['swap_fill'], self.svg_config['swap_stroke'])
-        self.swap_line = Line(self.rect1.right / 2, self.rect1.right / 2, 0,
-                              self.rect2.bottom).stroke_width(self.svg_config['ctrl_line_stroke_width']).stroke(color)
+        self.swap_line = (
+            Line(self.rect1.right / 2, self.rect1.right / 2, 0, self.rect2.bottom)
+            .stroke_width(self.svg_config['ctrl_line_stroke_width'])
+            .stroke(color)
+        )
 
         self.ctrl_dots = self.create_ctrl_dots(self.rect1.right / 2, color)
         self.add(self.swap_line)
@@ -878,6 +920,7 @@ class SVGSWAPGate(SVGBasicGate):
 
 class SVGCNOTGate(SVGBasicGate):
     """SVG for cnot gate."""
+
     def __init__(self, g, svg_config):
         super().__init__(g, svg_config)
         if isinstance(g, CNOTGate):
@@ -891,11 +934,15 @@ class SVGCNOTGate(SVGBasicGate):
 
         self.cross = SVGContainer(svg_config)
         self.cross.add(
-            Line(-self.svg_config['cnot_cross_size'] / 2, self.svg_config['cnot_cross_size'] / 2, 0, 0).stroke(
-                self.svg_config['cnot_cross_stroke']).stroke_width(self.svg_config['cnot_cross_stroke_width']))
+            Line(-self.svg_config['cnot_cross_size'] / 2, self.svg_config['cnot_cross_size'] / 2, 0, 0)
+            .stroke(self.svg_config['cnot_cross_stroke'])
+            .stroke_width(self.svg_config['cnot_cross_stroke_width'])
+        )
         self.cross.add(
-            Line(0, 0, -self.svg_config['cnot_cross_size'] / 2, self.svg_config['cnot_cross_size'] / 2).stroke(
-                self.svg_config['cnot_cross_stroke']).stroke_width(self.svg_config['cnot_cross_stroke_width']))
+            Line(0, 0, -self.svg_config['cnot_cross_size'] / 2, self.svg_config['cnot_cross_size'] / 2)
+            .stroke(self.svg_config['cnot_cross_stroke'])
+            .stroke_width(self.svg_config['cnot_cross_stroke_width'])
+        )
         self.cross.shift(self.svg_config['gate_size'] / 2, self.svg_config['gate_size'] / 2)
         color = get_bound_color(self.svg_config, self.svg_config['cnot_fill'], self.svg_config['cnot_stroke'])
         self.ctrl_dots = self.create_ctrl_dots(self.rect1.right / 2, color)
@@ -908,6 +955,7 @@ class SVGCNOTGate(SVGBasicGate):
 
 class SVGIntrinsicOneParaGate(SVGBasicGate):
     """SVG for parameterized gate."""
+
     def __init__(self, gate, svg_config):
         super().__init__(gate, svg_config)
         self.rect1 = self.create_n_qubits_rect(max(self.obj_qubits) - min(self.obj_qubits) + 1)
@@ -945,6 +993,7 @@ class SVGIntrinsicOneParaGate(SVGBasicGate):
 
 class GateContainer(SVGContainer):
     """Container that contains gate. This container can make sure that the gate will added layer by layer."""
+
     def __init__(self, n_qubits, svg_config):
         super().__init__(svg_config)
         self.n_qubits = n_qubits
@@ -963,6 +1012,7 @@ class GateContainer(SVGContainer):
 
 class SVGCircuit(SVGContainer):
     """SVG circuit component."""
+
     def __init__(self, circuit, svg_config):
         super().__init__(svg_config)
         _check_input_type("circuit", Circuit, circuit)
@@ -976,7 +1026,7 @@ class SVGCircuit(SVGContainer):
                 gate_container.add(SVGBarrier(circuit.n_qubits, svg_config, g.show))
             elif isinstance(g, Measure):
                 gate_container.add(SVGMeasure(g, svg_config))
-            elif (isinstance(g, XGate) and len(g.ctrl_qubits) == 1):
+            elif isinstance(g, XGate) and len(g.ctrl_qubits) == 1:
                 gate_container.add(SVGCNOTGate(g, svg_config))
             elif isinstance(g, CNOTGate):
                 gate_container.add(SVGCNOTGate(g, svg_config))
@@ -986,28 +1036,41 @@ class SVGCircuit(SVGContainer):
                 gate_container.add(SVGIntrinsicOneParaGate(g, svg_config))
             else:
                 name = g.str
-                name = name[:name.find('(')]
+                name = name[: name.find('(')]
                 gate_container.add(SVGGate(g, svg_config))
         circ_len = gate_container.right - gate_container.left + 2 * self.svg_config['gate_start_distance']
         for i in range(circuit.n_qubits):
             qubit_container.add(SVGQubit(0, i * self.svg_config['circuit_line_distance'], old_qubits[i], svg_config))
             circuit_line_container.add(
-                SVGCircuitLine(0, circ_len, i * self.svg_config['circuit_line_distance'],
-                               i * self.svg_config['circuit_line_distance'], self.svg_config))
-        qubit_container.shift(self.svg_config['padding_x'],
-                              self.svg_config['padding_y'] + self.svg_config['gate_size'] / 2)
+                SVGCircuitLine(
+                    0,
+                    circ_len,
+                    i * self.svg_config['circuit_line_distance'],
+                    i * self.svg_config['circuit_line_distance'],
+                    self.svg_config,
+                )
+            )
+        qubit_container.shift(
+            self.svg_config['padding_x'], self.svg_config['padding_y'] + self.svg_config['gate_size'] / 2
+        )
 
-        circuit_line_container.shift(qubit_container.right,
-                                     self.svg_config['padding_y'] + self.svg_config['gate_size'] / 2)
-        gate_container.shift(circuit_line_container.left + self.svg_config['gate_start_distance'],
-                             self.svg_config['padding_y'])
+        circuit_line_container.shift(
+            qubit_container.right, self.svg_config['padding_y'] + self.svg_config['gate_size'] / 2
+        )
+        gate_container.shift(
+            circuit_line_container.left + self.svg_config['gate_start_distance'], self.svg_config['padding_y']
+        )
         self.front = SVGContainer(svg_config)
         self.front.add(qubit_container)
         self.front.add(circuit_line_container)
         self.front.add(gate_container)
         front_box = box(self.front)
-        self.background = Rect(front_box['left'], front_box['top'], front_box['width'] + self.svg_config['gate_size'],
-                               front_box['height'] + self.svg_config['gate_size'])
+        self.background = Rect(
+            front_box['left'],
+            front_box['top'],
+            front_box['width'] + self.svg_config['gate_size'],
+            front_box['height'] + self.svg_config['gate_size'],
+        )
         self.background.fill(self.svg_config['background'])
         self.front.shift(self.svg_config['gate_size'] / 2, self.svg_config['gate_size'] / 2)
         self.add(self.background)
@@ -1016,6 +1079,7 @@ class SVGCircuit(SVGContainer):
 
 class SVGQubit(Text):
     """SVT qubit component."""
+
     def __init__(self, x, y, idx, svg_config):
         super().__init__(x, y, f"q{idx}:")
         self.svg_config = svg_config
@@ -1028,6 +1092,7 @@ class SVGQubit(Text):
 
 class SVGCircuitLine(Line):
     """SVG circuit line."""
+
     def __init__(self, x1, x2, y1, y2, svg_config):
         super().__init__(x1, x2, y1, y2)
         self.svg_config = svg_config
@@ -1037,6 +1102,7 @@ class SVGCircuitLine(Line):
 
 class SVGBarrier(SVGContainer):
     """SVG barrier."""
+
     def __init__(self, n_qubits, svg_config, show=True):
         super().__init__(svg_config)
         self.n_qubits = n_qubits
@@ -1045,8 +1111,12 @@ class SVGBarrier(SVGContainer):
         self.all_qubits = list(range(n_qubits))
         self.all_qubits_range = list(range(n_qubits))
         self.show = show
-        self.rect = Rect(0, 0, self.svg_config['barrier_width'] * show,
-                         self.svg_config['gate_size'] + (self.n_qubits - 1) * self.svg_config['circuit_line_distance'])
+        self.rect = Rect(
+            0,
+            0,
+            self.svg_config['barrier_width'] * show,
+            self.svg_config['gate_size'] + (self.n_qubits - 1) * self.svg_config['circuit_line_distance'],
+        )
         self.rect.fill(self.svg_config['barrier_fill'])
         self.rect.fill_opacity(self.svg_config['barrier_opacity'])
         self.add(self.rect)
@@ -1054,6 +1124,7 @@ class SVGBarrier(SVGContainer):
 
 class SVGMeasure(SVGBasicGate):
     """SVG for measure gate."""
+
     def __init__(self, g, svg_config):
         super().__init__(g, svg_config)
         self.rect = self.create_n_qubits_rect(1)
@@ -1061,8 +1132,9 @@ class SVGMeasure(SVGBasicGate):
         self.rect.fill_opacity(self.svg_config['measure_fill_opacity'])
         self.rect.stroke(self.svg_config['measure_stroke'])
         self.rect.stroke_width(self.svg_config['gate_stroke_width'])
-        self.circle = Circle(0.5 * self.svg_config['gate_size'], 0.8 * self.svg_config['gate_size'],
-                             2).fill(self.svg_config['measure_icon_color'])
+        self.circle = Circle(0.5 * self.svg_config['gate_size'], 0.8 * self.svg_config['gate_size'], 2).fill(
+            self.svg_config['measure_icon_color']
+        )
         self.arc = Arc(self.svg_config['gate_size'] * 0.4)
         self.arc.stroke(self.svg_config['measure_icon_color'])
         self.arc.stroke_width(self.svg_config['measure_arc_stroke_width'])
@@ -1071,8 +1143,9 @@ class SVGMeasure(SVGBasicGate):
         super_align(self.rect, self.arc, 'middle', 'middle', 'v')
         self.arrow = Arrow(0.2).fill(self.svg_config['measure_icon_color'])
         self.arrow.scale(6).rotate(30)
-        super_align(self.circle, self.arrow, 'middle', self.arrow.left + 3 * self.arrow.w * np.cos(np.pi / 180 * 30),
-                    'v')
+        super_align(
+            self.circle, self.arrow, 'middle', self.arrow.left + 3 * self.arrow.w * np.cos(np.pi / 180 * 30), 'v'
+        )
         super_align(self.rect, self.arrow, 0.8, 'bottom', relative=True)
         self.icon = SVGContainer(self.svg_config)
         self.icon.add(self.circle)
@@ -1089,6 +1162,7 @@ class SVGMeasure(SVGBasicGate):
 
 class Arrow(Path):
     """Arrow component."""
+
     def __init__(self, w=0.3):
         self.w = w
         self.points = [[0, 1, 2, 1 + w, 1 + w, 1 - w, 1 - w], [np.sqrt(3), 0, np.sqrt(3), np.sqrt(3), 5, 5, np.sqrt(3)]]
@@ -1097,6 +1171,7 @@ class Arrow(Path):
 
 class SWAPIcon(SVGContainer):
     """Icon for swap gate."""
+
     def __init__(self, svg_config):
         super().__init__(svg_config)
         self.rect = Rect(0, 0, self.svg_config['gate_size'], self.svg_config['gate_size'])
@@ -1154,6 +1229,7 @@ def super_align(target, source, t_des, s_des, direction=None, relative=False):
         relative (bool): if true, t_des and s_des should be number and will be tride as a
             percentage.
     """
+
     def relative_to_num(des, direction, box_data):
         """Relative keyword to absolute number."""
         assert direction in ['h', 'v']

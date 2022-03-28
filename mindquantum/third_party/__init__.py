@@ -16,5 +16,4 @@
 """Third-party modules for MindQuantum."""
 
 # Allow extending this namespace.
-from .unitary_cc import uccsd_singlet_get_packed_amplitudes
-from .unitary_cc import uccsd_singlet_generator
+from .unitary_cc import uccsd_singlet_generator, uccsd_singlet_get_packed_amplitudes

@@ -21,44 +21,43 @@
 
 namespace mindquantum::ops::parametric {
 
-    //! Generate a substitution dictionary from a single double
-    /*!
-     * \pre \c sizeof(args_t) == operator_t::num_params()
-     */
-    template <typename operator_t, typename... args_t>
-    HIQ_NODISCARD static auto generate_subs(args_t&&... args);
+//! Generate a substitution dictionary from a single double
+/*!
+ * \pre \c sizeof(args_t) == operator_t::num_params()
+ */
+template <typename operator_t, typename... args_t>
+HIQ_NODISCARD static auto generate_subs(args_t&&... args);
 
-    //! Generate a substitution dictionary from an array of double
-    /*!
-     * \sa generate_subs_(const std::vector<T>& param) const;
-     */
-    template <typename operator_t>
-    HIQ_NODISCARD static auto generate_subs(const double_list_t& params);
+//! Generate a substitution dictionary from an array of double
+/*!
+ * \sa generate_subs_(const std::vector<T>& param) const;
+ */
+template <typename operator_t>
+HIQ_NODISCARD static auto generate_subs(const double_list_t& params);
 
-    //! Generate a substitution dictionary from an array of expressions
-    /*!
-     * \sa generate_subs_(const std::vector<T>& param) const;
-     */
-    template <typename operator_t>
-    HIQ_NODISCARD static auto generate_subs(const param_list_t& params);
+//! Generate a substitution dictionary from an array of expressions
+/*!
+ * \sa generate_subs_(const std::vector<T>& param) const;
+ */
+template <typename operator_t>
+HIQ_NODISCARD static auto generate_subs(const param_list_t& params);
 
-    namespace details {
-        //! Generate a substitution dictionary from an array of elements
-        /*!
-         * \pre \c size(param) == operator_t::num_params()
-         */
-        template <typename operator_t, typename T>
-        HIQ_NODISCARD static auto generate_subs(const std::vector<T>& params);
+namespace details {
+//! Generate a substitution dictionary from an array of elements
+/*!
+ * \pre \c size(param) == operator_t::num_params()
+ */
+template <typename operator_t, typename T>
+HIQ_NODISCARD static auto generate_subs(const std::vector<T>& params);
 
 #if HIQ_USE_CONCEPTS
-        template <typename operator_t, std::size_t... indices, concepts::expr_or_number... expr_t>
-        HIQ_NODISCARD static auto create_subs_from_params(std::index_sequence<indices...> /*unused*/,
-                                                          expr_t&&... exprs);
+template <typename operator_t, std::size_t... indices, concepts::expr_or_number... expr_t>
+HIQ_NODISCARD static auto create_subs_from_params(std::index_sequence<indices...> /*unused*/, expr_t&&... exprs);
 #else
-        template <typename operator_t, std::size_t... indices, typename... args_t>
-        HIQ_NODISCARD static auto create_subs_from_params(std::index_sequence<indices...> /*unused*/, args_t&&... args);
+template <typename operator_t, std::size_t... indices, typename... args_t>
+HIQ_NODISCARD static auto create_subs_from_params(std::index_sequence<indices...> /*unused*/, args_t&&... args);
 #endif  // HIQ_USE_CONCEPTS
-    }   // namespace details
+}  // namespace details
 }  // namespace mindquantum::ops::parametric
 
 #include "ops/parametric/substitutions.tpp"

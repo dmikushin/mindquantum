@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-from mindquantum.core import Circuit, Hamiltonian, UN, H, ZZ, RX, QubitOperator
+import matplotlib.pyplot as plt
+import mindspore.nn as nn
+import networkx as nx
+import numpy as np
+
+from mindquantum.core import RX, UN, ZZ, Circuit, H, Hamiltonian, QubitOperator
 from mindquantum.framework import MQAnsatzOnlyLayer
 from mindquantum.simulator import Simulator
-import networkx as nx
-import mindspore.nn as nn
-import numpy as np
-import matplotlib.pyplot as plt
 
 g = nx.Graph()
 nx.add_path(g, [0, 1])
@@ -52,6 +53,7 @@ ansatz = build_ansatz(g, p)
 init_state_circ = UN(H, g.nodes)
 
 import mindspore as ms
+
 ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
 
 circ = init_state_circ + ansatz
@@ -70,7 +72,7 @@ print(circ.get_qs(pr=pr, ket=True))
 
 
 def show_amp(state):
-    amp = np.abs(state)**2
+    amp = np.abs(state) ** 2
     n_qubits = int(np.log2(len(amp)))
     labels = [bin(i)[2:].zfill(n_qubits) for i in range(len(amp))]
     plt.bar(labels, amp)

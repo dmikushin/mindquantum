@@ -39,11 +39,8 @@ if(WIN32)
     ${CXX_DIR}/libgcc_s_*-1.dll
     ${CXX_DIR}/libgomp-1.dll)
   # install(FILES ${LIB_LIST} DESTINATION ${CMAKE_BINARY_DIR})
-  foreach(WIN_DEP_LIB ${LIB_LIST})
+  foreach(win_dep_lib ${LIB_LIST})
     message("COPYING ${WIN_DEP_LIB}")
-    file(
-      COPY ${WIN_DEP_LIB}
-      DESTINATION ${MQBACKEND_OUTPUT_DIR}
-      FOLLOW_SYMLINK_CHAIN)
+    file(COPY ${win_dep_lib} DESTINATION ${MQBACKEND_OUTPUT_DIR} FOLLOW_SYMLINK_CHAIN)
   endforeach()
 endif()

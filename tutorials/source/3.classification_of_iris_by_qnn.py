@@ -49,16 +49,14 @@ print(X_train.shape)
 print(X_test.shape)
 
 import mindquantum as mq
-from mindquantum.core import Circuit
-from mindquantum.core import UN
-from mindquantum.core import H, X, RZ
+from mindquantum.core import RZ, UN, Circuit, H, X
 
 encoder = Circuit()
 
 encoder += UN(H, 4)
 for i in range(4):
     encoder += RZ(f'alpha{i}').on(i)
-for j in range(3):  #j = 0, 1, 2
+for j in range(3):  # j = 0, 1, 2
     encoder += X.on(j + 1, j)
     encoder += RZ(f'alpha{j+4}').on(j + 1)
     encoder += X.on(j + 1, j)
@@ -78,31 +76,28 @@ circuit = encoder + ansatz
 circuit.summary()
 circuit
 
-from mindquantum.core import QubitOperator
-from mindquantum.core import Hamiltonian
+from mindquantum.core import Hamiltonian, QubitOperator
 
 hams = [Hamiltonian(QubitOperator(f'Z{i}')) for i in [2, 3]]
 print(hams)
 
 import mindspore as ms
+
 from mindquantum.framework import MQLayer
 from mindquantum.simulator import Simulator
 
 ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
 ms.set_seed(1)
 sim = Simulator('projectq', circuit.n_qubits)
-grad_ops = sim.get_expectation_with_grad(hams,
-                                         circuit,
-                                         encoder_params_name=encoder.params_name,
-                                         ansatz_params_name=ansatz.params_name,
-                                         parallel_worker=5)
+grad_ops = sim.get_expectation_with_grad(
+    hams, circuit, encoder_params_name=encoder.params_name, ansatz_params_name=ansatz.params_name, parallel_worker=5
+)
 QuantumNet = MQLayer(grad_ops)
 QuantumNet
 
-from mindspore.nn import SoftmaxCrossEntropyWithLogits
-from mindspore.nn import Adam, Accuracy
 from mindspore import Model
 from mindspore.dataset import NumpySlicesDataset
+from mindspore.nn import Accuracy, Adam, SoftmaxCrossEntropyWithLogits
 from mindspore.train.callback import Callback, LossMonitor
 
 loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')
@@ -115,7 +110,6 @@ test_loader = NumpySlicesDataset({'features': X_test, 'labels': y_test}).batch(5
 
 
 class StepAcc(Callback):
-
     def __init__(self, model, test_loader):
         self.model = model
         self.test_loader = test_loader
@@ -137,7 +131,7 @@ plt.xlabel('Steps', fontsize=20)
 plt.ylabel('Accuracy', fontsize=20)
 plt.show()
 
-from mindspore import ops, Tensor
+from mindspore import Tensor, ops
 
 predict = np.argmax(ops.Softmax()(model.predict(Tensor(X_test))), axis=1)
 correct = model.eval(test_loader, dataset_sink_mode=False)

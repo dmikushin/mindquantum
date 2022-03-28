@@ -22,45 +22,45 @@
 #include "core/config.hpp"
 
 namespace mindquantum::traits {
-    template <typename T>
-    struct is_std_complex : std::false_type {};
+template <typename T>
+struct is_std_complex : std::false_type {};
 
-    template <typename T>
-    struct is_std_complex<std::complex<T>> : std::true_type {};
+template <typename T>
+struct is_std_complex<std::complex<T>> : std::true_type {};
 
-    template <typename T>
-    inline constexpr auto is_std_complex_v = is_std_complex<T>::value;
+template <typename T>
+inline constexpr auto is_std_complex_v = is_std_complex<T>::value;
 
-    template <typename T>
-    inline constexpr auto is_complex_v = is_std_complex_v<T>;
+template <typename T>
+inline constexpr auto is_complex_v = is_std_complex_v<T>;
 
-    // ---------------------------------
+// ---------------------------------
 
-    template <typename... Ts>
-    struct is_tuple : std::false_type {};
+template <typename... Ts>
+struct is_tuple : std::false_type {};
 
-    template <typename... Ts>
-    struct is_tuple<std::tuple<Ts...>> : std::true_type {};
+template <typename... Ts>
+struct is_tuple<std::tuple<Ts...>> : std::true_type {};
 
-    template <typename... Ts>
-    inline constexpr auto is_tuple_v = is_tuple<Ts...>::value;
+template <typename... Ts>
+inline constexpr auto is_tuple_v = is_tuple<Ts...>::value;
 
-    // ---------------------------------
+// ---------------------------------
 
-    template <typename...>
-    inline constexpr auto is_unique = std::true_type{};
+template <typename...>
+inline constexpr auto is_unique = std::true_type{};
 
-    template <typename T, typename... Ts>
-    inline constexpr auto is_unique<T, Ts...> = std::bool_constant<
-        std::conjunction_v<std::negation<std::is_same<T, Ts>>...> && is_unique<Ts...>>{};
+template <typename T, typename... Ts>
+inline constexpr auto is_unique<T, Ts...> = std::bool_constant<
+    std::conjunction_v<std::negation<std::is_same<T, Ts>>...> && is_unique<Ts...>>{};
 
-    // ---------------------------------
+// ---------------------------------
 
-    template <typename T, typename Tuple>
-    inline constexpr auto tuple_contains = false;
+template <typename T, typename Tuple>
+inline constexpr auto tuple_contains = false;
 
-    template <typename T, typename... Us>
-    inline constexpr auto tuple_contains<T, std::tuple<Us...>> = std::disjunction_v<std::is_same<T, Us>...>;
+template <typename T, typename... Us>
+inline constexpr auto tuple_contains<T, std::tuple<Us...>> = std::disjunction_v<std::is_same<T, Us>...>;
 }  // namespace mindquantum::traits
 
 #endif /* CORE_TRAITS_HPP */

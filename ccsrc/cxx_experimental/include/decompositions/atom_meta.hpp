@@ -22,33 +22,33 @@
 
 namespace mindquantum::traits {
 #if HIQ_USE_CONCEPTS
-    template <typename T, decompositions::num_control_t num_controls>
-    struct atom_control_type;
-    template <concepts::NonParametricGate gate_t, decompositions::num_control_t num_controls>
-    struct atom_control_type<gate_t, num_controls> {
-        using control_type = decompositions::TrivialSimpleAtom<gate_t, num_controls>;
-    };
-    template <concepts::ParametricGate gate_t, decompositions::num_control_t num_controls>
-    struct atom_control_type<gate_t, num_controls> {
-        using control_type = decompositions::ParametricSimpleAtom<gate_t, num_controls>;
-    };
+template <typename T, decompositions::num_control_t num_controls>
+struct atom_control_type;
+template <concepts::NonParametricGate gate_t, decompositions::num_control_t num_controls>
+struct atom_control_type<gate_t, num_controls> {
+    using control_type = decompositions::TrivialSimpleAtom<gate_t, num_controls>;
+};
+template <concepts::ParametricGate gate_t, decompositions::num_control_t num_controls>
+struct atom_control_type<gate_t, num_controls> {
+    using control_type = decompositions::ParametricSimpleAtom<gate_t, num_controls>;
+};
 #else
-    template <typename gate_t, decompositions::num_control_t num_controls, typename = void>
-    struct atom_control_type {
-        using control_type = decompositions::TrivialSimpleAtom<gate_t, num_controls>;
-    };
-    template <typename gate_t, decompositions::num_control_t num_controls>
-    struct atom_control_type<gate_t, num_controls, typename std::void_t<typename gate_t::is_parametric>> {
-        using control_type = decompositions::ParametricSimpleAtom<gate_t, num_controls>;
-    };
+template <typename gate_t, decompositions::num_control_t num_controls, typename = void>
+struct atom_control_type {
+    using control_type = decompositions::TrivialSimpleAtom<gate_t, num_controls>;
+};
+template <typename gate_t, decompositions::num_control_t num_controls>
+struct atom_control_type<gate_t, num_controls, typename std::void_t<typename gate_t::is_parametric>> {
+    using control_type = decompositions::ParametricSimpleAtom<gate_t, num_controls>;
+};
 #endif  // HIQ_USE_CONCEPTS
 }  // namespace mindquantum::traits
 
 namespace mindquantum::decompositions::atoms {
-    template <typename operator_t, num_control_t num_controls = num_control_t(1L)>
-    using Control = typename traits::atom_control_type<operator_t, num_controls>::control_type;
-    template <typename operator_t, num_control_t num_controls = num_control_t(1L)>
-    using C = Control<operator_t, num_controls>;
+template <typename operator_t, num_control_t num_controls = num_control_t(1L)>
+using Control = typename traits::atom_control_type<operator_t, num_controls>::control_type;
+template <typename operator_t, num_control_t num_controls = num_control_t(1L)>
+using C = Control<operator_t, num_controls>;
 }  // namespace mindquantum::decompositions::atoms
 
 #endif /* ATOM_META_HPP */

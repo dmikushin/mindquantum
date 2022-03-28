@@ -27,9 +27,9 @@
 namespace td = tweedledum;
 
 namespace impl {
-    auto recognize_all(const td::Instruction& /* inst */) -> bool {
-        return true;
-    }
+auto recognize_all(const td::Instruction& /* inst */) -> bool {
+    return true;
+}
 }  // namespace impl
 
 namespace mindquantum::cengines {
@@ -43,48 +43,48 @@ namespace mindquantum::cengines {
     std::make_pair(#name, CppDecomposer::rule_t{gate_class::kind(), is_recursive, impl::recognize_all,                 \
                                                 &decompositions::decompose_##func_name})
 
-    std::map<std::string, const CppDecomposer::rule_t, std::less<>> CppDecomposer::rule_map_ = {
-        RULE_ALL(cnot2cz, td::Op::X, false),
+std::map<std::string, const CppDecomposer::rule_t, std::less<>> CppDecomposer::rule_map_ = {
+    RULE_ALL(cnot2cz, td::Op::X, false),
 
-        RULE3_ALL(cnot2rxx, cnot2rxx_M, td::Op::X, false),
-        RULE_ALL(cnot2rxx_M, td::Op::X, false),
-        RULE_ALL(cnot2rxx_P, td::Op::X, false),
+    RULE3_ALL(cnot2rxx, cnot2rxx_M, td::Op::X, false),
+    RULE_ALL(cnot2rxx_M, td::Op::X, false),
+    RULE_ALL(cnot2rxx_P, td::Op::X, false),
 
-        RULE_ALL(entangle, ops::Entangle, false),
+    RULE_ALL(entangle, ops::Entangle, false),
 
-        RULE_ALL(PhNoCtrl, ops::Ph, false),
-        RULE3_ALL(globalphase, PhNoCtrl, ops::Ph, false),
+    RULE_ALL(PhNoCtrl, ops::Ph, false),
+    RULE3_ALL(globalphase, PhNoCtrl, ops::Ph, false),
 
-        RULE3_ALL(h2rx, h2rx_M, td::Op::H, false),
-        RULE_ALL(h2rx_M, td::Op::H, false),
-        RULE_ALL(h2rx_N, td::Op::H, false),
+    RULE3_ALL(h2rx, h2rx_M, td::Op::H, false),
+    RULE_ALL(h2rx_M, td::Op::H, false),
+    RULE_ALL(h2rx_N, td::Op::H, false),
 
-        RULE_ALL(ph2r, ops::Ph, false),
+    RULE_ALL(ph2r, ops::Ph, false),
 
-        RULE_ALL(qft2crandhadamard, ops::QFT, false),
+    RULE_ALL(qft2crandhadamard, ops::QFT, false),
 
-        RULE_ALL(r2rzandph, td::Op::P, false),
+    RULE_ALL(r2rzandph, td::Op::P, false),
 
-        RULE_ALL(rx2rz, td::Op::Rx, false),
-        RULE_ALL(ry2rz, td::Op::Ry, false),
-        RULE3_ALL(rz2rx, rz2rx_P, td::Op::Rz, false),
-        RULE_ALL(rz2rx_M, td::Op::Rz, false),
-        RULE_ALL(rz2rx_P, td::Op::Rz, false),
+    RULE_ALL(rx2rz, td::Op::Rx, false),
+    RULE_ALL(ry2rz, td::Op::Ry, false),
+    RULE3_ALL(rz2rx, rz2rx_P, td::Op::Rz, false),
+    RULE_ALL(rz2rx_M, td::Op::Rz, false),
+    RULE_ALL(rz2rx_P, td::Op::Rz, false),
 
-        // TODO: Missing SqrtX decomposition
+    // TODO: Missing SqrtX decomposition
 
-        RULE_ALL(sqrtswap2cnot, ops::SqrtSwap, false),
+    RULE_ALL(sqrtswap2cnot, ops::SqrtSwap, false),
 
-        RULE_ALL(swap2cnot, td::Op::Swap, false),
+    RULE_ALL(swap2cnot, td::Op::Swap, false),
 
-        RULE_ALL(toffoli2cnotandtgate, td::Op::X, false),
+    RULE_ALL(toffoli2cnotandtgate, td::Op::X, false),
 
-        RULE_ALL(qubitop2onequbit, ops::QubitOperator, false),
+    RULE_ALL(qubitop2onequbit, ops::QubitOperator, false),
 
-        // NB: recursion taken care of within decomposition function => false
-        RULE(time_evolution_commuting, ops::TimeEvolution, false),
-        RULE(time_evolution_individual_terms, ops::TimeEvolution, false),
-    };
+    // NB: recursion taken care of within decomposition function => false
+    RULE(time_evolution_commuting, ops::TimeEvolution, false),
+    RULE(time_evolution_individual_terms, ops::TimeEvolution, false),
+};
 
 #undef RULE
 #undef RULE_ALL
@@ -94,9 +94,9 @@ namespace mindquantum::cengines {
     std::make_pair(#name, CppDecomposer::gen_rule_t{#name, is_recursive, &decompositions::recognize_##name,            \
                                                     &decompositions::decompose_##name})
 
-    std::map<std::string, const CppDecomposer::gen_rule_t, std::less<>> CppDecomposer::gen_rule_map_ = {
-        // RULE(cnu2toffoliandcu, true)
-    };
+std::map<std::string, const CppDecomposer::gen_rule_t, std::less<>> CppDecomposer::gen_rule_map_ = {
+    // RULE(cnu2toffoliandcu, true)
+};
 #undef RULE
 }  // namespace mindquantum::cengines
 
@@ -108,7 +108,7 @@ mindquantum::cengines::CppDecomposer::CppDecomposer() : CppDecomposer({"qft2cran
 }
 
 mindquantum::cengines::CppDecomposer::CppDecomposer(std::vector<std::string> input_rules) {
-    for (auto& rule_str: input_rules) {
+    for (auto& rule_str : input_rules) {
         auto it = rule_map_.find(rule_str);
         if (it == rule_map_.end()) {
             std::cerr << "Rule not found: " << rule_str << "\n";
@@ -144,13 +144,13 @@ td::Circuit mindquantum::cengines::CppDecomposer::decompose_circuit(const td::Ci
             } else {
                 // Extract all rules that are recognized
                 std::vector<std::tuple<std::string, bool, decomp_func_t>> valid_rules;
-                for (const auto& [name, is_recursive, check, decomp]: rule_list) {
+                for (const auto& [name, is_recursive, check, decomp] : rule_list) {
                     if (check(inst)) {
                         valid_rules.emplace_back(name, is_recursive, decomp);
                     }
                 }
 
-                for (const auto& [name, value]: gen_rule_map_) {
+                for (const auto& [name, value] : gen_rule_map_) {
                     const auto& [is_recursive, check, decomp] = value;
 
                     if (check(inst)) {
@@ -184,8 +184,8 @@ td::Circuit mindquantum::cengines::CppDecomposer::decompose_circuit(const td::Ci
 // ==============================================================================
 
 bool mindquantum::cengines::CppDecomposer::register_decomposition(std::string_view name, std::string_view kind,
-                                                               bool is_recursive, recogn_func_t check,
-                                                               decomp_func_t decomp) {
+                                                                  bool is_recursive, recogn_func_t check,
+                                                                  decomp_func_t decomp) {
     return rule_map_
         .insert(std::make_pair(name, CppDecomposer::rule_t{kind, is_recursive, std::move(check), std::move(decomp)}))
         .second;

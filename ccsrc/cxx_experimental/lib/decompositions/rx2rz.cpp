@@ -19,17 +19,17 @@
 #include "decompositions.hpp"
 
 namespace mindquantum::decompositions {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    //! Decompose (controlled) x-rotation gate using z-rotation and hadamards
-    void decompose_rx2rz(circuit_t& result, const instruction_t& inst) {
-        assert(inst.kind() == "std.rx");
+//! Decompose (controlled) x-rotation gate using z-rotation and hadamards
+void decompose_rx2rz(circuit_t& result, const instruction_t& inst) {
+    assert(inst.kind() == "std.rx");
 
-        const auto& qubits = inst.qubits();
+    const auto& qubits = inst.qubits();
 
-        result.apply_operator(td::Op::H(), qubits);
-        // NB: / 2 factor compared to ProjectQ because of Tweedledum gate definition
-        result.apply_operator(td::Op::Rz(inst.cast<td::Op::Rx>().angle() / 2), qubits);
-        result.apply_operator(td::Op::H(), qubits);
-    }
+    result.apply_operator(td::Op::H(), qubits);
+    // NB: / 2 factor compared to ProjectQ because of Tweedledum gate definition
+    result.apply_operator(td::Op::Rz(inst.cast<td::Op::Rx>().angle() / 2), qubits);
+    result.apply_operator(td::Op::H(), qubits);
+}
 }  // namespace mindquantum::decompositions

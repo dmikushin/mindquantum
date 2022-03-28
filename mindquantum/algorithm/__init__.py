@@ -15,8 +15,7 @@
 # ============================================================================
 """Quantum algorithms"""
 
-from . import library
-from . import nisq
+from . import library, nisq
 from .library import *
 from .nisq import *
 

@@ -15,10 +15,8 @@
 # ============================================================================
 """NISQ algorithms"""
 
+from . import chem, qaoa, qnn
 from ._ansatz import Ansatz
-from . import chem
-from . import qaoa
-from . import qnn
 from .chem import *
 from .qaoa import *
 from .qnn import *

@@ -26,54 +26,54 @@
 #include "ops/meta/dagger.hpp"
 
 namespace Catch {
-    template <>
-    struct StringMaker<tweedledum::Circuit> {
-        static std::string convert(const tweedledum::Circuit& circuit) {
-            namespace ops = mindquantum::ops;
+template <>
+struct StringMaker<tweedledum::Circuit> {
+    static std::string convert(const tweedledum::Circuit& circuit) {
+        namespace ops = mindquantum::ops;
 
-            std::ostringstream ssout;
-            ssout << "Circuit (";
-            circuit.foreach_qubit(
-                [&ssout, &circuit](const tweedledum::Qubit& qubit) { ssout << "Q[" << circuit.name(qubit) << "], "; });
-            circuit.foreach_cbit(
-                [&ssout, &circuit](const tweedledum::Cbit& cbit) { ssout << "C[" << circuit.name(cbit) << "], "; });
-            ssout << "):\n";
+        std::ostringstream ssout;
+        ssout << "Circuit (";
+        circuit.foreach_qubit(
+            [&ssout, &circuit](const tweedledum::Qubit& qubit) { ssout << "Q[" << circuit.name(qubit) << "], "; });
+        circuit.foreach_cbit(
+            [&ssout, &circuit](const tweedledum::Cbit& cbit) { ssout << "C[" << circuit.name(cbit) << "], "; });
+        ssout << "):\n";
 
-            circuit.foreach_instruction([&ssout](const tweedledum::Instruction& inst) {
-                if (inst.kind() == mindquantum::ops::DaggerOperation::kind()) {
-                    ssout << "  Dagger(" << inst.adjoint().value().kind() << ")";
-                } else {
-                    ssout << "  " << inst.kind();
-                }
+        circuit.foreach_instruction([&ssout](const tweedledum::Instruction& inst) {
+            if (inst.kind() == mindquantum::ops::DaggerOperation::kind()) {
+                ssout << "  Dagger(" << inst.adjoint().value().kind() << ")";
+            } else {
+                ssout << "  " << inst.kind();
+            }
 
-                if (inst.is_a<ops::P>()) {
-                    ssout << "(" << inst.cast<ops::P>().angle() << ")";
-                } else if (inst.is_a<ops::Ph>()) {
-                    ssout << "(" << inst.cast<ops::Ph>().angle() << ")";
-                } else if (inst.is_a<ops::Rx>()) {
-                    ssout << "(" << inst.cast<ops::Rx>().angle() << ")";
-                } else if (inst.is_a<ops::Rxx>()) {
-                    ssout << "(" << inst.cast<ops::Rxx>().angle() << ")";
-                } else if (inst.is_a<ops::Ry>()) {
-                    ssout << "(" << inst.cast<ops::Ry>().angle() << ")";
-                } else if (inst.is_a<ops::Ryy>()) {
-                    ssout << "(" << inst.cast<ops::Ryy>().angle() << ")";
-                } else if (inst.is_a<ops::Rz>()) {
-                    ssout << "(" << inst.cast<ops::Rz>().angle() << ")";
-                } else if (inst.is_a<ops::Rzz>()) {
-                    ssout << "(" << inst.cast<ops::Rzz>().angle() << ")";
-                }
+            if (inst.is_a<ops::P>()) {
+                ssout << "(" << inst.cast<ops::P>().angle() << ")";
+            } else if (inst.is_a<ops::Ph>()) {
+                ssout << "(" << inst.cast<ops::Ph>().angle() << ")";
+            } else if (inst.is_a<ops::Rx>()) {
+                ssout << "(" << inst.cast<ops::Rx>().angle() << ")";
+            } else if (inst.is_a<ops::Rxx>()) {
+                ssout << "(" << inst.cast<ops::Rxx>().angle() << ")";
+            } else if (inst.is_a<ops::Ry>()) {
+                ssout << "(" << inst.cast<ops::Ry>().angle() << ")";
+            } else if (inst.is_a<ops::Ryy>()) {
+                ssout << "(" << inst.cast<ops::Ryy>().angle() << ")";
+            } else if (inst.is_a<ops::Rz>()) {
+                ssout << "(" << inst.cast<ops::Rz>().angle() << ")";
+            } else if (inst.is_a<ops::Rzz>()) {
+                ssout << "(" << inst.cast<ops::Rzz>().angle() << ")";
+            }
 
-                ssout << " [";
-                inst.foreach_qubit([&ssout](const tweedledum::Qubit& wire) { ssout << 'Q' << int(wire) << ','; });
-                inst.foreach_cbit([&ssout](const tweedledum::Cbit& wire) { ssout << 'C' << int(wire) << ','; });
+            ssout << " [";
+            inst.foreach_qubit([&ssout](const tweedledum::Qubit& wire) { ssout << 'Q' << int(wire) << ','; });
+            inst.foreach_cbit([&ssout](const tweedledum::Cbit& wire) { ssout << 'C' << int(wire) << ','; });
 
-                ssout << "]\n";
-            });
+            ssout << "]\n";
+        });
 
-            return ssout.str();
-        }
-    };
+        return ssout.str();
+    }
+};
 }  // namespace Catch
 
 struct CircuitEquals : Catch::MatcherBase<tweedledum::Circuit> {

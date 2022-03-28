@@ -60,8 +60,8 @@ void mindquantum::cengines::ResourceCounter::add_gate_counts(const td::Circuit& 
 
 // =============================================================================
 
-void mindquantum::cengines::ResourceCounter::add_gate_count(std::string_view kind, param_t param, std::size_t n_controls,
-                                                         std::size_t count) {
+void mindquantum::cengines::ResourceCounter::add_gate_count(std::string_view kind, param_t param,
+                                                            std::size_t n_controls, std::size_t count) {
     gate_counts_[std::make_tuple(kind, param, n_controls)] += count;
     gate_class_counts_[std::make_pair(kind, n_controls)] += count;
 }

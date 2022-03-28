@@ -21,24 +21,23 @@
 #include "ops/gates.hpp"
 
 namespace mindquantum::decompositions::rules {
-    class Swap2CNOT
-        : public GateDecompositionRule<Swap2CNOT, std::tuple<ops::Swap>, DUAL_TGT_ANY_CTRL, atoms::C<ops::X>> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 0);
+class Swap2CNOT : public GateDecompositionRule<Swap2CNOT, std::tuple<ops::Swap>, DUAL_TGT_ANY_CTRL, atoms::C<ops::X>> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 0);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "Swap2CNOT"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "Swap2CNOT"sv;
+    }
 
-        void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});
-            atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[1], qubits[0]});
-            atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});
-        }
-    };
+    void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
+                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+        atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});
+        atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[1], qubits[0]});
+        atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});
+    }
+};
 }  // namespace mindquantum::decompositions::rules
 
 #endif /* DECOMPOSITION_RULE_SWAP2CNOT_HPP */

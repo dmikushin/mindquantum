@@ -71,7 +71,7 @@ def test_qubit_ops_num_coeff():
     iden = -QubitOperator('')
     assert str(iden) == '-1.0 [] '
 
-    ham = ((QubitOperator('X0 Y3', 0.5) + 0.6 * QubitOperator('X0 Y3')))
+    ham = QubitOperator('X0 Y3', 0.5) + 0.6 * QubitOperator('X0 Y3')
     assert str(ham) == '1.1 [X0 Y3] '
 
 
@@ -104,7 +104,7 @@ def test_qubit_ops_symbol_coeff():
     assert str(q14) == '0.0001j [X1 Y2 Z3] +\n1.0e-5*b [Y1 X2] +\n1j [Z1 Y2 Z3] +\n-1.0e-9*I*b [X2] '
     assert str(q14.compress()) == str(q14)
 
-    ham = ((QubitOperator('X0 Y3', 'a') + 'a' * QubitOperator('X0 Y3')))
+    ham = QubitOperator('X0 Y3', 'a') + 'a' * QubitOperator('X0 Y3')
     assert str(ham) == '2.0*a [X0 Y3] '
     assert ham == QubitOperator('X0 Y3', {'a': 2})
 

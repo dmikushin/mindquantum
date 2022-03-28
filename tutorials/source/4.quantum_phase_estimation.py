@@ -1,7 +1,7 @@
-from mindquantum import Circuit
-from mindquantum import Simulator
-from mindquantum import UN, PhaseShift, qft, H, X, BARRIER
+# -*- coding: utf-8 -*-
 import numpy as np
+
+from mindquantum import BARRIER, UN, Circuit, H, PhaseShift, Simulator, X, qft
 
 n = 3
 c = Circuit()
@@ -10,7 +10,7 @@ c += X.on(n)
 print(c)
 
 for i in range(n):
-    c += PhaseShift({'phi': 2**i}).on(n, n - i - 1)
+    c += PhaseShift({'phi': 2 ** i}).on(n, n - i - 1)
 print(c)
 
 c += BARRIER
@@ -18,6 +18,7 @@ c += qft(range(n)).hermitian()
 print(c)
 
 from mindquantum import Measure
+
 sim = Simulator('projectq', c.n_qubits)
 phi = 0.125
 sim.apply_circuit(c, {'phi': 2 * np.pi * phi})
@@ -32,5 +33,5 @@ print(index)
 bit_string = bin(index)[2:].zfill(c.n_qubits)[1:]
 print(bit_string)
 
-theta_exp = int(bit_string[::-1], 2) / 2**n
+theta_exp = int(bit_string[::-1], 2) / 2 ** n
 print(theta_exp)

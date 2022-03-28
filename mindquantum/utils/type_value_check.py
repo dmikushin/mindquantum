@@ -15,6 +15,7 @@
 # ============================================================================
 """type and value check helper"""
 import numbers
+
 import numpy as np
 
 _num_type = (int, float, complex, np.int32, np.int64, np.float32, np.float64)
@@ -23,7 +24,7 @@ _num_type = (int, float, complex, np.int32, np.int64, np.float32, np.float64)
 def _check_seed(seed):
     """check seed"""
     _check_int_type("seed", seed)
-    _check_value_should_between_close_set("seed", 0, 2**23, seed)
+    _check_value_should_between_close_set("seed", 0, 2 ** 23, seed)
 
 
 def _check_input_type(arg_msg, require_type, arg):
@@ -53,6 +54,7 @@ def _check_value_should_between_close_set(arg_ms, min_value, max_value, arg):
 def _check_and_generate_pr_type(pr, names=None):
     """_check_and_generate_pr_type"""
     from mindquantum.core import ParameterResolver
+
     if isinstance(pr, _num_type):
         if len(names) != 1:
             raise ValueError(f"number of given parameters value is less than parameters ({len(names)})")
@@ -79,14 +81,18 @@ def _check_number_type(arg_msg, arg):
 
 def _check_gate_type(gate):
     from mindquantum.core.gates import BasicGate
+
     if not isinstance(gate, BasicGate):
         raise TypeError("Require a quantum gate, but get {}".format(type(gate)))
 
+
 def _check_gate_has_obj(gate):
     from mindquantum.core.gates import BarrierGate
-    if not isinstance(gate,BarrierGate):
+
+    if not isinstance(gate, BarrierGate):
         if not gate.obj_qubits:
             raise ValueError("Gate shuould act on some qubits first.")
+
 
 def _check_qubit_id(qubit_id):
     if not isinstance(qubit_id, (int, np.int64)):

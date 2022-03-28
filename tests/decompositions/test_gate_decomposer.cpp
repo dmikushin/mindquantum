@@ -41,62 +41,61 @@ namespace decompositions = mindquantum::decompositions;
 // =============================================================================
 
 namespace {
-    class X2Z
-        : public decompositions::GateDecompositionRule<X2Z, std::tuple<ops::X>, SINGLE_TGT_ANY_CTRL, ops::H, ops::Z> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 0);
+class X2Z : public decompositions::GateDecompositionRule<X2Z, std::tuple<ops::X>, SINGLE_TGT_ANY_CTRL, ops::H, ops::Z> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 0);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "X2Z"sv;
+    static constexpr auto name() noexcept {
+        return "X2Z"sv;
+    }
+
+    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
+                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+        atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
+        atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0]});
+        atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
+    }
+};
+
+class AllToX : public decompositions::NonGateDecompositionRule<AllToX, ops::X> {
+ public:
+    using base_t::base_t;
+
+    static constexpr auto name() noexcept {
+        return "AllToX"sv;
+    }
+
+    bool is_applicable(const decompositions::instruction_t& inst) const {
+        return true;
+    }
+
+    void apply_impl(decompositions::circuit_t& circuit, const decompositions::instruction_t& inst) {
+        atom<ops::X>()->apply(circuit, ops::X{}, inst.qubits());
+    }
+};
+
+class PseudoIdentityRule : public decompositions::NonGateDecompositionRule<PseudoIdentityRule> {
+ public:
+    using base_t::base_t;
+
+    static constexpr auto name() noexcept {
+        return "PseudoIdentityRule"sv;
+    }
+
+    bool is_applicable(const decompositions::instruction_t& inst) const {
+        return true;
+    }
+
+    void apply_impl(decompositions::circuit_t& circuit, const decompositions::instruction_t& inst) {
+        if (auto* atom{storage().get_atom_for(inst)}; atom != nullptr) {
+            atom->apply(circuit, inst);
+        } else {
+            circuit.apply_operator(inst);
         }
-
-        void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
-            atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0]});
-            atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
-        }
-    };
-
-    class AllToX : public decompositions::NonGateDecompositionRule<AllToX, ops::X> {
-     public:
-        using base_t::base_t;
-
-        static constexpr auto name() noexcept {
-            return "AllToX"sv;
-        }
-
-        bool is_applicable(const decompositions::instruction_t& inst) const {
-            return true;
-        }
-
-        void apply_impl(decompositions::circuit_t& circuit, const decompositions::instruction_t& inst) {
-            atom<ops::X>()->apply(circuit, ops::X{}, inst.qubits());
-        }
-    };
-
-    class PseudoIdentityRule : public decompositions::NonGateDecompositionRule<PseudoIdentityRule> {
-     public:
-        using base_t::base_t;
-
-        static constexpr auto name() noexcept {
-            return "PseudoIdentityRule"sv;
-        }
-
-        bool is_applicable(const decompositions::instruction_t& inst) const {
-            return true;
-        }
-
-        void apply_impl(decompositions::circuit_t& circuit, const decompositions::instruction_t& inst) {
-            if (auto* atom{storage().get_atom_for(inst)}; atom != nullptr) {
-                atom->apply(circuit, inst);
-            } else {
-                circuit.apply_operator(inst);
-            }
-        }
-    };
+    }
+};
 }  // namespace
 
 // -----------------------------------------------------------------------------

@@ -17,25 +17,25 @@
 #include <algorithm>
 
 namespace mindquantum::decompositions {
-    // =========================================================================
-    // :: get_atom_for
+// =========================================================================
+// :: get_atom_for
 
-    auto GateDecomposer::get_atom_for(const instruction_t& inst) noexcept -> atom_t* {
-        if (auto* atom = atom_storage_.get_atom_for(inst); atom != nullptr) {
-            return atom;
-        }
-
-        if (auto it = std::find_if(begin(general_rule_storage_), end(general_rule_storage_),
-                                   [&inst](const auto& atom) { return atom.is_applicable(inst); });
-            it != std::end(general_rule_storage_)) {
-            /* NB: const_cast() is needed for compilers/STL implementations where std::set elements are always
-             *     immutable when accessed through iterators.
-             */
-            return &const_cast<DecompositionAtom&>(*it);
-        }
-
-        return nullptr;
+auto GateDecomposer::get_atom_for(const instruction_t& inst) noexcept -> atom_t* {
+    if (auto* atom = atom_storage_.get_atom_for(inst); atom != nullptr) {
+        return atom;
     }
+
+    if (auto it = std::find_if(begin(general_rule_storage_), end(general_rule_storage_),
+                               [&inst](const auto& atom) { return atom.is_applicable(inst); });
+        it != std::end(general_rule_storage_)) {
+        /* NB: const_cast() is needed for compilers/STL implementations where std::set elements are always
+         *     immutable when accessed through iterators.
+         */
+        return &const_cast<DecompositionAtom&>(*it);
+    }
+
+    return nullptr;
+}
 }  // namespace mindquantum::decompositions
 
 // =============================================================================

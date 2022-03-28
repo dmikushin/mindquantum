@@ -32,52 +32,52 @@
 using namespace std::literals::string_view_literals;
 
 namespace {
-    using namespace mindquantum::ops::parametric;
+using namespace mindquantum::ops::parametric;
 
-    class OneDoubleGate {
-     public:
-        static constexpr auto kind() {
-            return "test.num.one"sv;
-        }
+class OneDoubleGate {
+ public:
+    static constexpr auto kind() {
+        return "test.num.one"sv;
+    }
 
-        static constexpr auto num_targets = 1UL;
+    static constexpr auto num_targets = 1UL;
 
-        OneDoubleGate(double alpha) : alpha_(alpha) {
-        }
+    OneDoubleGate(double alpha) : alpha_(alpha) {
+    }
 
-        const auto& param() const {
-            return alpha_;
-        }
+    const auto& param() const {
+        return alpha_;
+    }
 
-     private:
-        double alpha_;
-    };
+ private:
+    double alpha_;
+};
 
-    class AngleGate {
-     public:
-        static constexpr auto kind() {
-            return "test.angle.one"sv;
-        }
+class AngleGate {
+ public:
+    static constexpr auto kind() {
+        return "test.angle.one"sv;
+    }
 
-        AngleGate(double alpha) : alpha_(alpha) {
-        }
+    AngleGate(double alpha) : alpha_(alpha) {
+    }
 
-        const auto& angle() const {
-            return alpha_;
-        }
+    const auto& angle() const {
+        return alpha_;
+    }
 
-     private:
-        double alpha_;
-    };
+ private:
+    double alpha_;
+};
 
-    class AngleParam : public AngleParametricBase<AngleParam, AngleGate, 4> {
-     public:
-        static constexpr auto kind() {
-            return "test.param.one"sv;
-        }
+class AngleParam : public AngleParametricBase<AngleParam, AngleGate, 4> {
+ public:
+    static constexpr auto kind() {
+        return "test.param.one"sv;
+    }
 
-        using base_t::base_t;
-    };
+    using base_t::base_t;
+};
 }  // namespace
 
 namespace parametric = mindquantum::ops::parametric;

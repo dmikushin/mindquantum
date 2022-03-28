@@ -15,14 +15,32 @@
 # ============================================================================
 """Benchmark for QAOA with PaddlePaddle Quantum"""
 import time
+
 import numpy as np
 import paddle
 from paddle_quantum.circuit import UAnsatz
 
 n = 12
 V = range(n)
-E = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0), (0, 3), (1, 4), (2, 6),
-     (6, 7), (7, 8), (3, 8), (3, 9), (4, 9), (0, 10), (10, 11), (3, 11)]
+E = [
+    (0, 1),
+    (1, 2),
+    (2, 3),
+    (3, 4),
+    (4, 5),
+    (5, 0),
+    (0, 3),
+    (1, 4),
+    (2, 6),
+    (6, 7),
+    (7, 8),
+    (3, 8),
+    (3, 9),
+    (4, 9),
+    (0, 10),
+    (10, 11),
+    (3, 11),
+]
 
 h_d_list = []
 for (u, v) in E:
@@ -51,16 +69,16 @@ class Net(paddle.nn.Layer):
         self.p = p
         self.gamma = self.create_parameter(
             shape=[self.p],
-            default_initializer=paddle.nn.initializer.Uniform(low=0.0,
-                                                              high=2 * np.pi),
+            default_initializer=paddle.nn.initializer.Uniform(low=0.0, high=2 * np.pi),
             dtype=dtype,
-            is_bias=False)
+            is_bias=False,
+        )
         self.beta = self.create_parameter(
             shape=[self.p],
-            default_initializer=paddle.nn.initializer.Uniform(low=0.0,
-                                                              high=2 * np.pi),
+            default_initializer=paddle.nn.initializer.Uniform(low=0.0, high=2 * np.pi),
             dtype=dtype,
-            is_bias=False)
+            is_bias=False,
+        )
 
     def forward(self):
         cir = circuit_qaoa(self.p, self.gamma, self.beta)

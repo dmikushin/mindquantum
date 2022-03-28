@@ -23,12 +23,12 @@
 void init_decomposition(pybind11::module& module);
 
 namespace mindquantum::python {
-    class CppDecomposer
-        : public cengines::CppDecomposer
-        , public cpp::BasicEngine {
-     public:
-        using cengines::CppDecomposer::CppDecomposer;
-    };
+class CppDecomposer
+    : public cengines::CppDecomposer
+    , public cpp::BasicEngine {
+ public:
+    using cengines::CppDecomposer::CppDecomposer;
+};
 }  // namespace mindquantum::python
 
 #endif /* PYTHON_DECOMPOSITION_HPP */

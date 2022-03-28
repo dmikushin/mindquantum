@@ -18,8 +18,8 @@
 #include <type_traits>
 
 namespace mindquantum::details {
-    template <typename T>
-    using add_cvref = std::add_lvalue_reference_t<std::add_const_t<T>>;
+template <typename T>
+using add_cvref = std::add_lvalue_reference_t<std::add_const_t<T>>;
 }  // namespace mindquantum::details
 
 #define DECLARE_ATTRIBUTE(type, name)                                                                                  \
@@ -29,7 +29,7 @@ namespace mindquantum::details {
     type name##_
 
 #define DECLARE_GETTER_SETTER(type, name)                                                                              \
-    void set_##name(mindquantum::details::add_cvref<type> value) {                                                        \
+    void set_##name(mindquantum::details::add_cvref<type> value) {                                                     \
         name##_ = value;                                                                                               \
     }                                                                                                                  \
     auto get_##name() const {                                                                                          \

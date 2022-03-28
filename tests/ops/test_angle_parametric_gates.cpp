@@ -34,35 +34,35 @@
 using namespace std::literals::string_view_literals;
 
 namespace {
-    using namespace mindquantum::ops::parametric;
+using namespace mindquantum::ops::parametric;
 
-    class NumOne {
-     public:
-        static constexpr auto kind() {
-            return "test.num.one"sv;
-        }
+class NumOne {
+ public:
+    static constexpr auto kind() {
+        return "test.num.one"sv;
+    }
 
-        static constexpr auto num_targets = 1UL;
+    static constexpr auto num_targets = 1UL;
 
-        NumOne(double alpha) : alpha_(alpha) {
-        }
+    NumOne(double alpha) : alpha_(alpha) {
+    }
 
-        const auto& angle() const {
-            return alpha_;
-        }
+    const auto& angle() const {
+        return alpha_;
+    }
 
-     private:
-        double alpha_;
-    };
+ private:
+    double alpha_;
+};
 
-    class ParamOne : public AngleParametricBase<ParamOne, NumOne, 4> {
-     public:
-        static constexpr auto kind() {
-            return "test.param.one"sv;
-        }
+class ParamOne : public AngleParametricBase<ParamOne, NumOne, 4> {
+ public:
+    static constexpr auto kind() {
+        return "test.param.one"sv;
+    }
 
-        using base_t::base_t;
-    };
+    using base_t::base_t;
+};
 }  // namespace
 
 // =============================================================================

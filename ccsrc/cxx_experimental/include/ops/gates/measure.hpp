@@ -18,12 +18,12 @@
 #include <string_view>
 
 namespace mindquantum::ops {
-    class Measure {
-     public:
-        static constexpr std::string_view kind() {
-            return "projectq.measure";
-        }
-    };
+class Measure {
+ public:
+    static constexpr std::string_view kind() {
+        return "projectq.measure";
+    }
+};
 
 }  // namespace mindquantum::ops
 

@@ -19,29 +19,29 @@
 #include "decompositions.hpp"
 
 namespace mindquantum::decompositions {
-    namespace td = tweedledum;
+namespace td = tweedledum;
 
-    //! Decompose (controlled) z-rotation gate using y-rotation and x-rotation
-    void decompose_rz2rx_P(circuit_t& result, const instruction_t& inst) {
-        assert(inst.kind() == "std.rz");
+//! Decompose (controlled) z-rotation gate using y-rotation and x-rotation
+void decompose_rz2rx_P(circuit_t& result, const instruction_t& inst) {
+    assert(inst.kind() == "std.rz");
 
-        const auto& qubits = inst.qubits();
+    const auto& qubits = inst.qubits();
 
-        result.apply_operator(td::Op::Ry(-0.5), qubits);
-        // NB: * 2 factor compared to ProjectQ because of Tweedledum gate definition
-        result.apply_operator(td::Op::Rx(-inst.cast<td::Op::Rz>().angle() * 2), qubits);
-        result.apply_operator(td::Op::Ry(0.5), qubits);
-    }
+    result.apply_operator(td::Op::Ry(-0.5), qubits);
+    // NB: * 2 factor compared to ProjectQ because of Tweedledum gate definition
+    result.apply_operator(td::Op::Rx(-inst.cast<td::Op::Rz>().angle() * 2), qubits);
+    result.apply_operator(td::Op::Ry(0.5), qubits);
+}
 
-    //! Decompose (controlled) z-rotation gate using y-rotation and x-rotation
-    void decompose_rz2rx_M(circuit_t& result, const instruction_t& inst) {
-        assert(inst.kind() == "std.rz");
+//! Decompose (controlled) z-rotation gate using y-rotation and x-rotation
+void decompose_rz2rx_M(circuit_t& result, const instruction_t& inst) {
+    assert(inst.kind() == "std.rz");
 
-        const auto& qubits = inst.qubits();
+    const auto& qubits = inst.qubits();
 
-        result.apply_operator(td::Op::Ry(0.5), qubits);
-        // NB: * 2 factor compared to ProjectQ because of Tweedledum gate definition
-        result.apply_operator(td::Op::Rx(inst.cast<td::Op::Rz>().angle() * 2), qubits);
-        result.apply_operator(td::Op::Ry(-0.5), qubits);
-    }
+    result.apply_operator(td::Op::Ry(0.5), qubits);
+    // NB: * 2 factor compared to ProjectQ because of Tweedledum gate definition
+    result.apply_operator(td::Op::Rx(inst.cast<td::Op::Rz>().angle() * 2), qubits);
+    result.apply_operator(td::Op::Ry(-0.5), qubits);
+}
 }  // namespace mindquantum::decompositions

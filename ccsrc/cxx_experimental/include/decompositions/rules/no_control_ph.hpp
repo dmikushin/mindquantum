@@ -25,20 +25,20 @@
 #include "ops/parametric/angle_gates.hpp"
 
 namespace mindquantum::decompositions::rules {
-    class RemovePhNoCtrl : public decompositions::NonGateDecompositionRule<RemovePhNoCtrl> {
-     public:
-        using base_t::base_t;
+class RemovePhNoCtrl : public decompositions::NonGateDecompositionRule<RemovePhNoCtrl> {
+ public:
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "CNOT2CZ"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "CNOT2CZ"sv;
+    }
 
-        HIQ_NODISCARD static bool is_applicable(const decompositions::instruction_t& inst) {
-            return inst.is_one<ops::Ph, ops::parametric::Ph>() && inst.num_controls() == 0;
-        }
+    HIQ_NODISCARD static bool is_applicable(const decompositions::instruction_t& inst) {
+        return inst.is_one<ops::Ph, ops::parametric::Ph>() && inst.num_controls() == 0;
+    }
 
-        void apply_impl(circuit_t& /* circuit */, const instruction_t& /* inst */) {
-        }
-    };
+    void apply_impl(circuit_t& /* circuit */, const instruction_t& /* inst */) {
+    }
+};
 }  // namespace mindquantum::decompositions::rules
 #endif /* DECOMPOSITION_RULE_NO_CONTROL_PH */

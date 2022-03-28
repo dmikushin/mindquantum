@@ -14,11 +14,10 @@
 #   limitations under the License.
 """Input/Output module for MindQuantum."""
 
-from . import display
-from . import qasm
+from . import display, qasm
+from .beauty_print import bprint
 from .display import *
 from .qasm import *
-from .beauty_print import bprint
 
 __all__ = ['bprint']
 __all__.extend(display.__all__)

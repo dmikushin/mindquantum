@@ -19,11 +19,11 @@
 
 #include "QuEST.h"
 #include "QuEST_internal.h"
-#include "quest_utils.h"
 #include "core/utils.h"
 #include "gate/basic_gate.h"
 #include "hamiltonian/hamiltonian.h"
 #include "pr/parameter_resolver.h"
+#include "quest_utils.h"
 
 namespace mindquantum {
 namespace quest {

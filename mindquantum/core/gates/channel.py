@@ -16,7 +16,9 @@
 """Quantum channel."""
 
 import numpy as np
+
 from mindquantum import mqbackend as mb
+
 from .basic import NoneParameterGate
 
 
@@ -67,6 +69,7 @@ class PauliChannel(NoneParameterGate):
                    │
         {'00': 101, '01': 862, '11': 37}
     """
+
     def __init__(self, px: float, py: float, pz: float):
         NoneParameterGate.__init__(self, 'PC')
         self.matrix_value = np.array([[1, 0], [0, 1]])  # matrix value cannot be None, so I have to use identity matrix
@@ -123,6 +126,7 @@ class BitFlipChannel(PauliChannel):
                       │
         q1: ─────────BFC──
     """
+
     def __init__(self, p: float):
         PauliChannel.__init__(self, p, 0, 0)
         self.name = 'BFC'
@@ -158,6 +162,7 @@ class PhaseFlipChannel(PauliChannel):
                       │
         q1: ─────────PFC──
     """
+
     def __init__(self, p: float):
         PauliChannel.__init__(self, 0, 0, p)
         self.name = 'PFC'
@@ -194,6 +199,7 @@ class BitPhaseFlipChannel(PauliChannel):
                        │
         q1: ──────────BPFC──
     """
+
     def __init__(self, p: float):
         PauliChannel.__init__(self, 0, p, 0)
         self.name = 'BPFC'
@@ -230,6 +236,7 @@ class DepolarizingChannel(PauliChannel):
                     │
         q1: ────────DC──
     """
+
     def __init__(self, p: float):
         PauliChannel.__init__(self, p / 3, p / 3, p / 3)
         self.name = 'DC'

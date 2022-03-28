@@ -18,7 +18,7 @@
 
 target_sources(
   mindquantum_cxx PRIVATE ${CMAKE_CURRENT_LIST_DIR}/circuit_block.cpp ${CMAKE_CURRENT_LIST_DIR}/circuit_manager.cpp
-                       ${CMAKE_CURRENT_LIST_DIR}/cpp_core.cpp)
+                          ${CMAKE_CURRENT_LIST_DIR}/cpp_core.cpp)
 
 target_compile_definitions(
   mindquantum_cxx

@@ -19,26 +19,26 @@
 #include "cengines/cpp_engine_list.hpp"
 
 namespace mindquantum::python::cpp {
-    //! Class that only exists for compatibility with ProjectQ
-    /*!
-     * Behaviour: Does nothing
-     */
-    class TagRemover
-        : public BasicEngine
-        , public cengines::cpp::TagRemover {};
+//! Class that only exists for compatibility with ProjectQ
+/*!
+ * Behaviour: Does nothing
+ */
+class TagRemover
+    : public BasicEngine
+    , public cengines::cpp::TagRemover {};
 }  // namespace mindquantum::python::cpp
 
 namespace pybind11::detail {
-    template <>
-    struct type_caster<mindquantum::python::cpp::TagRemover> {
-     public:
-        using value_type = mindquantum::python::cpp::TagRemover;
+template <>
+struct type_caster<mindquantum::python::cpp::TagRemover> {
+ public:
+    using value_type = mindquantum::python::cpp::TagRemover;
 
-        PYBIND11_TYPE_CASTER(value_type, _("TagRemover_cpp"));
+    PYBIND11_TYPE_CASTER(value_type, _("TagRemover_cpp"));
 
-        bool load(handle src, bool) {
-            return true;
-        }
-    };
+    bool load(handle src, bool) {
+        return true;
+    }
+};
 }  // namespace pybind11::detail
 #endif /* TAG_REMOVER_HPP */

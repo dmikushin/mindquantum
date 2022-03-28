@@ -14,11 +14,12 @@
 # limitations under the License.
 # ============================================================================
 """Tools for MindQuantum eDSL"""
-from types import FunctionType, MethodType
 import copy
+from types import FunctionType, MethodType
+
 import numpy as np
-from projectq.ops import QubitOperator as pq_operator
 from openfermion.ops import QubitOperator as of_operator
+from projectq.ops import QubitOperator as pq_operator
 
 from mindquantum.core.parameterresolver.parameterresolver import ParameterResolver
 from mindquantum.utils.type_value_check import _check_input_type
@@ -60,11 +61,16 @@ def decompose_single_term_time_evolution(term, para):
     from mindquantum.core.circuit import Circuit
     from mindquantum.core.parameterresolver import ParameterResolver as PR
     from mindquantum.utils.type_value_check import _num_type
+
     if not isinstance(term, tuple):
         try:
             if len(term.terms) != 1:
-                raise ValueError("Only work for single term time \
-                    evolution operator, but get {}".format(len(term)))
+                raise ValueError(
+                    "Only work for single term time \
+                    evolution operator, but get {}".format(
+                        len(term)
+                    )
+                )
             term = list(term.terms.keys())[0]
         except TypeError:
             raise TypeError("Not supported type:{}".format(type(term)))
@@ -135,6 +141,7 @@ def pauli_word_to_circuits(qubitops):
     from mindquantum import gates as G
     from mindquantum import operators as ops
     from mindquantum.core import Circuit
+
     allow_ops = (pq_operator, of_operator, ops.QubitOperator, ops.Hamiltonian)
     if not isinstance(qubitops, allow_ops):
         raise TypeError("qubitops require a QubitOperator or a Hamiltonian, but get {}!".format(type(qubitops)))
@@ -157,8 +164,9 @@ def pauli_word_to_circuits(qubitops):
 
 def _add_ctrl_qubits(circ, ctrl_qubits):
     """Add control qubits on a circuit."""
-    from mindquantum.core import Circuit
     from mindquantum import gates as G
+    from mindquantum.core import Circuit
+
     if not isinstance(ctrl_qubits, (int, list)):
         raise TypeError("Require a int or a list of int for ctrl_qubits, but get {}!".format(type(ctrl_qubits)))
     if isinstance(ctrl_qubits, int):
@@ -172,7 +180,8 @@ def _add_ctrl_qubits(circ, ctrl_qubits):
         intersection = ctrl_qubits.intersection(set(gate.obj_qubits))
         if intersection:
             raise ValueError(
-                f"Qubit {intersection} in ctrl_qubits {ctrl_qubits} already used in obj_qubits of gate {gate}")
+                f"Qubit {intersection} in ctrl_qubits {ctrl_qubits} already used in obj_qubits of gate {gate}"
+            )
         curr_ctrl = set(gate.ctrl_qubits)
         curr_ctrl = list(curr_ctrl.union(ctrl_qubits))
         curr_ctrl.sort()
@@ -220,6 +229,7 @@ def controlled(circuit_fn):
         q2: ──●───────●───────●────●──
     """
     from mindquantum.core import Circuit
+
     if isinstance(circuit_fn, (FunctionType, MethodType)):
 
         def wrapper(ctrl_qubits, *arg, **keywords):
@@ -266,6 +276,7 @@ def dagger(circuit_fn):
         q1: ──@────H───────●───────────
     """
     from mindquantum.core import Circuit
+
     if isinstance(circuit_fn, (FunctionType, MethodType)):
 
         def wrapper(*arg, **keywords):
@@ -283,6 +294,7 @@ def dagger(circuit_fn):
 def _apply_circuit(circ, qubits):
     """Apply a circuit to other different qubits."""
     from mindquantum.core import Circuit
+
     old_qubits = set([])
     for g in circ:
         old_qubits.update(g.obj_qubits)
@@ -337,6 +349,7 @@ def apply(circuit_fn, qubits):
         q1: ──H────PS(π/2)─────────@──
     """
     from mindquantum.core import Circuit
+
     if not isinstance(qubits, list):
         raise TypeError(f"qubits need a list, but get {type(qubits)}!")
     if len(qubits) > 1:
@@ -361,6 +374,7 @@ def _add_prefix(circ, prefix):
     """Add prefix to every parameters in circuit."""
     from mindquantum.core import Circuit
     from mindquantum.core import ParameterResolver as PR
+
     out = Circuit()
     for g in circ:
         g = copy.deepcopy(g)
@@ -406,6 +420,7 @@ def add_prefix(circuit_fn, prefix):
         q0: ──H────RX(ansatz_a)──
     """
     from mindquantum.core import Circuit
+
     if not isinstance(prefix, str):
         raise TypeError(f"prefix need string, but get {type(prefix)}")
     if isinstance(circuit_fn, (FunctionType, MethodType)):
@@ -447,6 +462,7 @@ def shift(circ, p):
         Circuit, the shifted circuit.
     """
     from mindquantum.core import Circuit
+
     _check_input_type('circ', Circuit, circ)
     _check_input_type('p', int, p)
     return apply(circ, [i + p for i in sorted(circ.all_qubits.keys())])
@@ -456,6 +472,7 @@ def _change_param_name(circ, name_map):
     """Change the parameter of circuit according to the name map."""
     from mindquantum.core import Circuit
     from mindquantum.core import ParameterResolver as PR
+
     out = Circuit()
     for g in circ:
         g = copy.deepcopy(g)
@@ -505,6 +522,7 @@ def change_param_name(circuit_fn, name_map):
         q0: ──H────RX(b)──
     """
     from mindquantum.core import Circuit
+
     if not isinstance(name_map, dict):
         raise TypeError(f"name_map need map, but get {type(name_map)}")
     for k, v in name_map.items():

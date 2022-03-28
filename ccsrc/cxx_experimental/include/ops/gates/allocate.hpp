@@ -18,12 +18,12 @@
 #include <string_view>
 
 namespace mindquantum::ops {
-    class Allocate {
-     public:
-        static constexpr std::string_view kind() {
-            return "projectq.allocate";
-        }
-    };
+class Allocate {
+ public:
+    static constexpr std::string_view kind() {
+        return "projectq.allocate";
+    }
+};
 }  // namespace mindquantum::ops
 
 #endif /* ALLOCATE_OP_HPP */

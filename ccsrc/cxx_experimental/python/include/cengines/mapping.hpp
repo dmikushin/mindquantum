@@ -30,72 +30,72 @@
 void init_mapping(pybind11::module& module);
 
 namespace mindquantum::python {
-    class CppGraphMapper
-        : public cengines::CppGraphMapper
-        , public cpp::BasicEngine {
-     public:
-        using cengines::CppGraphMapper::CppGraphMapper;
-    };
+class CppGraphMapper
+    : public cengines::CppGraphMapper
+    , public cpp::BasicEngine {
+ public:
+    using cengines::CppGraphMapper::CppGraphMapper;
+};
 
-    namespace cpp {
-        //! C++ equivalent to projectq.cengines.LinearMapper
-        /*!
-         * This class is mainly intended as storage for the parameter of the
-         * qubit mapping/routing pass for a linear arrangement of qubits
-         */
-        class LinearMapper
-            : public cengines::cpp::LinearMapper
-            , public cpp::BasicEngine {};
+namespace cpp {
+//! C++ equivalent to projectq.cengines.LinearMapper
+/*!
+ * This class is mainly intended as storage for the parameter of the
+ * qubit mapping/routing pass for a linear arrangement of qubits
+ */
+class LinearMapper
+    : public cengines::cpp::LinearMapper
+    , public cpp::BasicEngine {};
 
-        //! C++ equivalent to projectq.cengines.GridMapper
-        /*!
-         * This class is mainly intended as storage for the parameter of the
-         * qubit mapping/routing pass for a linear arrangement of qubits
-         */
-        class GridMapper
-            : public cengines::cpp::GridMapper
-            , public cpp::BasicEngine {};
+//! C++ equivalent to projectq.cengines.GridMapper
+/*!
+ * This class is mainly intended as storage for the parameter of the
+ * qubit mapping/routing pass for a linear arrangement of qubits
+ */
+class GridMapper
+    : public cengines::cpp::GridMapper
+    , public cpp::BasicEngine {};
 
-    }  // namespace cpp
+}  // namespace cpp
 
 }  // namespace mindquantum::python
 
 // ==============================================================================
 
 namespace mindquantum::details {
-    //! Helper function to extract attributes from a CppOnlyLinearMapper
-    bool load_mapper(pybind11::handle src, python::cpp::LinearMapper& value);
+//! Helper function to extract attributes from a CppOnlyLinearMapper
+bool load_mapper(pybind11::handle src, python::cpp::LinearMapper& value);
 
-    //! Helper function to extract attributes from a CppOnlyGridMapper
-    bool load_mapper(pybind11::handle src, python::cpp::GridMapper& value);
+//! Helper function to extract attributes from a CppOnlyGridMapper
+bool load_mapper(pybind11::handle src, python::cpp::GridMapper& value);
 }  // namespace mindquantum::details
 
 // ==============================================================================
 
 namespace pybind11::detail {
-    template <>
-    struct type_caster<mindquantum::python::cpp::LinearMapper> {
-     public:
-        using value_type = mindquantum::python::cpp::LinearMapper;
+template <>
+struct type_caster<mindquantum::python::cpp::LinearMapper> {
+ public:
+    using value_type = mindquantum::python::cpp::LinearMapper;
 
-        PYBIND11_TYPE_CASTER(value_type, _("LinearMapper_cpp"));
+    PYBIND11_TYPE_CASTER(value_type, _("LinearMapper_cpp"));
 
-        bool load(handle src, bool) {
-            return mindquantum::details::load_mapper(src, value);
-        }
-    };
+    bool load(handle src, bool) {
+        return mindquantum::details::load_mapper(src, value);
+    }
+};
 
-    template <>
-    struct type_caster<mindquantum::python::cpp::GridMapper> {
-     public:
-        using value_type = mindquantum::python::cpp::GridMapper;
+template <>
+struct type_caster<mindquantum::python::cpp::GridMapper> {
+ public:
+    using value_type = mindquantum::python::cpp::GridMapper;
 
-        PYBIND11_TYPE_CASTER(value_type, _("GridMapper_cpp"));
+    PYBIND11_TYPE_CASTER(value_type, _("GridMapper_cpp"));
 
-        bool load(handle src, bool) {
-            return mindquantum::details::load_mapper(src, value);
-        }
-    };
+    bool load(handle src, bool) {
+        return mindquantum::details::load_mapper(src, value);
+    }
+};
 }  // namespace pybind11::detail
 
 #endif /* PYTHON_MAPPING_HPP */

@@ -133,7 +133,7 @@ class Simulator {
             if (tmpBuff1_.capacity() < tmpBuff2_.capacity())
                 std::swap(tmpBuff1_, tmpBuff2_);
 
-            for (auto& p: map_) {
+            for (auto& p : map_) {
                 if (p.second > pos)
                     p.second--;
             }
@@ -279,7 +279,7 @@ class Simulator {
     inline void emulate_math_addConstant(int a, const QuReg& quregs, const std::vector<qubit_id_t>& ctrl) {
         emulate_math(
             [a](std::vector<int>& res) {
-                for (auto& x: res)
+                for (auto& x : res)
                     x = x + a;
             },
             quregs, ctrl, true);
@@ -290,7 +290,7 @@ class Simulator {
     inline void emulate_math_addConstantModN(int a, int N, const QuReg& quregs, const std::vector<qubit_id_t>& ctrl) {
         emulate_math(
             [a, N](std::vector<int>& res) {
-                for (auto& x: res)
+                for (auto& x : res)
                     x = (x + a) % N;
             },
             quregs, ctrl, true);
@@ -302,7 +302,7 @@ class Simulator {
                                                     const std::vector<qubit_id_t>& ctrl) {
         emulate_math(
             [a, N](std::vector<int>& res) {
-                for (auto& x: res)
+                for (auto& x : res)
                     x = (x * a) % N;
             },
             quregs, ctrl, true);
@@ -320,7 +320,7 @@ class Simulator {
         for (std::size_t i = 0; i < vec_.size(); ++i)
             current_state[i] = vec_[i];
 
-        for (auto const& term: td) {
+        for (auto const& term : td) {
             auto const& coefficient = term.second;
             apply_term(term.first, ids, {});
             calc_type delta = 0.;
@@ -355,7 +355,7 @@ class Simulator {
             new_state[i] = 0;
             current_state[i] = vec_[i];
         }
-        for (auto const& term: td) {
+        for (auto const& term : td) {
             auto const& coefficient = term.second;
             apply_term(term.first, ids, {});
 #pragma omp parallel for schedule(static)
@@ -433,7 +433,7 @@ class Simulator {
                 auto coeff = (-time * I) / double(s * (k + 1));
                 auto current_state = vec_;
                 auto update = StateVector(vec_.size(), 0.);
-                for (auto const& tup: td) {
+                for (auto const& tup : td) {
                     apply_term(tup.first, ids, {});
 #pragma omp parallel for schedule(static)
                     for (std::size_t j = 0; j < vec_.size(); ++j) {
@@ -527,7 +527,7 @@ class Simulator {
 
         fused_gates_.perform_fusion(m, ids, ctrls);
 
-        for (auto& id: ids)
+        for (auto& id : ids)
             id = map_[id];
 
         auto ctrlmask = get_control_mask(ctrls);
@@ -577,7 +577,7 @@ class Simulator {
         Fusion::Matrix Y = {{0., -I}, {I, 0.}};
         Fusion::Matrix Z = {{1., 0.}, {0., -1.}};
         std::vector<Fusion::Matrix> gates = {X, Y, Z};
-        for (auto const& local_op: term) {
+        for (auto const& local_op : term) {
             qubit_id_t id = ids[local_op.first];
             apply_controlled_gate(gates[local_op.second - 'X'], {id}, ctrl);
         }
@@ -585,13 +585,13 @@ class Simulator {
     }
     std::size_t get_control_mask(std::vector<qubit_id_t> const& ctrls) {
         std::size_t ctrlmask = 0;
-        for (auto c: ctrls)
+        for (auto c : ctrls)
             ctrlmask |= (1UL << map_[c]);
         return ctrlmask;
     }
 
     bool check_ids(std::vector<qubit_id_t> const& ids) {
-        for (auto id: ids)
+        for (auto id : ids)
             if (!map_.count(id))
                 return false;
         return true;

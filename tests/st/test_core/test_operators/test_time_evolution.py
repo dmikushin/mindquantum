@@ -15,10 +15,9 @@
 # ============================================================================
 """Test TimeEvolution."""
 
-from mindquantum.core.operators import QubitOperator
 from mindquantum import Circuit
 from mindquantum import gates as G
-from mindquantum.core.operators import TimeEvolution
+from mindquantum.core.operators import QubitOperator, TimeEvolution
 
 
 def test_time_evolution():

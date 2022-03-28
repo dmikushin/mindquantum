@@ -16,10 +16,12 @@
 """Module circuit"""
 
 from collections.abc import Iterable
+
 import numpy as np
-from mindquantum.core.gates import BasicGate
-from mindquantum.core.gates import SWAP
+
+from mindquantum.core.gates import SWAP, BasicGate
 from mindquantum.core.gates.basic import _check_gate_type
+
 from .circuit import Circuit
 
 
@@ -57,6 +59,7 @@ class UN(Circuit):
               │
         q3: ──@───────
     """
+
     def __init__(self, gate: BasicGate, maps_obj, maps_ctrl=None):
         _check_gate_type(gate)
         if isinstance(maps_obj, Iterable):
@@ -102,6 +105,7 @@ class SwapParts(Circuit):
                    │
         q4: ───────@──
     """
+
     def __init__(self, a: Iterable, b: Iterable, maps_ctrl=None):
         if not isinstance(a, Iterable) or not isinstance(b, Iterable):
             raise Exception("Swap part should be iterable!")
@@ -124,6 +128,7 @@ class U3(Circuit):
         >>> U3('a','b','c')
         q0: ──RZ(a)────RX(-π/2)────RZ(b)────RX(π/2)────RZ(c)──
     """
+
     def __init__(self, a, b, c, obj_qubit=None):
         if obj_qubit is None:
             obj_qubit = 0

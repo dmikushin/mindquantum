@@ -22,25 +22,25 @@
 #include "ops/gates/sqrtswap.hpp"
 
 namespace mindquantum::decompositions::rules {
-    class SqrtSwap2CNOTAndSqrtX
-        : public GateDecompositionRule<SqrtSwap2CNOTAndSqrtX, std::tuple<ops::SqrtSwap>, DUAL_TGT_ANY_CTRL, ops::Sx,
-                                       atoms::C<ops::X>> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 0);
+class SqrtSwap2CNOTAndSqrtX
+    : public GateDecompositionRule<SqrtSwap2CNOTAndSqrtX, std::tuple<ops::SqrtSwap>, DUAL_TGT_ANY_CTRL, ops::Sx,
+                                   atoms::C<ops::X>> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 0);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "SqrtSwap2CNOTAndSqrtX"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "SqrtSwap2CNOTAndSqrtX"sv;
+    }
 
-        void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});
-            atom<ops::Sx>()->apply(circuit, ops::Sx{}, {qubits[1], qubits[0]});
-            atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});
-        }
-    };
+    void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
+                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+        atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});
+        atom<ops::Sx>()->apply(circuit, ops::Sx{}, {qubits[1], qubits[0]});
+        atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});
+    }
+};
 }  // namespace mindquantum::decompositions::rules
 
 #endif /* DECOMPOSITION_RULE_SQRTSWAP2CNOTANDSQRTX_HPP */

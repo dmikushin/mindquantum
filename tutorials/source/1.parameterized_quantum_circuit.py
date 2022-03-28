@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+
 import mindquantum as mq
-from mindquantum.core import X, Y, Z, H, RX, RY, RZ
+from mindquantum.core import RX, RY, RZ, H, X, Y, Z
 
 print('Gate name:', X)
 X.matrix()

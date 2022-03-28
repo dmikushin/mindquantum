@@ -39,7 +39,7 @@ class UnitTestAccessor {
     using decomposer_t = mindquantum::decompositions::AtomStorage;
 
     static void print(const decomposer_t& storage) {
-        for (const auto& [key, val]: storage.atoms_) {
+        for (const auto& [key, val] : storage.atoms_) {
             const auto& [s, i] = key;
             std::cout << s << "," << i << ": " << &val << '\n';
         }
@@ -142,84 +142,83 @@ TEST_CASE("AtomStorage/trivial_atom", "[decompositions][atom]") {
 // =============================================================================
 
 namespace {
-    namespace atoms = decompositions::atoms;
+namespace atoms = decompositions::atoms;
 
-    class X2Z
-        : public decompositions::GateDecompositionRule<X2Z, std::tuple<ops::X>, SINGLE_TGT_ANY_CTRL, ops::H, ops::Z> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 0);
+class X2Z : public decompositions::GateDecompositionRule<X2Z, std::tuple<ops::X>, SINGLE_TGT_ANY_CTRL, ops::H, ops::Z> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 0);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "X2Z"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "X2Z"sv;
+    }
 
-        void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op */,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            //  TODO(dnguyen): I find this syntax redundant, we should find a way to fix this!
-            atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
-            atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0]});
-            atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
-        }
-    };
+    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op */,
+                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+        //  TODO(dnguyen): I find this syntax redundant, we should find a way to fix this!
+        atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
+        atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0]});
+        atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
+    }
+};
 
-    class Z2YDummy
-        : public decompositions::GateDecompositionRule<Z2YDummy, std::tuple<ops::Z>, SINGLE_TGT_ANY_CTRL, ops::Y> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 0);
+class Z2YDummy
+    : public decompositions::GateDecompositionRule<Z2YDummy, std::tuple<ops::Z>, SINGLE_TGT_ANY_CTRL, ops::Y> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 0);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "Z2YDummy"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "Z2YDummy"sv;
+    }
 
-        void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            atom<ops::Y>()->apply(circuit, ops::Y{}, qubits);
-        }
-    };
+    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
+                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+        atom<ops::Y>()->apply(circuit, ops::Y{}, qubits);
+    }
+};
 
-    class CNOT2CZDummy
-        : public decompositions::GateDecompositionRule<CNOT2CZDummy, std::tuple<ops::X>, SINGLE_TGT_SINGLE_CTRL, ops::H,
-                                                       ops::Z> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 1);
+class CNOT2CZDummy
+    : public decompositions::GateDecompositionRule<CNOT2CZDummy, std::tuple<ops::X>, SINGLE_TGT_SINGLE_CTRL, ops::H,
+                                                   ops::Z> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 1);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "CNOT2CZDummy"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "CNOT2CZDummy"sv;
+    }
 
-        void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0], qubits[1]});
-            atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0], qubits[1]});
-            atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0], qubits[1]});
-        }
-    };
+    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
+                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+        atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0], qubits[1]});
+        atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0], qubits[1]});
+        atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0], qubits[1]});
+    }
+};
 
-    class CNOT2CZ
-        : public decompositions::GateDecompositionRule<CNOT2CZ, std::tuple<ops::X>, SINGLE_TGT_SINGLE_CTRL, ops::H,
-                                                       atoms::C<ops::Z>> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 1);
+class CNOT2CZ
+    : public decompositions::GateDecompositionRule<CNOT2CZ, std::tuple<ops::X>, SINGLE_TGT_SINGLE_CTRL, ops::H,
+                                                   atoms::C<ops::Z>> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 1);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        static constexpr auto name() noexcept {
-            return "CNOT2CZ"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "CNOT2CZ"sv;
+    }
 
-        void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});
-            atom<atoms::C<ops::Z>>()->apply(circuit, ops::Z{}, {qubits[0], qubits[1]});
-            atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});
-        }
-    };
+    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
+                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+        atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});
+        atom<atoms::C<ops::Z>>()->apply(circuit, ops::Z{}, {qubits[0], qubits[1]});
+        atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});
+    }
+};
 }  // namespace
 
 // -----------------------------------------------------------------------------

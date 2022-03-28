@@ -28,83 +28,82 @@
 #include "ops/parametric/register_gate_type.hpp"
 
 namespace mindquantum::decompositions::rules {
-    class Rz2RxAndRy
-        : public GateDecompositionRule<Rz2RxAndRy, std::tuple<ops::Rz, ops::parametric::Rz>, SINGLE_TGT_PARAM_ANY_CTRL,
-                                       ops::parametric::Rx, ops::parametric::Ry> {
-     public:
-        static_assert(self_t::num_controls_for_decomp == 0);
+class Rz2RxAndRy
+    : public GateDecompositionRule<Rz2RxAndRy, std::tuple<ops::Rz, ops::parametric::Rz>, SINGLE_TGT_PARAM_ANY_CTRL,
+                                   ops::parametric::Rx, ops::parametric::Ry> {
+ public:
+    static_assert(self_t::num_controls_for_decomp == 0);
 
-        using base_t::base_t;
+    using base_t::base_t;
 
-        explicit Rz2RxAndRy(AtomStorage& storage) : base_t{storage}, use_positive_decomp_{false} {
-        }
+    explicit Rz2RxAndRy(AtomStorage& storage) : base_t{storage}, use_positive_decomp_{false} {
+    }
 
-        static constexpr auto name() noexcept {
-            return "Rz2RxAndRy"sv;
-        }
+    static constexpr auto name() noexcept {
+        return "Rz2RxAndRy"sv;
+    }
 
-        void apply_positive_decomp(circuit_t& circuit, const qubits_t& qubits, const gate_param_t& param) {
-            atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{-PI_VAL_2}, qubits);
+    void apply_positive_decomp(circuit_t& circuit, const qubits_t& qubits, const gate_param_t& param) {
+        atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{-PI_VAL_2}, qubits);
 
-            std::visit(
-                [this, &circuit, &qubits](const auto& param) {
-                    using ops::parametric::param_list_t;
-                    using param_t = std::remove_cvref_t<decltype(param)>;
+        std::visit(
+            [this, &circuit, &qubits](const auto& param) {
+                using ops::parametric::param_list_t;
+                using param_t = std::remove_cvref_t<decltype(param)>;
 
-                    if constexpr (std::is_same_v<param_t, double>) {
-                        atom<ops::parametric::Rx>()->apply(circuit, ops::Rx{-param}, qubits);
+                if constexpr (std::is_same_v<param_t, double>) {
+                    atom<ops::parametric::Rx>()->apply(circuit, ops::Rx{-param}, qubits);
+                    return;
+                } else if constexpr (std::is_same_v<param_t, param_list_t>) {
+                    if (std::size(param) == 1) {
+                        atom<ops::parametric::Rx>()->apply(
+                            circuit, ops::parametric::Rx{SymEngine::neg(param[0])}.eval_smart(), qubits);
                         return;
-                    } else if constexpr (std::is_same_v<param_t, param_list_t>) {
-                        if (std::size(param) == 1) {
-                            atom<ops::parametric::Rx>()->apply(
-                                circuit, ops::parametric::Rx{SymEngine::neg(param[0])}.eval_smart(), qubits);
-                            return;
-                        }
                     }
-                    invalid_op_(circuit, qubits, param);
-                },
-                param);
+                }
+                invalid_op_(circuit, qubits, param);
+            },
+            param);
 
-            atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{PI_VAL_2}, qubits);
-        }
+        atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{PI_VAL_2}, qubits);
+    }
 
-        void apply_negative_decomp(circuit_t& circuit, const qubits_t& qubits, const gate_param_t& param) {
-            atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{PI_VAL_2}, qubits);
-            std::visit(
-                [this, &circuit, &qubits](const auto& param) {
-                    using ops::parametric::param_list_t;
-                    using param_t = std::remove_cvref_t<decltype(param)>;
+    void apply_negative_decomp(circuit_t& circuit, const qubits_t& qubits, const gate_param_t& param) {
+        atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{PI_VAL_2}, qubits);
+        std::visit(
+            [this, &circuit, &qubits](const auto& param) {
+                using ops::parametric::param_list_t;
+                using param_t = std::remove_cvref_t<decltype(param)>;
 
-                    if constexpr (std::is_same_v<param_t, double>) {
-                        atom<ops::parametric::Rx>()->apply(circuit, ops::Rx{param}, qubits);
+                if constexpr (std::is_same_v<param_t, double>) {
+                    atom<ops::parametric::Rx>()->apply(circuit, ops::Rx{param}, qubits);
+                    return;
+                } else if constexpr (std::is_same_v<param_t, param_list_t>) {
+                    if (std::size(param) == 1) {
+                        atom<ops::parametric::Rx>()->apply(circuit, ops::parametric::Rx{param[0]}.eval_smart(), qubits);
                         return;
-                    } else if constexpr (std::is_same_v<param_t, param_list_t>) {
-                        if (std::size(param) == 1) {
-                            atom<ops::parametric::Rx>()->apply(circuit, ops::parametric::Rx{param[0]}.eval_smart(),
-                                                               qubits);
-                            return;
-                        }
                     }
-                    invalid_op_(circuit, qubits, param);
-                },
-                param);
+                }
+                invalid_op_(circuit, qubits, param);
+            },
+            param);
 
-            atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{-PI_VAL_2}, qubits);
+        atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{-PI_VAL_2}, qubits);
+    }
+
+    void apply_impl(circuit_t& circuit, const decompositions::operator_t& op, const decompositions::qubits_t& qubits,
+                    const decompositions::cbits_t& /* unused */) {
+        if (use_positive_decomp_) {
+            apply_positive_decomp(circuit, qubits, ops::parametric::get_param(op));
+        } else {
+            apply_negative_decomp(circuit, qubits, ops::parametric::get_param(op));
         }
+        use_positive_decomp_ ^= 1U;
+    }
 
-        void apply_impl(circuit_t& circuit, const decompositions::operator_t& op,
-                        const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
-            if (use_positive_decomp_) {
-                apply_positive_decomp(circuit, qubits, ops::parametric::get_param(op));
-            } else {
-                apply_negative_decomp(circuit, qubits, ops::parametric::get_param(op));
-            }
-            use_positive_decomp_ ^= 1U;
-        }
-
-     private:
-        bool use_positive_decomp_;
-    };
+ private:
+    bool use_positive_decomp_;
+};
 }  // namespace mindquantum::decompositions::rules
 
 #endif /* DECOMPOSITION_RULE_RZ2RXANDRY_HPP */

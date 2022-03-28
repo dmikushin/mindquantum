@@ -18,12 +18,12 @@
 #include <string_view>
 
 namespace mindquantum::ops {
-    class Deallocate {
-     public:
-        static constexpr std::string_view kind() {
-            return "projectq.deallocate";
-        }
-    };
+class Deallocate {
+ public:
+    static constexpr std::string_view kind() {
+        return "projectq.deallocate";
+    }
+};
 }  // namespace mindquantum::ops
 
 #endif /* DEALLOCATE_OP_HPP */

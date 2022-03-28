@@ -21,52 +21,52 @@
 #include "ops/parametric/config.hpp"
 
 namespace mindquantum::decompositions {
-    //! Aggregate type to store DecompositionRule template parameters
-    struct DecompositionRuleParam {
-        num_target_t num_targets;    //!< Number of target qubits the decomposition is constrained on
-        num_control_t num_controls;  //!< Number of control qubits the decomposition is constrained on
-        num_param_t num_params;      //!< Number of parameters the decomposition rule possesses
-    } __attribute__((aligned(16)));  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+//! Aggregate type to store DecompositionRule template parameters
+struct DecompositionRuleParam {
+    num_target_t num_targets;    //!< Number of target qubits the decomposition is constrained on
+    num_control_t num_controls;  //!< Number of control qubits the decomposition is constrained on
+    num_param_t num_params;      //!< Number of parameters the decomposition rule possesses
+} __attribute__((aligned(16)));  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-    // ---------------------------------
-    // Definition of special values for decomposition rule template parameter
+// ---------------------------------
+// Definition of special values for decomposition rule template parameter
 
-    //! Namespace containing some helper constants to use when defining DecompositionRule classes
-    namespace tparam {
-        //! Constants for decomposition rules without constraints on the number of target qubits
-        namespace any_tgt {
-            static constexpr auto any_ctrl = DecompositionRuleParam{0, any_control, 0};
-            static constexpr auto no_ctrl = DecompositionRuleParam{0, 0, 0};
-            static constexpr auto single_ctrl = DecompositionRuleParam{0, 1, 0};
-            static constexpr auto double_ctrl = DecompositionRuleParam{0, 2, 0};
-        }  // namespace any_tgt
+//! Namespace containing some helper constants to use when defining DecompositionRule classes
+namespace tparam {
+//! Constants for decomposition rules without constraints on the number of target qubits
+namespace any_tgt {
+static constexpr auto any_ctrl = DecompositionRuleParam{0, any_control, 0};
+static constexpr auto no_ctrl = DecompositionRuleParam{0, 0, 0};
+static constexpr auto single_ctrl = DecompositionRuleParam{0, 1, 0};
+static constexpr auto double_ctrl = DecompositionRuleParam{0, 2, 0};
+}  // namespace any_tgt
 
-        //! Constants for decomposition rules for single target qubit gates
-        namespace single_tgt {
-            static constexpr auto any_ctrl = DecompositionRuleParam{1, any_control, 0};
-            static constexpr auto no_ctrl = DecompositionRuleParam{1, 0, 0};
-            static constexpr auto single_ctrl = DecompositionRuleParam{1, 1, 0};
-            static constexpr auto double_ctrl = DecompositionRuleParam{1, 2, 0};
-        }  // namespace single_tgt
+//! Constants for decomposition rules for single target qubit gates
+namespace single_tgt {
+static constexpr auto any_ctrl = DecompositionRuleParam{1, any_control, 0};
+static constexpr auto no_ctrl = DecompositionRuleParam{1, 0, 0};
+static constexpr auto single_ctrl = DecompositionRuleParam{1, 1, 0};
+static constexpr auto double_ctrl = DecompositionRuleParam{1, 2, 0};
+}  // namespace single_tgt
 
-        //! Constants for decomposition rules for single target qubit gates
-        namespace dual_tgt {
-            static constexpr auto any_ctrl = DecompositionRuleParam{2, any_control, 0};
-            static constexpr auto no_ctrl = DecompositionRuleParam{2, 0, 0};
-            static constexpr auto single_ctrl = DecompositionRuleParam{2, 1, 0};
-            static constexpr auto double_ctrl = DecompositionRuleParam{2, 2, 0};
-        }  // namespace dual_tgt
+//! Constants for decomposition rules for single target qubit gates
+namespace dual_tgt {
+static constexpr auto any_ctrl = DecompositionRuleParam{2, any_control, 0};
+static constexpr auto no_ctrl = DecompositionRuleParam{2, 0, 0};
+static constexpr auto single_ctrl = DecompositionRuleParam{2, 1, 0};
+static constexpr auto double_ctrl = DecompositionRuleParam{2, 2, 0};
+}  // namespace dual_tgt
 
-        //! Constants for decomposition rules for single target qubit with parameteric gates with 1 parameter
-        namespace single_tgt_param {
-            static constexpr auto any_ctrl = DecompositionRuleParam{1, any_control, 1};
-            static constexpr auto no_ctrl = DecompositionRuleParam{1, 0, 1};
-            static constexpr auto single_ctrl = DecompositionRuleParam{1, 1, 1};
-            static constexpr auto double_ctrl = DecompositionRuleParam{1, 2, 1};
-        }  // namespace single_tgt_param
+//! Constants for decomposition rules for single target qubit with parameteric gates with 1 parameter
+namespace single_tgt_param {
+static constexpr auto any_ctrl = DecompositionRuleParam{1, any_control, 1};
+static constexpr auto no_ctrl = DecompositionRuleParam{1, 0, 1};
+static constexpr auto single_ctrl = DecompositionRuleParam{1, 1, 1};
+static constexpr auto double_ctrl = DecompositionRuleParam{1, 2, 1};
+}  // namespace single_tgt_param
 
-        static constexpr auto default_t = any_tgt::any_ctrl;
-    }  // namespace tparam
+static constexpr auto default_t = any_tgt::any_ctrl;
+}  // namespace tparam
 
 }  // namespace mindquantum::decompositions
 

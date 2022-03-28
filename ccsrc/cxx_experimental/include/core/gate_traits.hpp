@@ -26,90 +26,88 @@
 
 namespace mindquantum::traits {
 #if HIQ_USE_CONCEPTS
-    template <typename operator_t>
-    struct gate_traits {
-        using non_param_type = operator_t;
-    };
+template <typename operator_t>
+struct gate_traits {
+    using non_param_type = operator_t;
+};
 
-    template <concepts::SingleDoubleGate operator_t>
-    struct gate_traits<operator_t> {
-        using non_param_type = operator_t;
+template <concepts::SingleDoubleGate operator_t>
+struct gate_traits<operator_t> {
+    using non_param_type = operator_t;
 
-        static constexpr auto param(const tweedledum::Operator& op) {
-            return op.cast<operator_t>().param();
-        }
-    };
+    static constexpr auto param(const tweedledum::Operator& op) {
+        return op.cast<operator_t>().param();
+    }
+};
 
-    template <concepts::MultiDoubleGate operator_t>
-    struct gate_traits<operator_t> {
-        using non_param_type = operator_t;
+template <concepts::MultiDoubleGate operator_t>
+struct gate_traits<operator_t> {
+    using non_param_type = operator_t;
 
-        static constexpr auto param(const tweedledum::Operator& op) {
-            return op.cast<operator_t>().params();
-        }
-    };
+    static constexpr auto param(const tweedledum::Operator& op) {
+        return op.cast<operator_t>().params();
+    }
+};
 
-    template <concepts::AngleGate operator_t>
-    struct gate_traits<operator_t> {
-        using non_param_type = operator_t;
+template <concepts::AngleGate operator_t>
+struct gate_traits<operator_t> {
+    using non_param_type = operator_t;
 
-        static constexpr auto param(const tweedledum::Operator& op) {
-            return op.cast<operator_t>().angle();
-        }
-    };
+    static constexpr auto param(const tweedledum::Operator& op) {
+        return op.cast<operator_t>().angle();
+    }
+};
 
-    template <concepts::ParametricGate operator_t>
-    struct gate_traits<operator_t> {
-        using non_param_type = typename operator_t::non_param_type;
+template <concepts::ParametricGate operator_t>
+struct gate_traits<operator_t> {
+    using non_param_type = typename operator_t::non_param_type;
 
-        static constexpr auto param(const tweedledum::Operator& op) {
-            return op.cast<operator_t>().params();
-        }
-    };
+    static constexpr auto param(const tweedledum::Operator& op) {
+        return op.cast<operator_t>().params();
+    }
+};
 #else
-    namespace details {
-        template <typename operator_t, typename = void>
-        struct has_angle : std::false_type {};
+namespace details {
+template <typename operator_t, typename = void>
+struct has_angle : std::false_type {};
 
-        template <typename operator_t>
-        struct has_angle<operator_t, std::void_t<decltype(std::declval<operator_t>().angle())>> : std::true_type {};
+template <typename operator_t>
+struct has_angle<operator_t, std::void_t<decltype(std::declval<operator_t>().angle())>> : std::true_type {};
 
-        template <typename operator_t, typename = void>
-        struct has_single_param : std::false_type {};
+template <typename operator_t, typename = void>
+struct has_single_param : std::false_type {};
 
-        template <typename operator_t>
-        struct has_single_param<operator_t, std::void_t<decltype(std::declval<operator_t>().param())>>
-            : std::true_type {};
+template <typename operator_t>
+struct has_single_param<operator_t, std::void_t<decltype(std::declval<operator_t>().param())>> : std::true_type {};
 
-        template <typename operator_t, typename = void>
-        struct has_multi_param : std::false_type {};
+template <typename operator_t, typename = void>
+struct has_multi_param : std::false_type {};
 
-        template <typename operator_t>
-        struct has_multi_param<operator_t, std::void_t<decltype(std::declval<operator_t>().params())>>
-            : std::true_type {};
+template <typename operator_t>
+struct has_multi_param<operator_t, std::void_t<decltype(std::declval<operator_t>().params())>> : std::true_type {};
 
-        template <typename operator_t>
-        struct param_traits {
-            static auto apply(const operator_t& optor) {
-                if constexpr (has_single_param<operator_t>::value) {
-                    return optor.param();
-                } else if constexpr (has_multi_param<operator_t>::value) {
-                    return optor.params();
-                } else if constexpr (has_angle<operator_t>::value) {
-                    return optor.angle();
-                }
-            }
-        };
-    }  // namespace details
-
-    template <typename operator_t>
-    struct gate_traits {
-        using non_param_type = operator_t;
-
-        static constexpr auto param(const tweedledum::Operator& op) {
-            return details::param_traits<operator_t>::apply(op.cast<operator_t>());
+template <typename operator_t>
+struct param_traits {
+    static auto apply(const operator_t& optor) {
+        if constexpr (has_single_param<operator_t>::value) {
+            return optor.param();
+        } else if constexpr (has_multi_param<operator_t>::value) {
+            return optor.params();
+        } else if constexpr (has_angle<operator_t>::value) {
+            return optor.angle();
         }
-    };
+    }
+};
+}  // namespace details
+
+template <typename operator_t>
+struct gate_traits {
+    using non_param_type = operator_t;
+
+    static constexpr auto param(const tweedledum::Operator& op) {
+        return details::param_traits<operator_t>::apply(op.cast<operator_t>());
+    }
+};
 #endif  // HIQ_USE_CONCEPTS
 
 }  // namespace mindquantum::traits

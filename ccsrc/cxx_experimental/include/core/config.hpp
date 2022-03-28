@@ -60,8 +60,8 @@
 #endif
 
 namespace mindquantum {
-    using qubit_id_t = unsigned int;
-    using qureg_t = std::vector<qubit_id_t>;
+using qubit_id_t = unsigned int;
+using qureg_t = std::vector<qubit_id_t>;
 }  // namespace mindquantum
 
 #endif /* CORE_CONFIG_HPP */
