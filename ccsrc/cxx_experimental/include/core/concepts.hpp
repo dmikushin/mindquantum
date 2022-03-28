@@ -24,7 +24,7 @@
 #if __cplusplus > 201703L
 #    include <concepts>
 
-#    if !(defined __cpp_lib_concepts) || (__cpp_lib_concepts < 202002L)
+#    if !(defined __cpp_lib_concepts) || (__cpp_lib_concepts < 202002L && (!defined(_MSC_VER) || _MSC_VER < 1923))
 #        include <type_traits>
 namespace std {
 // It appears that clang 11 already has std::same_as but not the others

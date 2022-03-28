@@ -162,7 +162,7 @@ add_compile_definitions(
 # Platform specific flags
 
 if(WIN32)
-  add_compile_definitions(_USE_MATH_DEFINES _CRT_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN)
+  add_compile_definitions(_USE_MATH_DEFINES _CRT_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN _ITERATOR_DEBUG_LEVEL=0)
 endif()
 
 # ==============================================================================

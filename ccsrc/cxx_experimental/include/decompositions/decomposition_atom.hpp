@@ -132,7 +132,11 @@ class DecompositionAtom {
         bool (*is_applicable)(void const*, const instruction_t&) noexcept;
         void (*apply)(void*, circuit_t&, const instruction_t&) noexcept;
         void (*apply_operator)(void*, circuit_t&, const operator_t&, const qubits_t&, const cbits_t&) noexcept;
-    } __attribute__((aligned(128)));  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    }
+#ifndef _MSC_VER
+    __attribute__((aligned(128)))  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+#endif                             // !_MSC_VER
+    ;
 
     template <class ConcreteOp, bool IsSmall>
     struct Model;
