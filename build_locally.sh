@@ -21,6 +21,7 @@ CMAKE_BOOL=(OFF ON)
 # Default values
 
 build_type='Release'
+cmake_debug_mode=0
 cmake_generator='Unix Makefiles'
 configure_only=0
 do_clean=0
@@ -143,6 +144,7 @@ help_message() {
     echo '  --configure-only     Stop after the CMake configure and generation steps (ie. before building MindQuantum)'
     echo '  --cxx                (experimental) Enable MindQuantum C++ support'
     echo '  --debug              Build in debug mode'
+    echo '  --debug-cmake        Enable debugging mode for CMake configuration step'
     echo '  --gpu                Enable GPU support'
     echo '  -j,--jobs [N]        Number of parallel jobs for building'
     echo "                       Defaults to: $n_jobs"
@@ -214,6 +216,9 @@ while getopts hcnB:j:-: OPT; do
                          ;;
         debug )          no_arg;
                          build_type='Debug'
+                         ;;
+        debug-cmake )    no_arg;
+                         cmake_debug_mode=1
                          ;;
         gpu )            no_arg;
                          enable_gpu=1
@@ -319,6 +324,10 @@ fi
 
 if [[ $enable_cxx -eq 1 ]]; then
     cmake_args+=(-DENABLE_CXX_EXPERIMENTAL:BOOL=ON)
+fi
+
+if [[ $cmake_debug_mode -eq 1 ]]; then
+    cmake_args+=(-DENABLE_CMAKE_DEBUG:BOOL=ON)
 fi
 
 local_pkgs_str=$(join_by , "${local_pkgs[@]}")

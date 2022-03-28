@@ -22,6 +22,7 @@ rem ============================================================================
 rem Default values
 
 set build_type=Release
+set cmake_debug_mode=0
 set configure_only=0
 set do_clean=0
 set do_clean_build_dir=0
@@ -115,6 +116,11 @@ rem ============================================================================
 
   if /I "%1" == "/Debug" (
     set build_type=Debug
+    shift & goto :initial
+  )
+
+  if /I "%1" == "/DebugCMake" (
+    set cmake_debug_mode=1
     shift & goto :initial
   )
 
@@ -258,6 +264,8 @@ if !enable_gpu! == 1 set cmake_args=!cmake_args! -DENABLE_CUDA:BOOL=ON
 
 if !enable_cxx! == 1 set cmake_args=!cmake_args! -DENABLE_CXX_EXPERIMENTAL:BOOL=ON
 
+if !cmake_debug_mode! == 1 set cmake_args=!cmake_args! -DENABLE_CMAKE_DEBUG:BOOL=ON
+
 if !force_local_pkgs! == 1 (
   set cmake_args=!cmake_args! -DMQ_FORCE_LOCAL_PKGS=all
 ) else (
@@ -386,6 +394,7 @@ exit /B 0
   echo   /ConfigureOnly      Stop after the CMake configure and generation steps (ie. before building MindQuantum)
   echo   /cxx                (experimental) Enable MindQuantum C++ support
   echo   /Debug              Build in debug mode
+  echo   /DebugCMake         Enable debugging mode for CMake configuration step
   echo   /gpu                Enable GPU support
   echo   /j,/Jobs [N]        Number of parallel jobs for building
   echo                       Defaults to: %n_jobs%

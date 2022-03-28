@@ -219,11 +219,22 @@ function(__exec_cmd)
     message(STATUS "      ...)")
   endif()
 
+  # cmake-format: off
   execute_process(
     COMMAND ${EXEC_COMMAND}
     WORKING_DIRECTORY ${EXEC_WORKING_DIRECTORY}
+    OUTPUT_VARIABLE _stdout
+    ERROR_VARIABLE _stderr
+    RESULTS_VARIABLE _results_out
     RESULT_VARIABLE RESULT)
+  # cmake-format: on
   if(NOT RESULT EQUAL "0")
+    if(ENABLE_CMAKE_DEBUG)
+      message(SEND_ERROR "STDOUT:\n${_stdout}")
+      message(SEND_ERROR "STDERR:\n${_stderr}")
+      message(SEND_ERROR "RESULTS OUT:\n${_results_out}")
+    endif()
+
     message(FATAL_ERROR "error! when ${EXEC_COMMAND} in ${EXEC_WORKING_DIRECTORY}")
   endif()
 endfunction()

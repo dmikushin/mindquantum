@@ -23,6 +23,7 @@ Param(
     [switch]$ConfigureOnly,
     [switch]$Cxx,
     [switch]$Debug,
+    [switch]$DebugCMake,
     [switch]$DryRun,
     [switch]$Gpu,
     [switch]$Help,
@@ -51,6 +52,7 @@ $IsWinEnv = !$IsLinuxEnv -and !$IsMacOSEnv
 # Default values
 
 $build_type = "Release"
+$cmake_debug_mode = 0
 $configure_only = 0
 $do_clean = 0
 $do_clean_build_dir = 0
@@ -158,6 +160,7 @@ function help_message() {
     echo '  -ConfigureOnly      Stop after the CMake configure and generation steps (ie. before building MindQuantum)'
     echo '  -Cxx                (experimental) Enable MindQuantum C++ support'
     echo '  -Debug              Build in debug mode'
+    echo '  -DebugCMake         Enable debugging mode for CMake configuration step'
     echo '  -Gpu                Enable GPU support'
     echo '  -J,-Jobs [N]        Number of parallel jobs for building'
     echo ("                      Defaults to: {0}" -f $n_jobs)
@@ -213,6 +216,10 @@ if ($Cxx.IsPresent) {
 
 if ($Debug.IsPresent) {
     $build_type = "Debug"
+}
+
+if ($DebugCMake.IsPresent) {
+    $cmake_debug_mode = 1
 }
 
 if ($Gpu.IsPresent) {
@@ -368,6 +375,10 @@ if ($enable_gpu -eq 1) {
 
 if ($enable_cxx -eq 1) {
     $cmake_args += "-DENABLE_CXX_EXPERIMENTAL:BOOL=ON"
+}
+
+if ($cmake_debug_mode -eq 1) {
+    $cmake_args += "-DENABLE_CMAKE_DEBUG:BOOL=ON"
 }
 
 if ($force_local_pkgs -eq 1) {
