@@ -17,7 +17,7 @@
 # ==============================================================================
 
 add_test_executable(test_atom_storage LIBS mindquantum_cxx DEFINES UNIT_TESTS)
-add_test_executable(test_apply_atoms LIBS mindquantum_cxx SymEngine::SymEngine DEFINES UNIT_TESTS)
+add_test_executable(test_apply_atoms LIBS mindquantum_cxx mindquantum::symengine DEFINES UNIT_TESTS)
 add_test_executable(test_non_gate_decomposition_rules LIBS mindquantum_cxx DEFINES UNIT_TESTS)
-add_test_executable(test_gate_decomposer LIBS mindquantum_cxx SymEngine::SymEngine DEFINES UNIT_TESTS)
-add_test_executable(test_decomposition_rules LIBS mindquantum_cxx SymEngine::SymEngine DEFINES UNIT_TESTS)
+add_test_executable(test_gate_decomposer LIBS mindquantum_cxx mindquantum::symengine DEFINES UNIT_TESTS)
+add_test_executable(test_decomposition_rules LIBS mindquantum_cxx mindquantum::symengine DEFINES UNIT_TESTS)

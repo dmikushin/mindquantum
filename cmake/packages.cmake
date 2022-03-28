@@ -183,14 +183,8 @@ endif()
 
 # ==============================================================================
 
-find_package(SymEngine 0.6.0 REQUIRED CONFIG PATHS /usr/local/symbolic)
 find_package(gmp REQUIRED)
 
-if(TARGET symengine)
-  target_link_libraries(symengine INTERFACE gmp::gmp)
-  duplicate_target(SymEngine::SymEngine symengine)
-elseif(TARGET SymEngine::SymEngine)
-  target_link_libraries(SymEngine::SymEngine INTERFACE gmp::gmp)
 endif()
 
 # ==============================================================================

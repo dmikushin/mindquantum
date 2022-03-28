@@ -33,5 +33,7 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake)
 
 if(ENABLE_CXX_EXPERIMENTAL)
+  # TODO(dnguyen): Replace with add_subdirectory(...)
+  include(${CMAKE_CURRENT_LIST_DIR}/symengine/symengine.cmake)
   include(${CMAKE_CURRENT_LIST_DIR}/tweedledum/tweedledum.cmake)
 endif()

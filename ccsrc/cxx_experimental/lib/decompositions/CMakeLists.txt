@@ -22,4 +22,4 @@ target_sources(
           ${CMAKE_CURRENT_LIST_DIR}/toffoli2cnotandtgate.cpp ${CMAKE_CURRENT_LIST_DIR}/gate_decomposer.cpp
           ${CMAKE_CURRENT_LIST_DIR}/atom_storage.cpp)
 
-target_link_libraries(mindquantum_cxx PUBLIC SymEngine::SymEngine)
+target_link_libraries(mindquantum_cxx PUBLIC mindquantum::symengine)
