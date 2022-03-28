@@ -23,4 +23,4 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/mapping)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ops)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/optimisation)
 
-target_link_libraries(mindquantum_cxx PUBLIC tweedledum_lib ${OpenMP_tgt} Threads::Threads)
+target_link_libraries(mindquantum_cxx PUBLIC mindquantum::tweedledum ${OpenMP_tgt} Threads::Threads)

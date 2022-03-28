@@ -16,6 +16,8 @@
 #
 # ==============================================================================
 
+# cmake-lint: disable=C0103,E1122
+
 set(TWEEDLEDUM_PYBINDS OFF)
 set(TWEEDLEDUM_USE_EXTERNAL_FMT OFF)
 
@@ -27,24 +29,62 @@ elseif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/../tweedledum/cmake)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/../tweedledum/cmake)
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../tweedledum EXCLUDE_FROM_ALL)
 else()
-  find_package(tweedledum REQUIRED)
-endif()
+  set(GIT_URL "https://github.com/boschmitt/tweedledum.git")
+  set(GIT_TAG "e73beb23a3feeba02a851e3f8131e3c85a29de2b")
 
-if(TARGET tweedledum)
-  get_target_property(_lib_type tweedledum TYPE)
-  if(_lib_type STREQUAL "OBJECT_LIBRARY")
-    add_library(tweedledum_lib STATIC $<TARGET_OBJECTS:tweedledum>)
+  set(CMAKE_OPTION -DBUILD_TESTING=OFF -DTWEEDLEDUM_EXAMPLES=OFF -DTWEEDLEDUM_USE_EXTERNAL_PYBIND11=ON
+                   -DTWEEDLEDUM_PYBINDS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_EXTENSIONS=OFF)
 
-    get_target_property(_link_libs tweedledum INTERFACE_LINK_LIBRARIES)
-    target_link_libraries(tweedledum_lib PUBLIC ${_link_libs})
-    get_target_property(_inc_dirs tweedledum INTERFACE_INCLUDE_DIRECTORIES)
-    target_include_directories(tweedledum_lib PUBLIC ${_inc_dirs})
-    target_link_libraries(tweedledum_lib INTERFACE ${_zlib_tgt})
-  else()
-    target_link_libraries(tweedledum INTERFACE ${_zlib_tgt})
-    add_library(tweedledum_lib ALIAS tweedledum)
+  if(MSVC)
+    set(tweedledum_CFLAGS "/D_ITERATOR_DEBUG_LEVEL=0")
+    set(tweedledum_CXXFLAGS "/D_ITERATOR_DEBUG_LEVEL=0 /Zc:__cplusplus")
+    list(APPEND CMAKE_OPTION -DCMAKE_DEBUG_POSTFIX=d)
   endif()
-else()
-  target_link_libraries(tweedledum::tweedledum INTERFACE ${_zlib_tgt})
-  add_library(tweedledum_lib ALIAS tweedledum::tweedledum)
+
+  set(PATCHES
+      ${CMAKE_CURRENT_LIST_DIR}/patch/cmake.patch001
+      ${CMAKE_CURRENT_LIST_DIR}/patch/cxx20_compatibility.patch002
+      ${CMAKE_CURRENT_LIST_DIR}/patch/parametric_ops_compatibility.patch003
+      ${CMAKE_CURRENT_LIST_DIR}/patch/rxx_matrix_fix.patch004
+      ${CMAKE_CURRENT_LIST_DIR}/patch/sync_bool_compare_and_swap.patch005
+      ${CMAKE_CURRENT_LIST_DIR}/patch/misc_changes.patch006
+      ${CMAKE_CURRENT_LIST_DIR}/patch/fix-msvc-platform-detection.patch007)
+
+  if(NOT MQ_HAS_STD_LAUNDER)
+    list(APPEND PATCHES ${CMAKE_CURRENT_LIST_DIR}/patch/fix-missing-std-launder.patch008)
+  endif()
+
+  mindquantum_add_pkg(
+    tweedledum
+    VER 1.1.0
+    LIBS tweedledum
+    GIT_REPOSITORY ${GIT_URL}
+    GIT_TAG ${GIT_TAG}
+    MD5 ${MD5}
+    PATCHES ${PATCHES}
+    CMAKE_OPTION
+      ${CMAKE_OPTION} -DEigen3_DIR=${Eigen3_DIR} -Dfmt_DIR=${fmt_DIR} -Dnlohmann_json_DIR=${nlohmann_json_DIR}
+      -Dpybind11_DIR=${pybind11_DIR} -DSymEngine_DIR=${SymEngine_DIR}
+    TARGET_ALIAS mindquantum::tweedledum tweedledum::tweedledum)
+
+  foreach(
+    _comp
+    abcresub
+    libabcesop
+    bill
+    kitty
+    rang
+    lorina
+    percy
+    libabcsat
+    mockturtle)
+    set(_tgt tweedledum::${_comp})
+    if(TARGET ${_tgt})
+      get_target_property(_aliased ${_tgt} ALIASED_TARGET)
+      if(_aliased)
+        set(_tgt ${_aliased})
+      endif()
+      set_target_properties(${_tgt} PROPERTIES IMPORTED_GLOBAL TRUE)
+    endif()
+  endforeach()
 endif()
