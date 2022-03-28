@@ -47,12 +47,39 @@ endif()
 
 # ------------------------------------------------------------------------------
 
-if(WIN32)
+if(MSVC)
   test_compile_option(
-    _compile_win32_flags
+    _compile_msvc_flags
     LANGS CXX
     FLAGS "/Zc:__cplusplus"
     AUTO_ADD_CO)
+
+  test_compile_option(
+    _compile_msvc_mt_flags
+    LANGS CXX
+    FLAGS "/MT"
+    AUTO_ADD_CO
+    GENEX "$<AND:$<CONFIG:RELEASE>,$<BOOL:${ENABLE_MT}>,$<COMPILE_LANGUAGE:@lang@>>")
+  test_compile_option(
+    _compile_msvc_mt_flags
+    LANGS CXX
+    FLAGS "/MTd"
+    AUTO_ADD_CO
+    GENEX "$<AND:$<OR:$<CONFIG:DEBUG>,$<CONFIG:RELWITHDEBINFO>>,$<BOOL:${ENABLE_MT}>,$<COMPILE_LANGUAGE:@lang@>>")
+
+  test_compile_option(
+    _compile_msvc_md_flags
+    LANGS CXX
+    FLAGS "/MD"
+    AUTO_ADD_CO
+    GENEX "$<AND:$<CONFIG:RELEASE>,$<BOOL:${ENABLE_MD}>,$<COMPILE_LANGUAGE:@lang@>>")
+  test_compile_option(
+    _compile_msvc_md_flags
+    LANGS CXX
+    FLAGS "/MDd"
+    AUTO_ADD_CO
+    GENEX "$<AND:$<OR:$<CONFIG:DEBUG>,$<CONFIG:RELWITHDEBINFO>>,$<BOOL:${ENABLE_MD}>,$<COMPILE_LANGUAGE:@lang@>>")
+
 endif()
 
 # ------------------------------------------------------------------------------

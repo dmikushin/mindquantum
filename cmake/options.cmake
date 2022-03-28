@@ -81,6 +81,13 @@ option(USE_PARALLEL_STL "Use parallel STL algorithms (GCC, Intel, IntelLLVM and 
 
 # ------------------------------------------------------------------------------
 
+if(MSVC)
+  option(ENABLE_MD "Enable compilation using the /MD,/MDd flags" OFF)
+  option(ENABLE_MT "Enable compilation using the /MT,/MTd flags" OFF)
+endif()
+
+# ------------------------------------------------------------------------------
+
 option(ENABLE_PROFILING "Enable compilation with profiling flags." OFF)
 option(ENABLE_STACK_PROTECTION "Enable the use of -fstack-protector during compilation" ON)
 
