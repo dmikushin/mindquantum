@@ -27,13 +27,13 @@
 
 #include "ops/parametric/config.hpp"
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "core/concepts.hpp"
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 #include "core/operator_traits.hpp"
 
 namespace mindquantum::concepts {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename operator_t>
 concept Gate = requires(operator_t optor) {
     // clang-format off
@@ -120,7 +120,7 @@ concept SingleParameterGate = requires(operator_t optor) {
 };
 
 #else
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 }  // namespace mindquantum::concepts
 
 #endif /* GATE_CONCEPTS_HPP */

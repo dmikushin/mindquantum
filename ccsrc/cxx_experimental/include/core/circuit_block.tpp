@@ -46,11 +46,11 @@ namespace mindquantum
 
 namespace mindquantum
 {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
           template <concepts::cold_start_t Fn, concepts::hot_start_t Gn>
 #else
           template <typename Fn, typename Gn>
-#endif // HIQ_USE_CONCEPTS
+#endif // MQ_HAS_CONCEPTS
      void CircuitBlock::apply_mapping(const device_t& device, const Fn& cold_start, const Gn& hot_start)
      {
           // clang-format off

@@ -26,7 +26,7 @@
 #include "ops/parametric/param_names.hpp"
 
 namespace mindquantum::concepts {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 // template <typename key_t, typename value_t, std::size_t N>
 // using umap_t = frozen::unordered_map<key_t, value_t, N, frozen::anna<key_t>, std::equal_to<>>;
 
@@ -68,6 +68,6 @@ struct number : std::false_type {};
 template <typename T>
 struct number<T, std::enable_if_t<(std::is_integral_v<T> || std::is_floating_point_v<T>)
                                   || (std::is_same_v<std::complex<double>, T>)>> : std::true_type {};
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 }  // namespace mindquantum::concepts
 #endif  // PARAMETRIC_CONCEPTS_HPP

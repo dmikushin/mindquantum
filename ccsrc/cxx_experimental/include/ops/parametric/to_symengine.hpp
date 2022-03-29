@@ -22,13 +22,13 @@
 
 #include "core/traits.hpp"
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "core/concepts.hpp"
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 #include "ops/parametric/concepts.hpp"
 
 namespace mindquantum::ops::parametric {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename T>
 static auto to_symengine(T&& t) {
     using type = std::remove_cvref_t<T>;
@@ -56,7 +56,7 @@ static auto to_symengine(T&& t) {
         return SymEngine::expand(std::forward<T>(t));
     }
 }
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 }  // namespace mindquantum::ops::parametric
 
 #endif /* TO_SYMENGINE_HPP */

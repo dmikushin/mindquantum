@@ -30,13 +30,13 @@ namespace mindquantum::traits {
 namespace impl {
 template <typename ref_kind_t, typename... kinds_t>
 constexpr bool kind_match(const ref_kind_t& ref_kind, kinds_t&&... kinds)
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     requires(sizeof...(kinds_t) > 0)
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 {
-#if !HIQ_USE_CONCEPTS
+#if !MQ_HAS_CONCEPTS
     static_assert(sizeof...(kinds_t) > 0);
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
     return ((ref_kind == std::forward<kinds_t>(kinds)) || ...);
 }
 
@@ -80,7 +80,7 @@ template <typename operator_t, typename = void>
 struct static_method_num_targets : std::integral_constant<std::size_t, 0UL> {};
 
 template <typename operator_t>
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 struct static_method_num_targets<operator_t, std::void_t<decltype(operator_t::num_targets() > 0)>>
     : std::integral_constant<std::size_t, operator_t::num_targets()> {
 };
@@ -88,7 +88,7 @@ struct static_method_num_targets<operator_t, std::void_t<decltype(operator_t::nu
 struct static_method_num_targets<operator_t, std::void_t<decltype(operator_t::num_targets_static() > 0)>>
     : std::integral_constant<std::size_t, operator_t::num_targets_static()> {
 };
-#endif  //  HIQ_USE_CONCEPTS
+#endif  //  MQ_HAS_CONCEPTS
 
 // -------------------------------------------------------------------------
 

@@ -26,11 +26,11 @@
 #include "ops/parametric/param_names.hpp"
 #include "ops/parametric/to_symengine.hpp"
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "core/gate_concepts.hpp"
 #else
 #    include <type_traits>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 
 #include <symengine/complex_double.h>
 #include <symengine/dict.h>
@@ -72,38 +72,38 @@
 // }  // namespace frozen
 
 namespace mindquantum::ops::parametric {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename derived_t, typename non_param_t, concepts::parameter... params_t>
 #else
 template <typename derived_t, typename non_param_t, typename... params_t>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 class ParametricBase;
 }  // namespace mindquantum::ops::parametric
 
 namespace mindquantum::traits {
 //! Detect if a template argument pack is a ParametricBase
 /*!
- * Only needed as a workaround for GCC 7+ when HIQ_USE_CONCEPTS == false
+ * Only needed as a workaround for GCC 7+ when MQ_HAS_CONCEPTS == false
  */
 template <typename... Ts>
 struct is_param_base : std::false_type {};
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename derived_t, typename non_param_t, concepts::parameter... params_t>
 #else
 template <typename derived_t, typename non_param_t, typename... params_t>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 struct is_param_base<ops::parametric::ParametricBase<derived_t, non_param_t, params_t...>> : std::true_type {
 };
 
 }  // namespace mindquantum::traits
 
 namespace mindquantum::ops::parametric {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename derived_t, typename non_param_t, concepts::parameter... params_t>
 #else
 template <typename derived_t, typename non_param_t, typename... params_t>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 class ParametricBase {
  public:
     static_assert(sizeof...(params_t) > 0, "Need to define at least 1 parameter");
@@ -130,10 +130,10 @@ class ParametricBase {
     /*!
      * Overload only available if \c non_param_type has compile-time constant number of qubits
      */
-    HIQ_NODISCARD static constexpr derived_t create_op()
-#if HIQ_USE_CONCEPTS
+    MQ_NODISCARD static constexpr derived_t create_op()
+#if MQ_HAS_CONCEPTS
         requires(has_const_num_targets)
-#endif  //  HIQ_USE_CONCEPTS
+#endif  //  MQ_HAS_CONCEPTS
     {
         return derived_t{param_array_t{SymEngine::symbol(std::string(params_t::name))...}};
     }
@@ -142,11 +142,11 @@ class ParametricBase {
     /*!
      * Overload only available if \c non_param_type does not have compile-time constant number of qubits
      */
-    HIQ_NODISCARD static constexpr derived_t create_op(uint32_t num_targets)
-#if HIQ_USE_CONCEPTS
+    MQ_NODISCARD static constexpr derived_t create_op(uint32_t num_targets)
+#if MQ_HAS_CONCEPTS
         requires(!has_const_num_targets)
 #else
-#endif  //  HIQ_USE_CONCEPTS
+#endif  //  MQ_HAS_CONCEPTS
     {
         return derived_t{num_targets, param_array_t{SymEngine::symbol(std::string(params_t::name))...}};
     }
@@ -159,10 +159,10 @@ class ParametricBase {
      * Overload only available if \c non_param_type has compile-time constant number of qubits
      */
     template <typename... funcs_t>
-    HIQ_NODISCARD static constexpr derived_t create_op(funcs_t&&... transforms)
-#if HIQ_USE_CONCEPTS
+    MQ_NODISCARD static constexpr derived_t create_op(funcs_t&&... transforms)
+#if MQ_HAS_CONCEPTS
         requires(traits::has_const_num_targets_v<non_param_type>)
-#endif  //  HIQ_USE_CONCEPTS
+#endif  //  MQ_HAS_CONCEPTS
     {
         static_assert(sizeof...(funcs_t) == sizeof...(params_t),
                       "You need to specify as many transformation functions as there are parameters");
@@ -174,10 +174,10 @@ class ParametricBase {
      * Overload only available if \c non_param_type does not have compile-time constant number of qubits
      */
     template <typename... funcs_t>
-    HIQ_NODISCARD static constexpr derived_t create_op(uint32_t num_targets, funcs_t&&... transforms)
-#if HIQ_USE_CONCEPTS
+    MQ_NODISCARD static constexpr derived_t create_op(uint32_t num_targets, funcs_t&&... transforms)
+#if MQ_HAS_CONCEPTS
         requires(!has_const_num_targets)
-#endif  //  HIQ_USE_CONCEPTS
+#endif  //  MQ_HAS_CONCEPTS
     {
         static_assert(sizeof...(funcs_t) == sizeof...(params_t),
                       "You need to specify as many transformation functions as there are parameters");
@@ -193,14 +193,14 @@ class ParametricBase {
      * \param expr List of SymEngine expressions
      * \note This constructor expects exactly \c num_params arguments
      */
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     template <typename... Ts>
     requires(has_const_num_targets && (concepts::expr_or_number<Ts> || ...)) constexpr ParametricBase(Ts&&... args)
 #else
     template <typename... Ts, typename T = self_t,
               typename = std::enable_if_t<T::has_const_num_targets && !traits::is_param_base<Ts...>::value>>
     constexpr ParametricBase(Ts&&... args)
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
         : num_targets_(traits::num_targets<non_param_type>), params_{to_symengine(std::forward<Ts>(args))...} {
         static_assert(sizeof...(Ts) == num_params, "You need to specify a value for all the parameters");
     }
@@ -211,14 +211,14 @@ class ParametricBase {
      * \param expr List of SymEngine expressions
      * \note This constructor expects exactly \c num_params arguments
      */
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     template <typename... Ts>
     requires(!has_const_num_targets
              && (concepts::expr_or_number<Ts> || ...)) constexpr ParametricBase(uint32_t num_targets, Ts&&... args)
 #else
     template <typename... Ts, typename T = self_t, typename = std::enable_if_t<!T::has_const_num_targets>>
     constexpr ParametricBase(uint32_t num_targets, Ts&&... args)
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
         : num_targets_(num_targets), params_{to_symengine(std::forward<Ts>(args))...} {
         static_assert(sizeof...(Ts) == num_params, "You need to specify a value for all the parameters");
     }
@@ -227,22 +227,22 @@ class ParametricBase {
     // :: ParametricBase([num_targets], params)
 
     //! Constructor from an array of parameters
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     constexpr ParametricBase(param_array_t&& params) requires(has_const_num_targets)
 #else
     template <typename T = self_t, typename = std::enable_if_t<T::has_const_num_targets>>
     constexpr ParametricBase(param_array_t&& params)
-#endif  //  HIQ_USE_CONCEPTS
+#endif  //  MQ_HAS_CONCEPTS
         : num_targets_(traits::num_targets<non_param_type>), params_{expand_all(std::move(params))} {
     }
 
     //! Constructor from an array of parameters
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     constexpr ParametricBase(uint32_t num_targets, param_array_t&& params) requires(!has_const_num_targets)
 #else
     template <typename T = self_t, typename = std::enable_if_t<!T::has_const_num_targets>>
     constexpr ParametricBase(uint32_t num_targets, param_array_t&& params)
-#endif  //  HIQ_USE_CONCEPTS
+#endif  //  MQ_HAS_CONCEPTS
         : num_targets_(num_targets), params_{expand_all(std::move(params))} {
     }
 
@@ -258,8 +258,8 @@ class ParametricBase {
 
     // ---------------------------
 
-#if HIQ_USE_CONCEPTS
-    HIQ_NODISCARD static constexpr auto num_targets() noexcept requires(has_const_num_targets)
+#if MQ_HAS_CONCEPTS
+    MQ_NODISCARD static constexpr auto num_targets() noexcept requires(has_const_num_targets)
 #else
     /* This is totally hacky...
      *
@@ -267,37 +267,37 @@ class ParametricBase {
      * traits::num_targets<operator_t> in order to get the number of targets at compile time (if available)
      */
     template <typename T = non_param_type, typename = std::enable_if_t<traits::has_const_num_targets_v<T>, uint32_t>>
-    HIQ_NODISCARD static constexpr auto num_targets_static() noexcept
-#endif  //  HIQ_USE_CONCEPTS
+    MQ_NODISCARD static constexpr auto num_targets_static() noexcept
+#endif  //  MQ_HAS_CONCEPTS
     {
         return traits::num_targets<non_param_type>;
     }
 
-#if HIQ_USE_CONCEPTS
-    HIQ_NODISCARD constexpr auto num_targets() const noexcept requires(!has_const_num_targets)
+#if MQ_HAS_CONCEPTS
+    MQ_NODISCARD constexpr auto num_targets() const noexcept requires(!has_const_num_targets)
 #else
     template <typename T = non_param_type, typename = std::enable_if_t<!traits::has_const_num_targets_v<T>, uint32_t>>
-    HIQ_NODISCARD constexpr auto num_targets() const noexcept
-#endif  //  HIQ_USE_CONCEPTS
+    MQ_NODISCARD constexpr auto num_targets() const noexcept
+#endif  //  MQ_HAS_CONCEPTS
     {
         return num_targets_;
     }
 
     //! Test whether another operation is the same as this instance
-    HIQ_NODISCARD bool operator==(const ParametricBase& other) const noexcept {
+    MQ_NODISCARD bool operator==(const ParametricBase& other) const noexcept {
         return std::equal(begin(params_), end(params_), begin(other.params_),
                           [](const auto& a, const auto& b) { return eq(*a, *b); });
     }
 
 #if __cplusplus <= 201703L
     //! Test whether another operation is the same as this instance
-    HIQ_NODISCARD bool operator!=(const ParametricBase& other) const noexcept {
+    MQ_NODISCARD bool operator!=(const ParametricBase& other) const noexcept {
         return !(*this == other);
     }
 #endif  // __cplusplus <= 201703L
 
     //! True if this operation has no particular ordering of qubits
-    HIQ_NODISCARD bool is_symmetric() const noexcept {
+    MQ_NODISCARD bool is_symmetric() const noexcept {
         return true;
     }
 
@@ -305,7 +305,7 @@ class ParametricBase {
     /*!
      * \param idx Index of parameter
      */
-    HIQ_NODISCARD static constexpr const auto& param_name(std::size_t idx) {
+    MQ_NODISCARD static constexpr const auto& param_name(std::size_t idx) {
         assert(idx < num_params);
         return pos_[idx];
     }
@@ -315,7 +315,7 @@ class ParametricBase {
      * \param idx Index of parameter
      * \return Parameter at index \c idx
      */
-    HIQ_NODISCARD constexpr const auto& param(std::size_t idx) const {
+    MQ_NODISCARD constexpr const auto& param(std::size_t idx) const {
         assert(idx < num_params);
         return params_[idx];
     }
@@ -324,7 +324,7 @@ class ParametricBase {
     /*!
      * \return SymEngine::vec_basic (\c std::vector<...>) containing all parameters
      */
-    HIQ_NODISCARD auto params() const noexcept {
+    MQ_NODISCARD auto params() const noexcept {
         SymEngine::vec_basic params;
         std::copy(begin(params_), end(params_), std::inserter(params, end(params)));
         return params;
@@ -339,7 +339,7 @@ class ParametricBase {
      * \return An new instance of the parametric gate with evaluated parameters
      * \sa non_param_type eval_full(const SymEngine::map_basic_basic& subs_map) const
      */
-    HIQ_NODISCARD derived_t eval(const subs_map_t& subs_map) const {
+    MQ_NODISCARD derived_t eval(const subs_map_t& subs_map) const {
         auto params = base_t::params_;
         for (auto& param : params) {
             // NB: expand required to normalize the expressions (e.g. required for testing for equality)
@@ -361,7 +361,7 @@ class ParametricBase {
      * \return An instance of a non-parametric gate (\c non_param_type)
      * \throw SymEngine::SymEngineException if the expression cannot be fully evaluated numerically
      */
-    HIQ_NODISCARD auto eval_full() const {
+    MQ_NODISCARD auto eval_full() const {
         return eval_full_impl_(std::index_sequence_for<params_t...>{});
     }
 
@@ -377,7 +377,7 @@ class ParametricBase {
      * \return An instance of a non-parametric gate (\c non_param_type)
      * \throw SymEngine::SymEngineException if the expression cannot be fully evaluated numerically
      */
-    HIQ_NODISCARD auto eval_full(const subs_map_t& subs_map) const {
+    MQ_NODISCARD auto eval_full(const subs_map_t& subs_map) const {
         return eval_full_impl_(std::index_sequence_for<params_t...>{}, subs_map);
     }
 
@@ -390,7 +390,7 @@ class ParametricBase {
      * \return An new instance of the parametric gate with evaluated parameters
      * \sa non_param_type eval_full(const SymEngine::map_basic_basic& subs_map) const
      */
-    HIQ_NODISCARD operator_t eval_smart() const {
+    MQ_NODISCARD operator_t eval_smart() const {
         auto params = base_t::params_;
         for (auto& param : params) {
             // NB: expand required to normalize the expressions (e.g. required for testing for equality)
@@ -414,7 +414,7 @@ class ParametricBase {
      * \return An new instance of the parametric gate with evaluated parameters
      * \sa non_param_type eval_full(const SymEngine::map_basic_basic& subs_map) const
      */
-    HIQ_NODISCARD operator_t eval_smart(const subs_map_t& subs_map) const {
+    MQ_NODISCARD operator_t eval_smart(const subs_map_t& subs_map) const {
         auto params = base_t::params_;
         for (auto& param : params) {
             // NB: expand required to normalize the expressions (e.g. required for testing for equality)

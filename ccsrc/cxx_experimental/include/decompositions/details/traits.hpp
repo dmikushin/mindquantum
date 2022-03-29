@@ -23,9 +23,9 @@
 
 #include "ops/parametric/traits.hpp"
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "core/gate_concepts.hpp"
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 
 #include "decompositions/details/decomposition_param.hpp"
 #include "decompositions/parametric_atom.hpp"
@@ -43,7 +43,7 @@ class GateDecompositionRuleCXX17;
 
 namespace mindquantum::traits {
 // Automatic type conversion utilities
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename atom_t>
 struct atom_traits;
 
@@ -113,13 +113,13 @@ inline constexpr auto has_is_applicable_v = has_is_applicable<atom_t>::value;
 namespace mindquantum::decompositions::details {
 template <std::size_t idx, typename elem_t, typename tuple_t>
 constexpr auto index_in_tuple_fn()
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     requires(idx < std::tuple_size_v<tuple_t> /* if this fails, elem_t is not in tuple_t */)
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 {
-#if !HIQ_USE_CONCEPTS
+#if !MQ_HAS_CONCEPTS
     static_assert(idx < std::tuple_size_v<tuple_t>, "The element is not in the tuple!");
-#endif  // !HIQ_USE_CONCEPTS
+#endif  // !MQ_HAS_CONCEPTS
     using tuple_elem_t = typename std::tuple_element_t<idx, tuple_t>;
     if constexpr (std::is_same_v<elem_t, tuple_elem_t>) {
         return idx;

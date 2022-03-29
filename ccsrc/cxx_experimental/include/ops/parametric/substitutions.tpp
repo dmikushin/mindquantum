@@ -63,11 +63,11 @@ namespace mindquantum::ops::parametric {
 
         // =========================================================================
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
         template <typename operator_t, std::size_t... indices, concepts::expr_or_number... exprs_t>
 #else
         template <typename operator_t, std::size_t... indices, typename... exprs_t>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
         auto create_subs_from_params(std::index_sequence<indices...> /* indices */, exprs_t&&... exprs) {
             static_assert(sizeof...(indices) == operator_t::num_params);
             static_assert(sizeof...(indices) == sizeof...(exprs));

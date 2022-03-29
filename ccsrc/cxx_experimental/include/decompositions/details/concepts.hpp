@@ -34,7 +34,7 @@ using ops::parametric::gate_param_t;
 using ops::parametric::param_list_t;
 }  // namespace mindquantum::concepts
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include <string_view>
 
 #    include "decompositions/config.hpp"
@@ -180,6 +180,6 @@ template <class Op>
 static constexpr auto has_param_list_apply = has_param_list_apply_<Op>::value;
 
 }  // namespace mindquantum::concepts
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 
 #endif /* DECOMPOSITIONS_CONCEPTS_HPP */

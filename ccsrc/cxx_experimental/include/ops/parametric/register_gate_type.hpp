@@ -17,9 +17,9 @@
 
 #include "ops/parametric/config.hpp"
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "core/gate_concepts.hpp"
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 
 #include <vector>
 
@@ -36,10 +36,10 @@ using operator_t = tweedledum::Operator;
  */
 template <typename operator_t>
 void register_gate_type()
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     requires((concepts::ParametricGate<operator_t>) || (concepts::AngleGate<operator_t>)
              || (concepts::SingleDoubleGate<operator_t>) || (concepts::MultiDoubleGate<operator_t>) )
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
         ;
 
 //! Get the parameters of an operation

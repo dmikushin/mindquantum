@@ -43,29 +43,29 @@ namespace mindquantum::decompositions {
     template <typename derived_t, typename... atoms_t>
     template <std::size_t idx>
     constexpr auto* DecompositionRule<derived_t, atoms_t...>::atom() noexcept
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
         requires(idx < sizeof...(atoms_t))
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
     {
-#if !HIQ_USE_CONCEPTS
+#if !MQ_HAS_CONCEPTS
         static_assert(idx < sizeof...(atoms_t));
-#endif  // !HIQ_USE_CONCEPTS
+#endif  // !MQ_HAS_CONCEPTS
         return atoms_[idx];
     }
 
     template <typename derived_t, typename... atoms_t>
     template <typename atom_t>
     constexpr auto* DecompositionRule<derived_t, atoms_t...>::atom() noexcept
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
         requires(concepts::tuple_contains<typename traits::atom_traits<atom_t>::type,
                                           typename traits::atom_traits<atoms_t>::type...>)
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
     {
         using real_atom_t = typename traits::atom_traits<atom_t>::type;
         using atoms_tuple_t = std::tuple<typename traits::atom_traits<atoms_t>::type...>;
-#if !HIQ_USE_CONCEPTS
+#if !MQ_HAS_CONCEPTS
         static_assert(traits::tuple_contains<real_atom_t, atoms_tuple_t>);
-#endif  // !HIQ_USE_CONCEPTS
+#endif  // !MQ_HAS_CONCEPTS
         return atom<details::index_in_tuple<real_atom_t, atoms_tuple_t>>();
     }
 

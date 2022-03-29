@@ -66,9 +66,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/packages.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/compiler_flags.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/linker_flags.cmake)
 
-# Test compiler capabilities
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/compiler_test.cmake)
-
 # ==============================================================================
 # Some more macro definitions
 

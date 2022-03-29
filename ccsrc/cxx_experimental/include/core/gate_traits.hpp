@@ -15,9 +15,9 @@
 #ifndef GATE_TRAITS_HPP
 #define GATE_TRAITS_HPP
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "core/gate_concepts.hpp"
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -25,7 +25,7 @@
 #include <tweedledum/IR/Operator.h>
 
 namespace mindquantum::traits {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename operator_t>
 struct gate_traits {
     using non_param_type = operator_t;
@@ -108,7 +108,7 @@ struct gate_traits {
         return details::param_traits<operator_t>::apply(op.cast<operator_t>());
     }
 };
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 
 }  // namespace mindquantum::traits
 

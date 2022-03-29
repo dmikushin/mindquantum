@@ -17,9 +17,9 @@
 
 #include "core/config.hpp"
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "core/concepts.hpp"
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 
 #include <map>
 #include <memory>
@@ -40,7 +40,7 @@ class UnitTestAccessor;
 #endif  // UNIT_TESTS
 
 namespace mindquantum {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 namespace concepts {
 using device_t = tweedledum::Device;
 using circuit_t = tweedledum::Circuit;
@@ -60,7 +60,7 @@ concept hot_start_t = requires(func_t func, device_t device, circuit_t circuit, 
     // clang-format on
 };
 }  // namespace concepts
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 
 //! ProjectQ qubit ID
 class QubitID {
@@ -294,11 +294,11 @@ class CircuitBlock {
      * \note The signature of the callables are:
      *         - void (*) (td::MapState&);
      */
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     template <concepts::cold_start_t Fn, concepts::hot_start_t Gn>
 #else
     template <typename Fn, typename Gn>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
     void apply_mapping(const device_t& device, const Fn& cold_start, const Gn& hot_start);
 
     // -----------------------------------------------

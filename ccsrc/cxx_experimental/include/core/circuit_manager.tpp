@@ -47,11 +47,11 @@ namespace mindquantum
 
 namespace mindquantum
 {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
      template <concepts::Mapper mapper_t>
 #else
      template <typename mapper_t>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
      void CircuitManager::apply_mapping(const mapper_t& mapper)
      {
           apply_mapping(
@@ -64,11 +64,11 @@ namespace mindquantum
               });
      }
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
      template <concepts::cold_start_t Fn, concepts::hot_start_t Gn>
 #else
      template <typename Fn, typename Gn>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
      void CircuitManager::apply_mapping(const device_t& device, Fn&& cold_start, Gn&& hot_start)
      {
           blocks_.back().apply_mapping(device, std::forward<Fn>(cold_start), std::forward<Gn>(hot_start));

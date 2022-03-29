@@ -1,4 +1,4 @@
-//   Copyright 2021 <Huawei Technologies Co., Ltd>
+//   Copyright 2022 <Huawei Technologies Co., Ltd>
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -12,23 +12,21 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#ifndef CORE_CONCEPTS_HPP
-#define CORE_CONCEPTS_HPP
+#ifndef CXX20_CONFIG_HPP
+#define CXX20_CONFIG_HPP
 
-#include <tuple>
+#cmakedefine01 MQ_HAS_CONCEPTS
 
-#include "core/config.hpp"
+#cmakedefine01 MQ_HAS_CONCEPT_LIBRARY
 
-#include "core/traits.hpp"
+#cmakedefine01 MQ_HAS_DETECTED_TS2
 
-namespace mindquantum::concepts {
-template <typename T, typename U>
-concept same_decay_as = std::same_as<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+#cmakedefine01 MQ_HAS_MAP_CONTAINS
 
-template <typename T, typename... Ts>
-concept tuple_contains = traits::tuple_contains<T, std::tuple<Ts...>>;
+#cmakedefine01 MQ_HAS_REMOVE_CVREF_T
 
-template <typename T>
-concept std_complex = traits::is_complex_v<T>;
-}  // namespace mindquantum::concepts
-#endif /* CORE_CONCEPTS_HPP */
+#cmakedefine01 MQ_HAS_STD_FILESYSTEM
+
+#cmakedefine01 MQ_HAS_STD_LAUNDER
+
+#endif /* CXX20_CONFIG_HPP */

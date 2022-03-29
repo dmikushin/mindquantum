@@ -17,46 +17,37 @@
 
 #include <vector>
 
+#include "core/cxx20_config.hpp"
 #include "core/details/clang_version.hpp"
-
-#ifdef CXX20_COMPATIBILITY
-#    include "core/details/cxx20_compatibility.hpp"
-#endif  // CXX20_COMPATIBILITY
+#include "core/details/cxx20_compatibility.hpp"
 
 #ifdef __has_cpp_attribute
 #    if __has_cpp_attribute(nodiscard)
-#        define HIQ_NODISCARD [[nodiscard]]
+#        define MQ_NODISCARD [[nodiscard]]
 #    endif  // __has_cpp_attribute(nodiscard)
 #endif      // __has_cpp_attribute
 
-#ifndef HIQ_NODISCARD
-#    define HIQ_NODISCARD
-#endif  // HIQ_NODISCARD
+#ifndef MQ_NODISCARD
+#    define MQ_NODISCARD
+#endif  // MQ_NODISCARD
 
-#ifndef HIQ_IS_CLANG_VERSION_LESS
-#    define HIQ_IS_CLANG_VERSION_LESS(major, minor)                                                                    \
-        (defined __clang__) && (HIQ_CLANG_MAJOR < major) && (HIQ_CLANG_MINOR < minor)
-#    define HIQ_IS_CLANG_VERSION_LESS_EQUAL(major, minor)                                                              \
-        (defined __clang__) && (HIQ_CLANG_MAJOR <= major) && (HIQ_CLANG_MINOR <= minor)
-#endif  // HIQ_IS_CLANG_VERSION_LESS
+#ifndef MQ_IS_CLANG_VERSION_LESS
+#    define MQ_IS_CLANG_VERSION_LESS(major, minor)                                                                     \
+        (defined __clang__) && (MQ_CLANG_MAJOR < major) && (HIQ_CLANG_MINOR < minor)
+#    define MQ_IS_CLANG_VERSION_LESS_EQUAL(major, minor)                                                               \
+        (defined __clang__) && (MQ_CLANG_MAJOR <= major) && (HIQ_CLANG_MINOR <= minor)
+#endif  // MQ_IS_CLANG_VERSION_LESS
 
-// NB: Clang <= 13.0 for some reason has some troubles with some of the concepts codes
-#if __cpp_concepts && !((defined __clang__) && (HIQ_CLANG_MAJOR <= 13))
-#    define HIQ_USE_CONCEPTS 1
+#if !defined(MQ_CONFIG_NO_COUNTER) && !defined(HIQ_CONFIG_COUNTER)
+#    define MQ_CONFIG_COUNTER
+#endif  // !MQ_CONFIG_NO_COUNTER && !HIQ_CONFIG_COUNTER
+
+#define MQ_UNIQUE_NAME_LINE2(name, line) name##line
+#define MQ_UNIQUE_NAME_LINE(name, line)  MQ_UNIQUE_NAME_LINE2(name, line)
+#ifdef MQ_CONFIG_COUNTER
+#    define MQ_UNIQUE_NAME(name) MQ_UNIQUE_NAME_LINE(name, __COUNTER__)
 #else
-#    define HIQ_USE_CONCEPTS 0
-#endif  // __cpp_concepts
-
-#if !defined(HIQ_CONFIG_NO_COUNTER) && !defined(HIQ_CONFIG_COUNTER)
-#    define HIQ_CONFIG_COUNTER
-#endif  // !HIQ_CONFIG_NO_COUNTER && !HIQ_CONFIG_COUNTER
-
-#define HIQ_UNIQUE_NAME_LINE2(name, line) name##line
-#define HIQ_UNIQUE_NAME_LINE(name, line)  HIQ_UNIQUE_NAME_LINE2(name, line)
-#ifdef HIQ_CONFIG_COUNTER
-#    define HIQ_UNIQUE_NAME(name) HIQ_UNIQUE_NAME_LINE(name, __COUNTER__)
-#else
-#    define HIQ_UNIQUE_NAME(name) HIQ_UNIQUE_NAME_LINE(name, __LINE__)
+#    define MQ_UNIQUE_NAME(name) MQ_UNIQUE_NAME_LINE(name, __LINE__)
 #endif
 
 namespace mindquantum {

@@ -45,7 +45,7 @@ class DecompositionRule {
      * \param storage Atom storage within which this decomposition will live in
      */
     template <typename... args_t>
-    HIQ_NODISCARD static auto create(AtomStorage& storage, args_t&&... args) noexcept {
+    MQ_NODISCARD static auto create(AtomStorage& storage, args_t&&... args) noexcept {
         return derived_t{storage, std::forward<args_t>(args)...};
     }
 
@@ -70,9 +70,9 @@ class DecompositionRule {
      */
     template <std::size_t idx>
     constexpr auto* atom() noexcept
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
         requires(idx < sizeof...(atoms_t))
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
             ;
 
     //! Getter function for the individual atoms
@@ -84,10 +84,10 @@ class DecompositionRule {
      */
     template <typename atom_t>
     constexpr auto* atom() noexcept
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
         requires(concepts::tuple_contains<typename traits::atom_traits<atom_t>::type,
                                           typename traits::atom_traits<atoms_t>::type...>)
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
             ;
 
     //! Apply a decomposition

@@ -25,9 +25,9 @@
 #include "core/config.hpp"
 #include "decompositions/config.hpp"
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "core/concepts.hpp"
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 #include "decompositions/decomposition_atom.hpp"
 
 #ifdef UNIT_TESTS
@@ -35,7 +35,7 @@ class UnitTestAccessor;
 #endif  // UNIT_TESTS
 
 namespace mindquantum::concepts {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename atom_t>
 concept atom_compatible_t = requires(atom_t) {
     // clang-format off
@@ -51,7 +51,7 @@ template <typename operator_t>
 struct atom_compatible_t<operator_t,
                          std::void_t<std::tuple<decltype(operator_t::kind()), decltype(operator_t::num_controls())>>>
     : std::true_type {};
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 }  // namespace mindquantum::concepts
 
 namespace mindquantum::decompositions {
@@ -98,7 +98,7 @@ class AtomStorage {
     /*!
      * \return Pointer to inserted element, pointer to compatible element or nullptr.
      */
-    HIQ_NODISCARD auto size() const noexcept {
+    MQ_NODISCARD auto size() const noexcept {
         // TODO(dnguyen): take general decompositions into account? If not need to change name!
         return std::size(atoms_);
     }
@@ -114,7 +114,7 @@ class AtomStorage {
      * \sa has_atom(std::string_view kind, num_control_t num_controls, std::string_view name) const noexcept
      */
     template <typename o_atom_t>
-    HIQ_NODISCARD bool has_atom() const noexcept;
+    MQ_NODISCARD bool has_atom() const noexcept;
 
     //! Check whether a matching (gate) atom can be found in the storage
     /*!
@@ -126,14 +126,14 @@ class AtomStorage {
      * \return True/false depending on whether the atom can be found or not
      */
     template <typename o_atom_t, typename... operator_t>
-    HIQ_NODISCARD bool has_atom(num_control_t num_controls, std::string_view name) const noexcept;
+    MQ_NODISCARD bool has_atom(num_control_t num_controls, std::string_view name) const noexcept;
 
     //! Look for a suitable decomposition atom within the storage
     /*!
      * \param inst An instruction
      * \return Pointer to atom if any, \c nullptr otherwise
      */
-    HIQ_NODISCARD atom_t* get_atom_for(const instruction_t& inst) noexcept;
+    MQ_NODISCARD atom_t* get_atom_for(const instruction_t& inst) noexcept;
 
     // Read-write accessors
 
@@ -147,7 +147,7 @@ class AtomStorage {
      * \return Pointer to inserted element, pointer to compatible element.
      */
     template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
-    HIQ_NODISCARD atom_t* add_or_compatible_atom(args_t&&... args);
+    MQ_NODISCARD atom_t* add_or_compatible_atom(args_t&&... args);
 
     //! Inserts a new element, constructed in-place with the given args or returns an existing one
     /*!
@@ -159,7 +159,7 @@ class AtomStorage {
      * \return Pointer to inserted element, pointer to compatible element.
      */
     template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
-    HIQ_NODISCARD atom_t* add_or_return_atom(args_t&&... args);
+    MQ_NODISCARD atom_t* add_or_return_atom(args_t&&... args);
 
     //! Inserts or replaces a new element, constructed in-place with the given args
     /*!
@@ -169,7 +169,7 @@ class AtomStorage {
      * \return Pointer to inserted element, pointer to compatible element or nullptr.
      */
     template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
-    HIQ_NODISCARD atom_t* add_or_replace_atom(args_t&&... args);
+    MQ_NODISCARD atom_t* add_or_replace_atom(args_t&&... args);
 
  private:
 #ifdef UNIT_TESTS
@@ -177,7 +177,7 @@ class AtomStorage {
 #endif  // UNIT_TESTS
 
     template <typename o_atom_t, typename ctrl_comp_t, std::size_t kind_idx = 0, typename... args_t>
-    HIQ_NODISCARD atom_t* add_or_non_replace_atom_(args_t&&... args);
+    MQ_NODISCARD atom_t* add_or_non_replace_atom_(args_t&&... args);
 
     template <typename, typename>
     struct has_atom_helper_;

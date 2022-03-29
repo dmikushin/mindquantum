@@ -106,7 +106,7 @@ bool CircuitBlock::has_qubit(pq_id_t qubit_id) const {
     if (std::size(pq_to_td_) == 0) {
         return false;
     }
-#if __cplusplus > 201703L && !(defined CXX20_COMPATIBILITY)
+#if MQ_HAS_MAP_CONTAINS
     return pq_to_td_.contains(qubit_id);
 #else
     return pq_to_td_.count(qubit_id) > 0;

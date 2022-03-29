@@ -21,7 +21,7 @@
 #include "decompositions/trivial_atom.hpp"
 
 namespace mindquantum::traits {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename T, decompositions::num_control_t num_controls>
 struct atom_control_type;
 template <concepts::NonParametricGate gate_t, decompositions::num_control_t num_controls>
@@ -41,7 +41,7 @@ template <typename gate_t, decompositions::num_control_t num_controls>
 struct atom_control_type<gate_t, num_controls, typename std::void_t<typename gate_t::is_parametric>> {
     using control_type = decompositions::ParametricSimpleAtom<gate_t, num_controls>;
 };
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 }  // namespace mindquantum::traits
 
 namespace mindquantum::decompositions::atoms {

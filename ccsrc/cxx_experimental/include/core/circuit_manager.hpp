@@ -18,9 +18,9 @@
 #include "core/config.hpp"
 
 #include "circuit_block.hpp"
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "engine_concepts.hpp"
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 
 #include <map>
 #include <memory>
@@ -165,11 +165,11 @@ class CircuitManager {
 
     // ---------------------------
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     template <concepts::Mapper mapper_t>
 #else
     template <typename mapper_t>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
     void apply_mapping(const mapper_t& mapper);
 
     //! Apply a mapping to the underlying circuit
@@ -181,11 +181,11 @@ class CircuitManager {
      * \note The signature of the callables are:
      *         - void (*) (td::MapState&);
      */
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
     template <concepts::cold_start_t Fn, concepts::hot_start_t Gn>
 #else
     template <typename Fn, typename Gn>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
     void apply_mapping(const device_t& device, Fn&& cold_start, Gn&& hot_start);
 
     // ---------------------------

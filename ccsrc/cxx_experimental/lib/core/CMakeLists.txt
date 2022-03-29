@@ -19,7 +19,3 @@
 target_sources(
   mindquantum_cxx PRIVATE ${CMAKE_CURRENT_LIST_DIR}/circuit_block.cpp ${CMAKE_CURRENT_LIST_DIR}/circuit_manager.cpp
                           ${CMAKE_CURRENT_LIST_DIR}/cpp_core.cpp)
-
-target_compile_definitions(
-  mindquantum_cxx
-  PUBLIC "$<$<OR:$<NOT:$<COMPILE_FEATURES:cxx_std_20>>,$<BOOL:${HIQ_FORCE_CXX20_COMPAT}>>:CXX20_COMPATIBILITY>")

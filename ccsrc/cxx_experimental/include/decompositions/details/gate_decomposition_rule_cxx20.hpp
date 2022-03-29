@@ -21,9 +21,9 @@
 #include "decompositions/config.hpp"
 #include "ops/parametric/config.hpp"
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include "core/gate_concepts.hpp"
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 
 #include "decompositions/decomposition_rule.hpp"
 #include "decompositions/details/decomposition_param.hpp"
@@ -83,13 +83,13 @@ class GateDecompositionRule
      */
     // TODO(dnguyen): constrain `rule_t` to decomposition atoms
     template <typename rule_t>
-    HIQ_NODISCARD constexpr bool is_compatible() const noexcept;
+    MQ_NODISCARD constexpr bool is_compatible() const noexcept;
 
     //! Check whether a decomposition is applicable with a given instruction
     /*!
      * \param inst A quantum instruction
      */
-    HIQ_NODISCARD bool is_applicable(const instruction_t& inst) const noexcept;
+    MQ_NODISCARD bool is_applicable(const instruction_t& inst) const noexcept;
 
     // -----------------------------
 };

@@ -146,44 +146,14 @@ endif()
 
 # --------------------------------------
 
-include(CheckCXXSourceCompiles)
-
-check_cxx_source_compiles(
-  "#include <experimental/type_traits>
-#include <type_traits>
-#include <utility>
-struct A { int foo() const { return 0; } };
-template <typename T> using has_foo = decltype(std::declval<T&>().foo());
-static_assert(std::experimental::is_detected_v<has_foo, A>);
-int main() { return 0; }
-"
-  compiler_has_detected_ts2)
-
-# --------------------------------------
-
-check_cxx_source_compiles(
-  "#include <concepts>
-#include <type_traits>
-#include <utility>
-
-template <std::equality_comparable eq_t> auto foo(eq_t a, eq_t b) { return a == b; }
-template <typename T>
-requires std::convertible_to<T, double> auto goo(T t) { return t + 1.2; }
-template <std::integral int_t> auto hoo(int_t i) { return i + 1; }
-template <std::movable mov_t> auto&& ioo(mov_t&& m) {return std::move(m); }
-int main() {  return 0; }
-"
-  compiler_has_concepts_library)
+include(${CMAKE_CURRENT_LIST_DIR}/compiler_test.cmake)
 
 # --------------------------------------
 
 add_compile_definitions(
-  "$<$<BOOL:${USE_OPENMP}>:USE_OPENMP>"
-  "$<$<BOOL:${USE_PARALLEL_STL}>:USE_PARALLEL_STL>"
-  "$<$<BOOL:${ENABLE_OPENMP}>:ENABLE_OPENMP>"
-  "$<$<BOOL:${VERSION_INFO}>:VERSION_INFO=${VERSION_INFO}>"
-  "$<$<AND:$<CONFIG:RELEASE>,$<COMPILE_LANGUAGE:CXX>>:_FORTIFY_SOURCE=2>"
-  "$<$<AND:$<BOOL:${compiler_has_detected_ts2}>,$<COMPILE_LANGUAGE:CXX>>:HAS_STD_DETECTED_TS2>")
+  "$<$<BOOL:${USE_OPENMP}>:USE_OPENMP>" "$<$<BOOL:${USE_PARALLEL_STL}>:USE_PARALLEL_STL>"
+  "$<$<BOOL:${ENABLE_OPENMP}>:ENABLE_OPENMP>" "$<$<BOOL:${VERSION_INFO}>:VERSION_INFO=${VERSION_INFO}>"
+  "$<$<AND:$<CONFIG:RELEASE>,$<COMPILE_LANGUAGE:CXX>>:_FORTIFY_SOURCE=2>")
 
 # ==============================================================================
 # Platform specific flags

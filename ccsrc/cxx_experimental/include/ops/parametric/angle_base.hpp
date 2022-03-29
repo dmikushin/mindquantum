@@ -32,11 +32,11 @@
 #include <tuple>
 
 namespace mindquantum::ops::parametric {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename derived_t, concepts::AngleGate non_param_t, std::size_t mod_pi>
 #else
 template <typename derived_t, typename non_param_t, std::size_t mod_pi>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 class AngleParametricBase : public ParametricBase<derived_t, non_param_t, real::theta> {
  public:
     using operator_t = tweedledum::Operator;
@@ -52,25 +52,25 @@ class AngleParametricBase : public ParametricBase<derived_t, non_param_t, real::
 
     //! Evaluation helper function
     template <typename evaluated_param_t>
-    HIQ_NODISCARD static auto to_param_type(const self_t& /* self */, evaluated_param_t&& evaluated_param) {
+    MQ_NODISCARD static auto to_param_type(const self_t& /* self */, evaluated_param_t&& evaluated_param) {
         return derived_t{std::forward<evaluated_param_t>(evaluated_param)};
     }
 
     //! Evaluation helper function
     template <typename evaluated_param_t>
-    HIQ_NODISCARD static auto to_non_param_type(const self_t& /* self */, evaluated_param_t&& evaluated_param) {
+    MQ_NODISCARD static auto to_non_param_type(const self_t& /* self */, evaluated_param_t&& evaluated_param) {
         // NB: non-parametric classes simply accept the evaluated parameter
         return non_param_type{std::forward<evaluated_param_t>(evaluated_param)};
     }
 
     //! Test whether another operation is the same as this instance
-    HIQ_NODISCARD bool operator==(const AngleParametricBase& other) const noexcept {
+    MQ_NODISCARD bool operator==(const AngleParametricBase& other) const noexcept {
         return eq(*this->param(0), *other.param(0));
         // return eq(*expand(sub(this->param(0), other.param(0))), SymEngine::Integer(0));
     }
 
     //! Get the adjoint of an \c AngleParametricBase gate instance
-    HIQ_NODISCARD auto adjoint() const noexcept {
+    MQ_NODISCARD auto adjoint() const noexcept {
         auto params = base_t::params_;
         for (auto& param : params) {
             param = expand(neg(param));
@@ -92,7 +92,7 @@ class AngleParametricBase : public ParametricBase<derived_t, non_param_t, real::
      * \return An instance of a non-parametric gate (\c non_param_type)
      * \throw SymEngine::SymEngineException if the expression cannot be fully evaluated numerically
      */
-    HIQ_NODISCARD non_param_type eval_full() const {
+    MQ_NODISCARD non_param_type eval_full() const {
         using param_t = typename std::tuple_element_t<0, typename parent_t::params_type>::param_type;
 
         return {
@@ -118,7 +118,7 @@ class AngleParametricBase : public ParametricBase<derived_t, non_param_t, real::
      * \return An instance of a non-parametric gate (\c non_param_type)
      * \throw SymEngine::SymEngineException if the expression cannot be fully evaluated numerically
      */
-    HIQ_NODISCARD non_param_type eval_full(const subs_map_t& subs_map) const {
+    MQ_NODISCARD non_param_type eval_full(const subs_map_t& subs_map) const {
         using param_t = typename std::tuple_element_t<0, typename parent_t::params_type>::param_type;
 
         return {
