@@ -56,7 +56,7 @@ class TimeEvolution : public ParametricBase<TimeEvolution, ops::TimeEvolution, r
     }
 
     //! Get the adjoint of an \c TimeEvolution gate instance
-    HIQ_NODISCARD auto adjoint() const noexcept {
+    MQ_NODISCARD auto adjoint() const noexcept {
         auto params = base_t::params_;
         for (auto& param : params) {
             param = expand(SymEngine::neg(param));
@@ -70,22 +70,22 @@ class TimeEvolution : public ParametricBase<TimeEvolution, ops::TimeEvolution, r
     }
 
     template <typename evaluated_param_t>
-    HIQ_NODISCARD static auto to_param_type(const self_t& self, evaluated_param_t&& evaluated_param) {
+    MQ_NODISCARD static auto to_param_type(const self_t& self, evaluated_param_t&& evaluated_param) {
         return self_t{self.hamiltonian_, std::forward<evaluated_param_t>(evaluated_param)};
     }
 
     template <typename evaluated_param_t>
-    HIQ_NODISCARD static auto to_non_param_type(const self_t& self, evaluated_param_t&& evaluated_param) {
+    MQ_NODISCARD static auto to_non_param_type(const self_t& self, evaluated_param_t&& evaluated_param) {
         return non_param_type{self.hamiltonian_, std::forward<evaluated_param_t>(evaluated_param)};
     }
 
     // -------------------------------------------------------------------
 
-    HIQ_NODISCARD const QubitOperator& get_hamiltonian() const {
+    MQ_NODISCARD const QubitOperator& get_hamiltonian() const {
         return hamiltonian_;
     }
 
-    HIQ_NODISCARD const auto& get_time() const {
+    MQ_NODISCARD const auto& get_time() const {
         return param(0);
     }
 

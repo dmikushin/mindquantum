@@ -129,7 +129,7 @@ void decompose_time_evolution_individual_terms(CircuitType& result, const instru
         }
     } else {
         // hamiltonian has more than one local operator
-        HIQ_WITH_COMPUTE(result, circuit) {
+        MQ_WITH_COMPUTE(result, circuit) {
             for (const auto& [index, action] : term) {
                 qubits.push_back(targets[index]);
                 if (action == 'X') {
@@ -149,7 +149,7 @@ void decompose_time_evolution_individual_terms(CircuitType& result, const instru
                 qubits.pop_back();
             }
         }
-        HIQ_WITH_COMPUTE_END
+        MQ_WITH_COMPUTE_END
 
         qubits.push_back(targets.back());
         // NB: missing * 2 factor due to Tweedledum Rz definition

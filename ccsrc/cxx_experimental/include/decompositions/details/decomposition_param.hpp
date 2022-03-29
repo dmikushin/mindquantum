@@ -95,28 +95,28 @@ static constexpr auto default_t = any_tgt::any_ctrl;
 #    define SINGLE_TGT_PARAM_SINGLE_CTRL mindquantum::decompositions::tparam::single_tgt_param::single_ctrl
 #    define SINGLE_TGT_PARAM_DOUBLE_CTRL mindquantum::decompositions::tparam::single_tgt_param::double_ctrl
 #else
-#    define HIQ_INTERNAL_DR_EXPAND_TPARAM_IMPL(value) value.num_targets, value.num_controls, value.num_params
-#    define HIQ_INTERNAL_DR_EXPAND_TPARAM(value)      HIQ_INTERNAL_DR_EXPAND_TPARAM_IMPL(mindquantum::decompositions::value)
+#    define MQ_INTERNAL_DR_EXPAND_TPARAM_IMPL(value) value.num_targets, value.num_controls, value.num_params
+#    define MQ_INTERNAL_DR_EXPAND_TPARAM(value)      HIQ_INTERNAL_DR_EXPAND_TPARAM_IMPL(mindquantum::decompositions::value)
 
-#    define ANY_TGT_ANY_CTRL    HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::any_ctrl)
-#    define ANY_TGT_NO_CTRL     HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::no_ctrl)
-#    define ANY_TGT_SINGLE_CTRL HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::single_ctrl)
-#    define ANY_TGT_DOUBLE_CTRL HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::double_ctrl)
+#    define ANY_TGT_ANY_CTRL    MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::any_ctrl)
+#    define ANY_TGT_NO_CTRL     MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::no_ctrl)
+#    define ANY_TGT_SINGLE_CTRL MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::single_ctrl)
+#    define ANY_TGT_DOUBLE_CTRL MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::double_ctrl)
 
-#    define SINGLE_TGT_ANY_CTRL    HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt::any_ctrl)
-#    define SINGLE_TGT_NO_CTRL     HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt::no_ctrl)
-#    define SINGLE_TGT_SINGLE_CTRL HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt::single_ctrl)
-#    define SINGLE_TGT_DOUBLE_CTRL HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt::double_ctrl)
+#    define SINGLE_TGT_ANY_CTRL    MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt::any_ctrl)
+#    define SINGLE_TGT_NO_CTRL     MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt::no_ctrl)
+#    define SINGLE_TGT_SINGLE_CTRL MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt::single_ctrl)
+#    define SINGLE_TGT_DOUBLE_CTRL MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt::double_ctrl)
 
-#    define DUAL_TGT_ANY_CTRL    HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::dual_tgt::any_ctrl)
-#    define DUAL_TGT_NO_CTRL     HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::dual_tgt::no_ctrl)
-#    define DUAL_TGT_DUAL_CTRL   HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::dual_tgt::dual_ctrl)
-#    define DUAL_TGT_DOUBLE_CTRL HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::dual_tgt::double_ctrl)
+#    define DUAL_TGT_ANY_CTRL    MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::dual_tgt::any_ctrl)
+#    define DUAL_TGT_NO_CTRL     MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::dual_tgt::no_ctrl)
+#    define DUAL_TGT_DUAL_CTRL   MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::dual_tgt::dual_ctrl)
+#    define DUAL_TGT_DOUBLE_CTRL MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::dual_tgt::double_ctrl)
 
-#    define SINGLE_TGT_PARAM_ANY_CTRL    HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::any_ctrl)
-#    define SINGLE_TGT_PARAM_NO_CTRL     HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::no_ctrl)
-#    define SINGLE_TGT_PARAM_SINGLE_CTRL HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::single_ctrl)
-#    define SINGLE_TGT_PARAM_DOUBLE_CTRL HIQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::double_ctrl)
+#    define SINGLE_TGT_PARAM_ANY_CTRL    MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::any_ctrl)
+#    define SINGLE_TGT_PARAM_NO_CTRL     MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::no_ctrl)
+#    define SINGLE_TGT_PARAM_SINGLE_CTRL MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::single_ctrl)
+#    define SINGLE_TGT_PARAM_DOUBLE_CTRL MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::double_ctrl)
 #endif  // __cplusplus > 201703L
 
 #endif /* DECOMPOSITION_PARAM_HPP */

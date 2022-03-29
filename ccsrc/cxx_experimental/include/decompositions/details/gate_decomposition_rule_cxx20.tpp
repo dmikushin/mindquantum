@@ -34,7 +34,7 @@ namespace mindquantum::decompositions {
 
     template <typename derived_t, typename kinds_t, DecompositionRuleParam param_, typename... atoms_t>
     template <typename rule_t>
-    HIQ_NODISCARD constexpr bool GateDecompositionRule<derived_t, kinds_t, param_, atoms_t...>::is_compatible()
+    MQ_NODISCARD constexpr bool GateDecompositionRule<derived_t, kinds_t, param_, atoms_t...>::is_compatible()
         const noexcept {
         return param_.num_targets == rule_t::num_targets_
                && (param_.num_controls < 0 || rule_t::num_controls_ < 0
@@ -45,7 +45,7 @@ namespace mindquantum::decompositions {
     // ::is_applicable()
 
     template <typename derived_t, typename kinds_t, DecompositionRuleParam param_, typename... atoms_t>
-    HIQ_NODISCARD bool GateDecompositionRule<derived_t, kinds_t, param_, atoms_t...>::is_applicable(
+    MQ_NODISCARD bool GateDecompositionRule<derived_t, kinds_t, param_, atoms_t...>::is_applicable(
         const instruction_t& inst) const noexcept {
         if constexpr(traits::has_is_applicable_v<derived_t>) {
             return static_cast<const derived_t*>(this)->is_applicable_impl(inst);

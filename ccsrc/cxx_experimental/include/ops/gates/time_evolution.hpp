@@ -41,11 +41,11 @@ class TimeEvolution {
     TimeEvolution(QubitOperator hamiltonian, double time) : hamiltonian_(std::move(hamiltonian)), time_(time) {
     }
 
-    HIQ_NODISCARD TimeEvolution adjoint() const {
+    MQ_NODISCARD TimeEvolution adjoint() const {
         return {hamiltonian_.num_targets(), hamiltonian_, -time_};
     }
 
-    HIQ_NODISCARD uint32_t num_targets() const {
+    MQ_NODISCARD uint32_t num_targets() const {
         return hamiltonian_.num_targets();
     }
 
@@ -55,15 +55,15 @@ class TimeEvolution {
 
     // -------------------------------------------------------------------
 
-    HIQ_NODISCARD const QubitOperator& get_hamiltonian() const {
+    MQ_NODISCARD const QubitOperator& get_hamiltonian() const {
         return hamiltonian_;
     }
 
-    HIQ_NODISCARD auto get_time() const {
+    MQ_NODISCARD auto get_time() const {
         return time_;
     }
 
-    HIQ_NODISCARD auto param() const {
+    MQ_NODISCARD auto param() const {
         return get_time();
     }
 

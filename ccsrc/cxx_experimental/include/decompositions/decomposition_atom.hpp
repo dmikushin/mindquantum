@@ -77,12 +77,12 @@ class DecompositionAtom {
     }
 
     //! Return the name of this decomposition atom
-    HIQ_NODISCARD auto name() const noexcept {
+    MQ_NODISCARD auto name() const noexcept {
         return concept_->name();
     }
 
     //! Test whether an atom has (supports) a particular kind of operator
-    HIQ_NODISCARD auto is_kind(std::string_view kind) const noexcept {
+    MQ_NODISCARD auto is_kind(std::string_view kind) const noexcept {
         return concept_->is_kind(kind);
     }
 
@@ -94,7 +94,7 @@ class DecompositionAtom {
      * \param inst An instruction
      * \return True if the atom can be applied, false otherwise
      */
-    HIQ_NODISCARD bool is_applicable(const instruction_t& inst) const noexcept {
+    MQ_NODISCARD bool is_applicable(const instruction_t& inst) const noexcept {
         return concept_->is_applicable(&model_, inst);
     }
 
@@ -181,7 +181,7 @@ void apply_gate(atom_t& atom, circuit_t& circuit, const instruction_t& inst) {
         qubits.emplace_back(inst.qubit(i));
     }
 
-    HIQ_WITH_CONTROL(circuit, controlled, free_controls) {
+    MQ_WITH_CONTROL(circuit, controlled, free_controls) {
         //  TODO(dnguyen): Fix cbits argument if required in the future!
         atom.apply(controlled, static_cast<const operator_t&>(inst), qubits, {});
     }

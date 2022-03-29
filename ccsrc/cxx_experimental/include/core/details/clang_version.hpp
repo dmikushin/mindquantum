@@ -21,45 +21,45 @@
 #        if hiq_clang_version < 700
 #            error Version of clang is too old!
 #        elif hiq_clang_version < 900
-#            define HIQ_CLANG_MAJOR 3
+#            define MQ_CLANG_MAJOR 3
 #        elif hiq_clang_version == 900
-#            define HIQ_CLANG_MAJOR 4
+#            define MQ_CLANG_MAJOR 4
 #        elif hiq_clang_version < 1000
-#            define HIQ_CLANG_MAJOR 5
+#            define MQ_CLANG_MAJOR 5
 #        elif hiq_clang_version == 1000
-#            define HIQ_CLANG_MAJOR 6
+#            define MQ_CLANG_MAJOR 6
 #        elif hiq_clang_version == 1001
-#            define HIQ_CLANG_MAJOR 7
+#            define MQ_CLANG_MAJOR 7
 #        elif hiq_clang_version == 1100
-#            define HIQ_CLANG_MAJOR 8
+#            define MQ_CLANG_MAJOR 8
 #        elif hiq_clang_version == 1103
-#            define HIQ_CLANG_MAJOR 9
+#            define MQ_CLANG_MAJOR 9
 #        elif hiq_clang_version == 1200
-#            define HIQ_CLANG_MAJOR 10
+#            define MQ_CLANG_MAJOR 10
 #        elif hiq_clang_version == 1205
-#            define HIQ_CLANG_MAJOR 11
+#            define MQ_CLANG_MAJOR 11
 #        elif hiq_clang_version == 1300
-#            define HIQ_CLANG_MAJOR 12
+#            define MQ_CLANG_MAJOR 12
 #        else
-#            define HIQ_CLANG_MAJOR 12
+#            define MQ_CLANG_MAJOR 12
 #        endif
 #        if hiq_clang_version < 702
-#            define HIQ_CLANG_MINOR 7
+#            define MQ_CLANG_MINOR 7
 #        elif hiq_clang_version == 730
-#            define HIQ_CLANG_MINOR 8
+#            define MQ_CLANG_MINOR 8
 #        elif hiq_clang_version <= 810
-#            define HIQ_CLANG_MINOR 9
+#            define MQ_CLANG_MINOR 9
 #        elif hiq_clang_version <= 1200
-#            define HIQ_CLANG_MINOR 0
+#            define MQ_CLANG_MINOR 0
 #        elif hiq_clang_version == 1205
-#            define HIQ_CLANG_MINOR 1
+#            define MQ_CLANG_MINOR 1
 #        else
-#            define HIQ_CLANG_MINOR 0
+#            define MQ_CLANG_MINOR 0
 #        endif
 #        undef hiq_clang_version
 #    else
-#        define HIQ_CLANG_MAJOR __clang_major__
-#        define HIQ_CLANG_MINOR __clang_minor__
+#        define MQ_CLANG_MAJOR __clang_major__
+#        define MQ_CLANG_MINOR __clang_minor__
 #    endif  // __apple_build_version__
 #endif      // __clang__
 

@@ -141,13 +141,13 @@ class ComputeCircuitProxy {
 }  // namespace mindquantum::cengines
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define HIQ_WITH_COMPUTE_IMPL(original, name, unique_name)                                                             \
+#define MQ_WITH_COMPUTE_IMPL(original, name, unique_name)                                                              \
     mindquantum::cengines::ComputeCircuit unique_name{original};                                                       \
     mindquantum::cengines::circuit_t&(name){(unique_name).non_compute()};                                              \
     if (mindquantum::cengines::details::ComputeCircuitProxy proxy{(unique_name)}; true) {                              \
         auto&(unique_name) = static_cast<mindquantum::cengines::circuit_t&>(proxy);
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define HIQ_WITH_COMPUTE(original, name) HIQ_WITH_COMPUTE_IMPL(original, name, HIQ_UNIQUE_NAME(name))
+#define MQ_WITH_COMPUTE(original, name) HIQ_WITH_COMPUTE_IMPL(original, name, HIQ_UNIQUE_NAME(name))
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define HIQ_WITH_COMPUTE_END }
+#define MQ_WITH_COMPUTE_END }
 #endif /* COMPUTE_HPP */

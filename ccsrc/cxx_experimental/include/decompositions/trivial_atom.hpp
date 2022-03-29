@@ -43,22 +43,22 @@ class TrivialAtom : public traits::controls<num_controls_> {
     }
 
     //! Return the name of this decomposition atom
-    HIQ_NODISCARD static constexpr std::string_view name() noexcept {
+    MQ_NODISCARD static constexpr std::string_view name() noexcept {
         return operator_t::kind();
     }
 
     //! Return the number of target qubits this decomposition atom is constrained on
-    HIQ_NODISCARD static constexpr auto num_targets() noexcept {
+    MQ_NODISCARD static constexpr auto num_targets() noexcept {
         return num_targets_;
     }
 
     //! Return the number of control qubits this decomposition atom is constrained on
-    HIQ_NODISCARD static constexpr auto num_controls() noexcept {
+    MQ_NODISCARD static constexpr auto num_controls() noexcept {
         return num_controls_;
     }
 
     //! Return the number of parameters of this decomposition atom
-    HIQ_NODISCARD static constexpr auto num_params() noexcept {
+    MQ_NODISCARD static constexpr auto num_params() noexcept {
         return num_param_t{0UL};
     }
 
@@ -66,7 +66,7 @@ class TrivialAtom : public traits::controls<num_controls_> {
     /*!
      * \param storage Atom storage within which this decomposition will live in
      */
-    HIQ_NODISCARD static auto create(AtomStorage& storage) noexcept {
+    MQ_NODISCARD static auto create(AtomStorage& storage) noexcept {
         return self_t{storage};
     }
 
@@ -77,7 +77,7 @@ class TrivialAtom : public traits::controls<num_controls_> {
      * \param inst An instruction
      * \return True if the atom can be applied, false otherwise
      */
-    HIQ_NODISCARD bool is_applicable(const instruction_t& inst) const noexcept;
+    MQ_NODISCARD bool is_applicable(const instruction_t& inst) const noexcept;
 
     //! Apply the atom (ie. the decomposition it represents) to a quantum circuit
     /*!

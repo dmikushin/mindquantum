@@ -35,7 +35,7 @@ class CRZ2CXAndRz : public decompositions::NonGateDecompositionRule<CRZ2CXAndRz,
         return "CRZ2CXAndRz"sv;
     }
 
-    HIQ_NODISCARD static bool is_applicable(const decompositions::instruction_t& inst) {
+    MQ_NODISCARD static bool is_applicable(const decompositions::instruction_t& inst) {
         return inst.is_one<ops::Rz, ops::parametric::Rz>() && inst.num_controls() > 0;
     }
 

@@ -44,17 +44,17 @@ class GateDecomposer {
     using general_rule_storage_t = std::set<DecompositionAtom, details::rules_less>;
 
     //! Return the number of atoms in the internal storage
-    HIQ_NODISCARD auto num_atoms() const noexcept {
+    MQ_NODISCARD auto num_atoms() const noexcept {
         return std::size(atom_storage_);
     }
 
     //! Return the number of general decomposition rules in the internal storage
-    HIQ_NODISCARD auto num_rules() const noexcept {
+    MQ_NODISCARD auto num_rules() const noexcept {
         return std::size(general_rule_storage_);
     }
 
     //! Simple getter to the internal storage
-    HIQ_NODISCARD const auto& storage() const noexcept {
+    MQ_NODISCARD const auto& storage() const noexcept {
         return atom_storage_;
     }
 
@@ -71,7 +71,7 @@ class GateDecomposer {
      * \sa has_atom(std::string_view kind, num_control_t num_controls, std::string_view name) const noexcept
      */
     template <typename o_atom_t>
-    HIQ_NODISCARD bool has_atom() const noexcept;
+    MQ_NODISCARD bool has_atom() const noexcept;
 
     //! Look for a suitable decomposition within the storages
     /*!
@@ -80,7 +80,7 @@ class GateDecomposer {
      * \param inst An instruction
      * \return Pointer to atom if any, \c nullptr otherwise
      */
-    HIQ_NODISCARD atom_t* get_atom_for(const instruction_t& inst) noexcept;
+    MQ_NODISCARD atom_t* get_atom_for(const instruction_t& inst) noexcept;
 
     // Read-write accessors
 
@@ -95,7 +95,7 @@ class GateDecomposer {
      * \return Pointer to inserted element, pointer to compatible element or nullptr.
      */
     template <typename o_atom_t, std::size_t kind_idx = 0, typename... args_t>
-    HIQ_NODISCARD atom_t* add_or_replace_atom(args_t&&... args);
+    MQ_NODISCARD atom_t* add_or_replace_atom(args_t&&... args);
 
  private:
 #ifdef UNIT_TESTS

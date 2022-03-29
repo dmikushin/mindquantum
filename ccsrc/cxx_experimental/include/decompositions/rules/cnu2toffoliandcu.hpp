@@ -34,7 +34,7 @@ class CNu2ToffoliAndCu : public decompositions::NonGateDecompositionRule<CNu2Tof
         return "CNu2ToffoliAndCu"sv;
     }
 
-    HIQ_NODISCARD static bool is_applicable(const decompositions::instruction_t& inst) {
+    MQ_NODISCARD static bool is_applicable(const decompositions::instruction_t& inst) {
         return inst.num_controls() > 2 || (inst.num_controls() == 2 && inst.kind() != ops::X::kind());
     }
 
@@ -58,14 +58,14 @@ class CNu2ToffoliAndCu : public decompositions::NonGateDecompositionRule<CNu2Tof
             ancillae.emplace_back(circuit.create_qubit());
         }
 
-        HIQ_WITH_COMPUTE(circuit, compute) {
+        MQ_WITH_COMPUTE(circuit, compute) {
             atom<atoms::C<ops::X, 2>>()->apply(compute, ops::X{}, {controls[0], controls[1], ancillae[0]});
             for (auto ctrl_idx(2UL); ctrl_idx < n_controls; ++ctrl_idx) {
                 atom<atoms::C<ops::X, 2>>()->apply(
                     compute, ops::X{}, {controls[ctrl_idx], ancillae[ctrl_idx - 2], ancillae[ctrl_idx - 1]});
             }
         }
-        HIQ_WITH_COMPUTE_END
+        MQ_WITH_COMPUTE_END
 
         qubits_t ctrls{ancillae.back()};
 
@@ -73,7 +73,7 @@ class CNu2ToffoliAndCu : public decompositions::NonGateDecompositionRule<CNu2Tof
             ctrls.emplace_back(controls.back());
         }
 
-        HIQ_WITH_CONTROL(circuit, controlled, ctrls) {
+        MQ_WITH_CONTROL(circuit, controlled, ctrls) {
             const auto new_inst = instruction_t{inst, targets, {}};
             if (auto* atom{storage().get_atom_for(new_inst)}; atom) {
                 atom->apply(circuit, new_inst);
