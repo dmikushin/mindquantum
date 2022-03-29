@@ -22,6 +22,7 @@ CMAKE_BOOL=(OFF ON)
 
 build_type='Release'
 cmake_debug_mode=0
+cmake_make_silent=0
 cmake_generator='Unix Makefiles'
 configure_only=0
 do_clean=0
@@ -36,10 +37,19 @@ enable_projectq=1
 enable_quest=0
 force_local_pkgs=0
 local_pkgs=()
-n_jobs=$(nproc)
+n_jobs=-1
+
+if command -v nproc >/dev/null 2>&1; then
+    n_jobs_default=$(nproc)
+elif command -v sysctl >/dev/null 2>&1; then
+    n_jobs_default=$(sysctl -n hw.logicalcpu)
+else
+    n_jobs_default=8
+fi
 
 source_dir=$(realpath "$BASEPATH")
 build_dir="$source_dir/build"
+python_venv_path=$source_dir/venv
 
 third_party_libraries=$(cd "$BASEPATH/third_party" \
                             && find . -maxdepth 1 -type d ! -path . | grep -vE '(cmake|CMakeLists.txt)' \
@@ -132,7 +142,7 @@ help_message() {
     echo '  -h,--help            Show this help message and exit'
     echo '  -n                   Dry run; only print commands but do not execute them'
     echo ''
-    echo '  -B [dir]             Specify build directory'
+    echo '  -B,--build [dir]     Specify build directory'
     echo "                       Defaults to: $build_dir"
     echo '  --clean              Run make clean before building'
     echo '  --clean-all          Clean everything before building.'
@@ -147,10 +157,13 @@ help_message() {
     echo '  --debug-cmake        Enable debugging mode for CMake configuration step'
     echo '  --gpu                Enable GPU support'
     echo '  -j,--jobs [N]        Number of parallel jobs for building'
-    echo "                       Defaults to: $n_jobs"
+    echo "                       Defaults to: $n_jobs_default"
     echo '  --local-pkgs         Compile third-party dependencies locally'
     echo '  --ninja              Build using Ninja instead of make'
+    echo '  --quiet              Disable verbose build rules'
     echo '  --show-libraries     Show all known third-party libraries'
+    echo '  --venv               Path to Python virtual environment'
+    echo "                       Defaults to: $python_venv_path"
     echo '  --with-<library>     Build the third-party <library> from source'
     echo '                       (ignored if --local-pkgs is passed, except for projectq and quest)'
     echo '  --without-<library>  Do not build the third-party library from source'
@@ -186,7 +199,7 @@ while getopts hcnB:j:-: OPT; do
         h | help )       no_arg;
                          help_message >&2
                          exit 1 ;;
-        B )              needs_arg;
+        B | build)       needs_arg;
                          build_dir="$OPTARG"
                          ;;
         clean )          no_arg;
@@ -235,9 +248,15 @@ while getopts hcnB:j:-: OPT; do
         ninja )          no_arg;
                          cmake_generator='Ninja'
                          ;;
+        quiet )          no_arg;
+                         cmake_make_silent=1
+                         ;;
         show-libraries ) no_arg;
                          print_show_libraries
                          exit 1
+                         ;;
+        venv )           needs_arg;
+                         python_venv_path="$OPTARG"
                          ;;
         with )           no_arg;
                          parse_with_libraries "$library" $enable_lib
@@ -270,8 +289,8 @@ cd "${BASEPATH}"
 # Create a virtual environment for building the wheel
 
 if [ $do_clean_venv -eq 1 ]; then
-    echo "Deleting virtualenv folder: $BASEPATH/venv"
-    call_cmd rm -rf venv
+    echo "Deleting virtualenv folder: $python_venv_path"
+    call_cmd rm -rf "$python_venv_path"
 fi
 
 if [ $do_clean_build_dir -eq 1 ]; then
@@ -280,13 +299,13 @@ if [ $do_clean_build_dir -eq 1 ]; then
 fi
 
 created_venv=0
-if [ ! -d "$BASEPATH/venv" ]; then
+if [ ! -d "$python_venv_path" ]; then
     created_venv=1
-    echo "Creating Python virtualenv: $PYTHON -m venv venv"
-    call_cmd $PYTHON -m venv venv
+    echo "Creating Python virtualenv: $PYTHON -m venv $python_venv_path"
+    call_cmd $PYTHON -m venv "$python_venv_path"
 fi
 
-source venv/bin/activate
+call_cmd source "$python_venv_path/bin/activate"
 
 if [ $created_venv -eq 1 ]; then
     pkgs=(pip setuptools wheel build pybind11)
@@ -301,33 +320,40 @@ if [ $created_venv -eq 1 ]; then
     call_cmd $PYTHON -m pip install -U "${pkgs[@]}"
 fi
 
-# Make sure the root directory is in the virtualenv PATH
-site_pkg_dir=$($PYTHON -c 'import site; print(site.getsitepackages()[0])')
-pth_file="$site_pkg_dir/mindquantum_local.pth"
+if [ $dry_run -ne 1 ]; then
+    # Make sure the root directory is in the virtualenv PATH
+    site_pkg_dir=$($PYTHON -c 'import site; print(site.getsitepackages()[0])')
+    pth_file="$site_pkg_dir/mindquantum_local.pth"
 
-if [ ! -e "$pth_file" ]; then
-    echo "Creating pth-file in $pth_file"
-    echo "$BASEPATH" > "$pth_file"
+    if [ ! -e "$pth_file" ]; then
+        echo "Creating pth-file in $pth_file"
+        echo "$BASEPATH" > "$pth_file"
+    fi
 fi
 
 # ------------------------------------------------------------------------------
 # Setup arguments for build
 
-cmake_args=(-DIN_PLACE_BUILD:BOOL=ON)
+cmake_args=(-DIN_PLACE_BUILD:BOOL=ON
+            -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
+            -DENABLE_PROJECTQ:BOOL="${CMAKE_BOOL[$enable_projectq]}"
+            -DENABLE_QUEST:BOOL="${CMAKE_BOOL[$enable_quest]}"
+            -G "${cmake_generator}")
 
-cmake_args+=(-DENABLE_PROJECTQ:BOOL="${CMAKE_BOOL[$enable_projectq]}")
-cmake_args+=(-DENABLE_QUEST:BOOL="${CMAKE_BOOL[$enable_quest]}")
+if [[ $cmake_debug_mode -eq 1 ]]; then
+    cmake_args+=(-DENABLE_CMAKE_DEBUG:BOOL=ON)
+fi
 
-if [[ $enable_gpu -eq 1 ]]; then
-    cmake_args+=(-DENABLE_CUDA:BOOL=ON)
+if [[ $cmake_make_silent -eq 1 ]]; then
+    cmake_args+=(-DUSE_VERBOSE_MAKEFILE:BOOL=OFF)
 fi
 
 if [[ $enable_cxx -eq 1 ]]; then
     cmake_args+=(-DENABLE_CXX_EXPERIMENTAL:BOOL=ON)
 fi
 
-if [[ $cmake_debug_mode -eq 1 ]]; then
-    cmake_args+=(-DENABLE_CMAKE_DEBUG:BOOL=ON)
+if [[ $enable_gpu -eq 1 ]]; then
+    cmake_args+=(-DENABLE_CUDA:BOOL=ON)
 fi
 
 local_pkgs_str=$(join_by , "${local_pkgs[@]}")
@@ -337,7 +363,13 @@ elif [ -n "$local_pkgs_str" ]; then
     cmake_args+=(-DMQ_FORCE_LOCAL_PKGS="$local_pkgs_str")
 fi
 
-cmake_args+=(-G "${cmake_generator}" -DJOBS:STRING="$n_jobs")
+if [[ $n_jobs -eq -1 && ! $cmake_generator == "Ninja"  ]]; then
+    n_jobs=$n_jobs_default
+fi
+
+if [ $n_jobs -ne -1 ]; then
+    cmake_args+=(-DJOBS:STRING="$n_jobs")
+fi
 
 # ------------------------------------------------------------------------------
 # Build

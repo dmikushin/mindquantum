@@ -28,16 +28,20 @@ Param(
     [switch]$Gpu,
     [switch]$Help,
     [switch]$Ninja,
+    [switch]$Quiet,
     [switch]$ShowLibraries,
     [switch]$c,
     [switch]$h,
     [switch]$n,
 
-    # Option with values
+    # Integer options
+    [int]$J,
+    [int]$Jobs,
+
+    # String options
     [string]$B,
     [string]$Build,
-    [string]$J,
-    [string]$Jobs
+    [string]$Venv
 )
 
 $BASENAME = Split-Path $MyInvocation.MyCommand.Path -Leaf
@@ -53,6 +57,7 @@ $IsWinEnv = !$IsLinuxEnv -and !$IsMacOSEnv
 
 $build_type = "Release"
 $cmake_debug_mode = 0
+$cmake_make_silent = 0
 $configure_only = 0
 $do_clean = 0
 $do_clean_build_dir = 0
@@ -66,10 +71,12 @@ $enable_projectq = 1
 $enable_quest = 0
 $force_local_pkgs = 0
 $local_pkgs = @()
-$n_jobs = 8
+$n_jobs = -1
 
 $source_dir = Resolve-Path $BASEPATH
 $build_dir = "$BASEPATH\build"
+$python_venv_path="$source_dir\venv"
+
 
 $third_party_libraries = ((Get-ChildItem -Path $BASEPATH\third_party -Directory -Exclude cmake).Name).ForEach("ToLower")
 
@@ -80,15 +87,15 @@ function Call-Cmd {
         Invoke-Expression -Command "$args"
     }
     else {
-        echo "$args"
+        Write-Output "$args"
     }
 }
 
 function Call-CMake {
     if ($dry_run -ne 1) {
-        echo "**********"
-        echo "Calling CMake with: cmake $args"
-        echo "**********"
+        Write-Output "**********"
+        Write-Output "Calling CMake with: cmake $args"
+        Write-Output "**********"
     }
     Call-Cmd cmake @args
 }
@@ -117,67 +124,91 @@ function Test-CommandExists{
 
 # ==============================================================================
 
+$n_jobs_default = 8
+if(Test-CommandExists nproc) {
+    $n_jobs_default = nproc
+}
+elseif (Test-CommandExists sysctl) {
+    $n_jobs_default = Invoke-Expression -Command "sysctl -n hw.logicalcpu"
+}
+elseif ($IsWinEnv -eq 1) {
+    if (Test-CommandExists Get-CimInstance) {
+        $n_jobs_default = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
+    }
+    elseif (Test-CommandExists wmic) {
+        $tmp = (wmic cpu get NumberOfLogicalProcessors /value) -Join ' '
+        if ($tmp -match "\s*[a-zA-Z]+=([0-9]+)") {
+            $n_jobs_default = $Matches.1
+        }
+    }
+}
+
+# ==============================================================================
+
 function print_show_libraries {
-    echo 'Known third-party libraries:'
+    Write-Output 'Known third-party libraries:'
     foreach($lib in $third_party_libraries) {
-        echo (" - {0}" -f $lib)
+        Write-Output (" - {0}" -f $lib)
     }
 }
 
 # ------------------------------------------------------------------------------
 
 function help_message() {
-    echo 'Build MindQunantum locally (in-source build)'
-    echo ''
-    echo 'This is mainly relevant for developers that do not want to always '
-    echo 'have to reinstall the Python package'
-    echo ''
-    echo 'This script will create a Python virtualenv in the MindQuantum root'
-    echo 'directory and then build all the C++ Python modules and place the'
-    echo 'generated libraries in their right locations within the MindQuantum'
-    echo 'folder hierarchy so Python knows how to find them.'
-    echo ''
-    echo 'A pth-file will be created in the virtualenv site-packages directory'
-    echo 'so that the MindQuantum root folder will be added to the Python PATH'
-    echo 'without the need to modify PYTHONPATH.'
-    echo ''
-    echo 'Usage:'
-    echo ('  {0} [options]' -f $BASENAME)
-    echo ''
-    echo 'Options:'
-    echo '  -h,--help           Show this help message and exit'
-    echo '  -n                  Dry run; only print commands but do not execute them'
-    echo ''
-    echo '  -B,-Build [dir]     Specify build directory'
-    echo ("                      Defaults to: {0}" -f $build_dir)
-    echo '  -Clean              Run make clean before building'
-    echo '  -CleanAll           Clean everything before building.'
-    echo '                      Equivalent to --clean-venv --clean-builddir'
-    echo '  -CleanBuildDir      Delete build directory before building'
-    echo '  -CleanCache         Re-run CMake with a clean CMake cache'
-    echo '  -CleanVenv          Delete Python virtualenv before building'
-    echo '  -c,-Configure       Force running the CMake configure step'
-    echo '  -ConfigureOnly      Stop after the CMake configure and generation steps (ie. before building MindQuantum)'
-    echo '  -Cxx                (experimental) Enable MindQuantum C++ support'
-    echo '  -Debug              Build in debug mode'
-    echo '  -DebugCMake         Enable debugging mode for CMake configuration step'
-    echo '  -Gpu                Enable GPU support'
-    echo '  -J,-Jobs [N]        Number of parallel jobs for building'
-    echo ("                      Defaults to: {0}" -f $n_jobs)
-    echo '  -LocalPkgs          Compile third-party dependencies locally'
-    echo '  -ShowLibraries      Show all known third-party libraries'
-    echo '  -With<library>      Build the third-party <library> from source (<library> is case-insensitive)'
-    echo '                      (ignored if --local-pkgs is passed, except for projectq and quest)'
-    echo '  -Without<library>   Do not build the third-party library from source (<library> is case-insensitive)'
-    echo '                      (ignored if --local-pkgs is passed, except for projectq and quest)'
-    echo ''
-    echo 'Any options not matching one of the above will be passed on to CMake during the configuration step'
-    echo ''
-    echo 'Example calls:'
-    echo ("{0} -B build" -f $BASENAME)
-    echo ("{0} -B build -gpu" -f $BASENAME)
-    echo ("{0} -B build -cxx -WithBoost -Without-Quest" -f $BASENAME)
-    echo ("{0} -B build -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc" -f $BASENAME)
+    Write-Output 'Build MindQunantum locally (in-source build)'
+    Write-Output ''
+    Write-Output 'This is mainly relevant for developers that do not want to always '
+    Write-Output 'have to reinstall the Python package'
+    Write-Output ''
+    Write-Output 'This script will create a Python virtualenv in the MindQuantum root'
+    Write-Output 'directory and then build all the C++ Python modules and place the'
+    Write-Output 'generated libraries in their right locations within the MindQuantum'
+    Write-Output 'folder hierarchy so Python knows how to find them.'
+    Write-Output ''
+    Write-Output 'A pth-file will be created in the virtualenv site-packages directory'
+    Write-Output 'so that the MindQuantum root folder will be added to the Python PATH'
+    Write-Output 'without the need to modify PYTHONPATH.'
+    Write-Output ''
+    Write-Output 'Usage:'
+    Write-Output ('  {0} [options]' -f $BASENAME)
+    Write-Output ''
+    Write-Output 'Options:'
+    Write-Output '  -h,--help           Show this help message and exit'
+    Write-Output '  -n                  Dry run; only print commands but do not execute them'
+    Write-Output ''
+    Write-Output '  -B,-Build [dir]     Specify build directory'
+    Write-Output ("                      Defaults to: {0}" -f $build_dir)
+    Write-Output '  -Clean              Run make clean before building'
+    Write-Output '  -CleanAll           Clean everything before building.'
+    Write-Output '                      Equivalent to --clean-venv --clean-builddir'
+    Write-Output '  -CleanBuildDir      Delete build directory before building'
+    Write-Output '  -CleanCache         Re-run CMake with a clean CMake cache'
+    Write-Output '  -CleanVenv          Delete Python virtualenv before building'
+    Write-Output '  -c,-Configure       Force running the CMake configure step'
+    Write-Output '  -ConfigureOnly      Stop after the CMake configure and generation steps (ie. before building MindQuantum)'
+    Write-Output '  -Cxx                (experimental) Enable MindQuantum C++ support'
+    Write-Output '  -Debug              Build in debug mode'
+    Write-Output '  -DebugCMake         Enable debugging mode for CMake configuration step'
+    Write-Output '  -Gpu                Enable GPU support'
+    Write-Output '  -J,-Jobs [N]        Number of parallel jobs for building'
+    Write-Output ("                      Defaults to: {0}" -f $n_jobs_default)
+    Write-Output '  -LocalPkgs          Compile third-party dependencies locally'
+    Write-Output '  -Quiet              Disable verbose build rules'
+    Write-Output '  -ShowLibraries      Show all known third-party libraries'
+    Write-Output '  -Venv <path>        Path to Python virtual environment'
+    Write-Output ("                      Defaults to: {0}" -f $python_venv_path)
+    Write-Output '  -With<library>      Build the third-party <library> from source (<library> is case-insensitive)'
+    Write-Output '                      (ignored if --local-pkgs is passed, except for projectq and quest)'
+    Write-Output '  -Without<library>   Do not build the third-party library from source (<library> is case-insensitive)'
+    Write-Output '                      (ignored if --local-pkgs is passed, except for projectq and quest)'
+    Write-Output ''
+    Write-Output 'Any options not matching one of the above will be passed on to CMake during the configuration step'
+    Write-Output ''
+    Write-Output 'Example calls:'
+    Write-Output ("{0} -B build" -f $BASENAME)
+    Write-Output ("{0} -B build -gpu" -f $BASENAME)
+    Write-Output ("{0} -B build -cxx -WithBoost -Without-Quest" -f $BASENAME)
+    Write-Output ("{0} -B build -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc" -f $BASENAME)
 }
 
 # ==============================================================================
@@ -230,12 +261,23 @@ if ($LocalPkgs.IsPresent) {
     $force_local_pkgs = 1
 }
 
+if ($Quiet.IsPresent) {
+    $cmake_make_silent = 1
+}
+
 if ($B -ne "" -Or $Build -ne "") {
     $build_dir = "$B" + "$Build"
 }
 
-if ($J -ne "" -Or $Jobs -ne "") {
-    $n_jobs = "$J" + "$Jobs"
+if ($J -ne 0) {
+    $n_jobs = $J
+}
+elseif ($Jobs -ne 0) {
+    $n_jobs = $Jobs
+}
+
+if ($Venv -ne "") {
+    $python_venv_path = "$Venv"
 }
 
 # Parse -With<library> and -Without<library>
@@ -254,7 +296,7 @@ foreach($arg in $args) {
     }
 
     if ((($third_party_libraries -eq $library) -join " ") -eq "") {
-        echo ('Unkown library for {0}' -f $arg)
+        Write-Output ('Unkown library for {0}' -f $arg)
         exit 1
     }
 
@@ -295,7 +337,7 @@ elseif (Test-CommandExists python) {
     $PYTHON = "python"
 }
 else {
-    echo 'Unable to locate python or python3!'
+    Write-Output 'Unable to locate python or python3!'
     exit 1
 }
 
@@ -308,31 +350,35 @@ cd $BASEPATH
 # ------------------------------------------------------------------------------
 
 if ($do_clean_venv -eq 1) {
-    echo "Deleting virtualenv folder: $BASEPATH\venv"
-    Call-Cmd Remove-Item -Force -Recurse "$BASEPATH\venv" -ErrorAction SilentlyContinue
+    Write-Output "Deleting virtualenv folder: $python_venv_path"
+    Call-Cmd Remove-Item -Force -Recurse "$python_venv_path" -ErrorAction SilentlyContinue
 }
 
 if ($do_clean_build_dir -eq 1) {
-    echo "Deleting build folder: $build_dir"
+    Write-Output "Deleting build folder: $build_dir"
     Call-Cmd Remove-Item -Force -Recurse "$build_dir" -ErrorAction SilentlyContinue
 }
 
 $created_venv = 0
-if (-Not (Test-Path -Path "$BASEPATH/venv" -PathType Container)) {
+if (-Not (Test-Path -Path "$python_venv_path" -PathType Container)) {
     $created_venv = 1
-    echo "Creating Python virtualenv: $PYTHON -m venv venv"
-    Call-Cmd $PYTHON -m venv venv
+    Write-Output "Creating Python virtualenv: $PYTHON -m venv $python_venv_path"
+    Call-Cmd $PYTHON -m venv "$python_venv_path"
 }
 
 if($IsWinEnv) {
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 }
 
-if (Test-Path -Path $BASEPATH/venv/Scripts/activate.ps1) {
-    ./venv/Scripts/Activate.ps1
+$activate_path = "$python_venv_path\bin\Activate.ps1"
+if (Test-Path -Path $BASEPATH\venv\Scripts\activate.ps1) {
+    $activate_path = "$python_venv_path\Scripts\Activate.ps1"
 }
-else {
-    ./venv/bin/Activate.ps1
+
+if ($dry_run -ne 1) {
+    . "$activate_path"
+} else {
+    Write-Output ". $activate_path"
 }
 
 if ($created_venv -eq 1) {
@@ -347,38 +393,43 @@ if ($created_venv -eq 1) {
 
     # TODO(dnguyen): add wheel delocation package for Windows once we figure this out
 
-
-    echo ("Updating Python packages: $PYTHON -m pip install -U "  + ($pkgs -Join ' '))
+    Write-Output ("Updating Python packages: $PYTHON -m pip install -U "  + ($pkgs -Join ' '))
     Call-Cmd $PYTHON -m pip install -U @pkgs
 }
 
-# Make sure the root directory is in the virtualenv PATH
-$site_pkg_dir = Invoke-Expression -Command "$PYTHON -c 'import site; print(site.getsitepackages()[0])'"
-$pth_file = "$site_pkg_dir\mindquantum_local.pth"
+if ($dry_run -ne 1) {
+    # Make sure the root directory is in the virtualenv PATH
+    $site_pkg_dir = Invoke-Expression -Command "$PYTHON -c 'import site; print(site.getsitepackages()[0])'"
+    $pth_file = "$site_pkg_dir\mindquantum_local.pth"
 
-if (-Not (Test-Path -Path "$pth_file" -PathType leaf)) {
-    echo "Creating pth-file in $pth_file"
-    echo "$BASEPATH" > "$pth_file"
+    if (-Not (Test-Path -Path "$pth_file" -PathType leaf)) {
+        Write-Output "Creating pth-file in $pth_file"
+        Write-Output "$BASEPATH" > "$pth_file"
+    }
 }
 
 # ------------------------------------------------------------------------------
 # Setup arguments for build
 
-$cmake_args = @('-DIN_PLACE_BUILD:BOOL=ON')
+$cmake_args = @('-DIN_PLACE_BUILD:BOOL=ON'
+                '-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON'
+                "-DENABLE_PROJECTQ:BOOL={0}" -f $CMAKE_BOOL[$enable_projectq]
+                "-DENABLE_QUEST:BOOL={0}" -f $CMAKE_BOOL[$enable_quest])
 
-$cmake_args += "-DENABLE_PROJECTQ:BOOL={0}" -f $CMAKE_BOOL[$enable_projectq]
-$cmake_args += "-DENABLE_QUEST:BOOL={0}" -f $CMAKE_BOOL[$enable_quest]
+if ($cmake_debug_mode -eq 1) {
+    $cmake_args += "-DENABLE_CMAKE_DEBUG:BOOL=ON"
+}
 
-if ($enable_gpu -eq 1) {
-    $cmake_args += "-DENABLE_CUDA:BOOL=ON"
+if ($cmake_make_silent -eq 1) {
+    $cmake_args += "-DUSE_VERBOSE_MAKEFILE:BOOL=OFF"
 }
 
 if ($enable_cxx -eq 1) {
     $cmake_args += "-DENABLE_CXX_EXPERIMENTAL:BOOL=ON"
 }
 
-if ($cmake_debug_mode -eq 1) {
-    $cmake_args += "-DENABLE_CMAKE_DEBUG:BOOL=ON"
+if ($enable_gpu -eq 1) {
+    $cmake_args += "-DENABLE_CUDA:BOOL=ON"
 }
 
 if ($force_local_pkgs -eq 1) {
@@ -391,8 +442,13 @@ elseif ("$local_pkgs" -ne "") {
 if ($Ninja.IsPresent) {
     $cmake_args += "-GNinja"
 }
+elseif ($n_jobs -eq -1){
+    $n_jobs = $n_jobs_default
+}
 
-$cmake_args += "-DJOBS:STRING={0}" -f $n_jobs
+if($n_jobs -ne -1) {
+    $cmake_args += "-DJOBS:STRING={0}" -f $n_jobs
+}
 
 # ------------------------------------------------------------------------------
 # Build
@@ -403,9 +459,9 @@ if ($do_configure -eq 0) {
     }
     elseif ($do_clean_cache -eq 1) {
         $do_configure=1
-        echo "Removing CMake cache at: $build_dir/CMakeCache.txt"
+        Write-Output "Removing CMake cache at: $build_dir/CMakeCache.txt"
         Call-Cmd Remove-Item -Force "$build_dir/CMakeCache.txt" -ErrorAction SilentlyContinue
-        echo "Removing CMake files at: $build_dir/CMakeFiles"
+        Write-Output "Removing CMake files at: $build_dir/CMakeFiles"
         Call-Cmd Remove-Item -Force -Recurse "$build_dir/CMakeFiles" -ErrorAction SilentlyContinue
     }
 }

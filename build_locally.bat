@@ -1,3 +1,5 @@
+@echo off
+
 rem Copyright 2021 Huawei Technologies Co., Ltd
 rem
 rem Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +14,6 @@ rem WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 rem See the License for the specific language governing permissions and
 rem limitations under the License.
 
-@echo off
 setlocal ENABLEDELAYEDEXPANSION ENABLEEXTENSIONS
 
 set BASEPATH=%~dp0
@@ -23,6 +24,7 @@ rem Default values
 
 set build_type=Release
 set cmake_debug_mode=0
+set cmake_make_silent=0
 set configure_only=0
 set do_clean=0
 set do_clean_build_dir=0
@@ -36,10 +38,13 @@ set enable_projectq=1
 set enable_quest=0
 set force_local_pkgs=0
 set ninja=0
-set n_jobs=8
+set n_jobs=-1
+set n_jobs_default=0
+for /f  "tokens=2 delims==" %%d in ('wmic cpu get NumberOfLogicalProcessors /value ^| findstr "="') do @set /A n_jobs_default+=%%d >NUL
 
 set source_dir=%BASEPATH%
 set build_dir=%BASEPATH%\build
+set python_venv_path=%BASEPATH%\venv
 
 set third_party_libraries=boost eigen3 fmt gmp nlohmann_json projectq pybind11 quest symengine tweedledum
 set third_party_libraries_N=10
@@ -153,9 +158,26 @@ rem ============================================================================
     shift & goto :initial
   )
 
+  if /I "%1" == "/Quiet" (
+    set cmake_make_silent=1
+    shift & goto :initial
+  )
+
   if /I "%1" == "/ShowLibraries" (
     call :print_show_libraries
     goto :EOF
+  )
+
+  if /I "%1" == "/Venv" (
+    set value=%2
+    if not defined value goto :arg_venv
+    if "!value:~0,1!" == "/" (
+      :arg_venv
+      echo %BASENAME%: option requires an argument -- '/Venv'
+      goto :EOF
+    )
+    set python_venv_path=!value!
+    shift & shift & goto :initial
   )
 
   set value=%1
@@ -208,8 +230,8 @@ rem ============================================================================
 cd %BASEPATH%
 
 if !do_clean_venv! == 1 (
-  echo Deleting virtualenv folder: %BASEPATH%\venv
-  if exist %BASEPATH%\venv call :call_cmd rd /Q /S %BASEPATH%\venv
+  echo Deleting virtualenv folder: !python_venv_path!
+  if exist !python_venv_path! call :call_cmd rd /Q /S !python_venv_path!
 )
 
 if !do_clean_build_dir! == 1 (
@@ -218,13 +240,13 @@ if !do_clean_build_dir! == 1 (
 )
 
 set created_venv=0
-if NOT exist %BASEPATH%\venv (
+if NOT exist !python_venv_path! (
   set created_venv=1
-  echo Creating Python virtualenv: !PYTHON! -m venv venv
-  call :call_cmd !PYTHON! -m venv venv
+  echo Creating Python virtualenv: !PYTHON! -m venv !python_venv_path!
+  call :call_cmd !PYTHON! -m venv !python_venv_path!
 )
 
-call .\venv\Scripts\activate.bat
+call :call_cmd !python_venv_path!\Scripts\activate.bat
 
 if !created_venv! == 1 (
   set pkgs=pip setuptools wheel build pybind11
@@ -235,18 +257,28 @@ if !created_venv! == 1 (
   call :call_cmd !PYTHON! -m pip install -U !pkgs!
 )
 
-for /F %%i in ('!PYTHON! -c "import site; print(site.getsitepackages()[0])"') do set site_pkg_dir=%%i
-set pth_file=!site_pkg_dir!\mindquantum_local.pth
+if NOT !dry_run! == 1 (
+   for /F %%i in ('!PYTHON! -c "import site; print(site.getsitepackages()[0])"') do set site_pkg_dir=%%i
+   set pth_file=!site_pkg_dir!\mindquantum_local.pth
 
-if NOT exist !pth_file! (
-  echo Creating pth-file in !pth_file!
-  echo %BASEPATH% > !pth_file!
+   if NOT exist !pth_file! (
+      echo Creating pth-file in !pth_file!
+      echo %BASEPATH% > !pth_file!
+   )
 )
 
 rem ----------------------------------------------------------------------------
 rem Setup arguments for build
 
-set cmake_args="-DIN_PLACE_BUILD:BOOL=ON"
+set cmake_args="-DIN_PLACE_BUILD:BOOL=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON"
+
+if !cmake_debug_mode! == 1 set cmake_args=!cmake_args! -DENABLE_CMAKE_DEBUG:BOOL=ON
+
+if !cmake_make_silent! == 1 set cmake_args=!cmake_args! -DUSE_VERBOSE_MAKEFILE:BOOL=OFF
+
+if !enable_cxx! == 1 set cmake_args=!cmake_args! -DENABLE_CXX_EXPERIMENTAL:BOOL=ON
+
+if !enable_gpu! == 1 set cmake_args=!cmake_args! -DENABLE_CUDA:BOOL=ON
 
 if !enable_projectq! == 1 (
   set cmake_args=!cmake_args! -DENABLE_PROJECTQ:BOOL=ON
@@ -260,21 +292,19 @@ if !enable_quest! == 1 (
   set cmake_args=!cmake_args! -DENABLE_QUEST:BOOL=OFF
 )
 
-if !enable_gpu! == 1 set cmake_args=!cmake_args! -DENABLE_CUDA:BOOL=ON
-
-if !enable_cxx! == 1 set cmake_args=!cmake_args! -DENABLE_CXX_EXPERIMENTAL:BOOL=ON
-
-if !cmake_debug_mode! == 1 set cmake_args=!cmake_args! -DENABLE_CMAKE_DEBUG:BOOL=ON
-
 if !force_local_pkgs! == 1 (
   set cmake_args=!cmake_args! -DMQ_FORCE_LOCAL_PKGS=all
 ) else (
-  if NOT "!local_pkgs!" == ""   set cmake_args=!cmake_args! -DMQ_FORCE_LOCAL_PKGS=!local_pkgs!
+  if NOT "!local_pkgs!" == "" set cmake_args=!cmake_args! -DMQ_FORCE_LOCAL_PKGS=!local_pkgs!
 )
 
-if !ninja! == 1 set cmake_args=!cmake_args! -GNinja
+if !ninja! == 1 (
+  set cmake_args=!cmake_args! -GNinja
+) else (
+  if !n_jobs! == -1 set n_jobs=!n_jobs_default!
+)
 
-set cmake_args=!cmake_args! -DJOBS:STRING=!n_jobs!
+if NOT !n_jobs! == -1 set cmake_args=!cmake_args! -DJOBS:STRING=!n_jobs!
 
 rem ----------------------------------------------------------------------------
 rem Build
@@ -397,10 +427,13 @@ exit /B 0
   echo   /DebugCMake         Enable debugging mode for CMake configuration step
   echo   /gpu                Enable GPU support
   echo   /j,/Jobs [N]        Number of parallel jobs for building
-  echo                       Defaults to: %n_jobs%
+  echo                       Defaults to: !n_jobs_default!
   echo   /LocalPkgs          Compile third-party dependencies locally
   echo   /Ninja              Use the Ninja CMake generator
+  echo   /Quiet              Disable verbose build rules
   echo   /ShowLibraries      Show all known third-party libraries
+  echo   /Venv *path*        Path to Python virtual environment
+  echo                       Defaults to: %python_venv_path%
   echo   /With*library*      Build the third-party *library* from source (*library* is case-insensitive)
   echo                       (ignored if /LocalPkgs is passed, except for projectq and quest)
   rem echo   /Without*library*   Do not build the third-party library from source (*library* is case-insensitive)
