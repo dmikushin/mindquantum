@@ -163,10 +163,12 @@ struct Quest {
         }
     }
     unsigned ApplyMeasure(const BasicGate<T> &gate) {
+        return 0;
     }
 
     VT<unsigned> Sampling(const VT<BasicGate<T>> &circ, const ParameterResolver<T> &pr, size_t shots,
                           const MST<size_t> &key_map, unsigned seed) {
+        return {};
     }
 
     void ApplyCircuit(const VT<BasicGate<T>> &circ, const ParameterResolver<T> &pr) {
