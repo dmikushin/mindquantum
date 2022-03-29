@@ -43,7 +43,7 @@ struct overload : Ts... {
     using Ts::operator()...;
 };
 
-#if __cplusplus <= 201703L || (defined(__clang__))
+#if __cpp_deduction_guide <= 201907L
 //! Template deduction guide for the overload struct
 /*!
  * \note Not needed anymore for C++20
