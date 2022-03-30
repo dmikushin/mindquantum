@@ -16,6 +16,9 @@
 #
 # ==============================================================================
 
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
+  message(FATAL_ERROR "Clang < 7.0.0 is currently not supported!")
+endif()
 include(CheckCXXSourceCompiles)
 
 # ==============================================================================
