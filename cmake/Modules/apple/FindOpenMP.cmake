@@ -111,14 +111,14 @@ function(_OPENMP_FLAG_CANDIDATES LANG)
     set(OMP_FLAG_HP "+Oopenmp")
     if(WIN32)
       set(OMP_FLAG_Intel "-Qopenmp")
-    elseif(CMAKE_${LANG}_COMPILER_ID STREQUAL "Intel" AND "${CMAKE_${LANG}_COMPILER_VERSION}" VERSION_LESS
-                                                          "15.0.0.20140528")
+    elseif("${CMAKE_${LANG}_COMPILER_ID}" STREQUAL "Intel" AND "${CMAKE_${LANG}_COMPILER_VERSION}" VERSION_LESS
+                                                               "15.0.0.20140528")
       set(OMP_FLAG_Intel "-openmp")
     else()
       set(OMP_FLAG_Intel "-qopenmp")
     endif()
-    if(CMAKE_${LANG}_COMPILER_ID STREQUAL "IntelLLVM" AND "x${CMAKE_${LANG}_COMPILER_FRONTEND_VARIANT}" STREQUAL
-                                                          "xMSVC")
+    if("${CMAKE_${LANG}_COMPILER_ID}" STREQUAL "IntelLLVM" AND "x${CMAKE_${LANG}_COMPILER_FRONTEND_VARIANT}" STREQUAL
+                                                               "xMSVC")
       set(OMP_FLAG_IntelLLVM "-Qiopenmp")
     else()
       set(OMP_FLAG_IntelLLVM "-fiopenmp")
@@ -289,9 +289,9 @@ function(_OPENMP_GET_FLAGS LANG FLAG_MODE OPENMP_FLAG_VAR OPENMP_LIB_NAMES_VAR)
             PARENT_SCOPE)
       endif()
       break()
-    elseif((CMAKE_${LANG}_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_${LANG}_COMPILER_VERSION VERSION_GREATER_EQUAL
-                                                                "7.0") OR (CMAKE_${LANG}_COMPILER_ID STREQUAL "Clang"
-                                                                           AND APPLE))
+    elseif(("${CMAKE_${LANG}_COMPILER_ID}" STREQUAL "AppleClang" AND CMAKE_${LANG}_COMPILER_VERSION
+                                                                     VERSION_GREATER_EQUAL "7.0")
+           OR (CMAKE_${LANG}_COMPILER_ID STREQUAL "Clang" AND APPLE))
       # Check for separate OpenMP library on AppleClang 7+
       find_library(
         OpenMP_libomp_LIBRARY
@@ -359,7 +359,7 @@ function(_OPENMP_GET_FLAGS LANG FLAG_MODE OPENMP_FLAG_VAR OPENMP_LIB_NAMES_VAR)
           break()
         endif()
       endif()
-    elseif(CMAKE_${LANG}_COMPILER_ID STREQUAL "Clang" AND WIN32)
+    elseif("${CMAKE_${LANG}_COMPILER_ID}" STREQUAL "Clang" AND WIN32)
       # Check for separate OpenMP library for Clang on Windows
       find_library(
         OpenMP_libomp_LIBRARY
@@ -510,7 +510,7 @@ macro(_OPENMP_SET_VERSION_BY_SPEC_DATE LANG)
   else()
     set(_version_match "")
   endif()
-  if(NOT _version_match STREQUAL "")
+  if(NOT "${_version_match}" STREQUAL "")
     set(OpenMP_${LANG}_VERSION_MAJOR ${CMAKE_MATCH_1})
     set(OpenMP_${LANG}_VERSION_MINOR ${CMAKE_MATCH_2})
     set(OpenMP_${LANG}_VERSION "${OpenMP_${LANG}_VERSION_MAJOR}.${OpenMP_${LANG}_VERSION_MINOR}")

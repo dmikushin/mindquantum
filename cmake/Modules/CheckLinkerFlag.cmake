@@ -61,7 +61,7 @@ function(CHECK_LINKER_FLAG _lang _flag _var)
 
   if(_lang MATCHES "^(C|CXX)$")
     set(_source "int main() { return 0; }")
-  elseif(_lang STREQUAL "Fortran")
+  elseif("${_lang}" STREQUAL "Fortran")
     set(_source "       program test\n       stop\n       end program")
   elseif(_lang MATCHES "CUDA")
     set(_source "__host__ int main() { return 0; }")

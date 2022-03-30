@@ -256,7 +256,7 @@ function(__check_patches pkg_patches)
       set(${pkg_name}_PATCHES_NEW_MD5 "${${pkg_name}_PATCHES_NEW_MD5},${_patch_md5}")
     endforeach()
 
-    if(NOT ${pkg_name}_PATCHES_MD5 STREQUAL ${pkg_name}_PATCHES_NEW_MD5)
+    if(NOT "${${pkg_name}_PATCHES_MD5}" STREQUAL "${${pkg_name}_PATCHES_NEW_MD5}")
       set(${pkg_name}_PATCHES ${pkg_patches})
       file(REMOVE_RECURSE "${_mq_local_prefix}/${pkg_name}-subbuild")
       file(WRITE ${_mq_local_prefix}/${pkg_name}_patch.md5 ${${pkg_name}_PATCHES_NEW_MD5})
@@ -527,10 +527,10 @@ set(PACKAGE_VERSION "${PKG_VER}")
 
 if (PACKAGE_FIND_VERSION_RANGE)
   # Package version must be in the requested version range
-  if ((PACKAGE_FIND_VERSION_RANGE_MIN STREQUAL "INCLUDE" AND PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION_MIN)
-      OR ((PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "INCLUDE"
+  if (("${PACKAGE_FIND_VERSION_RANGE_MIN}" STREQUAL "INCLUDE" AND PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION_MIN)
+      OR (("${PACKAGE_FIND_VERSION_RANGE_MAX}" STREQUAL "INCLUDE"
              AND PACKAGE_VERSION VERSION_GREATER PACKAGE_FIND_VERSION_MAX)
-           OR (PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "EXCLUDE"
+           OR ("${PACKAGE_FIND_VERSION_RANGE_MAX}" STREQUAL "EXCLUDE"
                  AND PACKAGE_VERSION VERSION_GREATER_EQUAL PACKAGE_FIND_VERSION_MAX)))
     set(PACKAGE_VERSION_COMPATIBLE FALSE)
   else()
@@ -541,7 +541,7 @@ else()
     set(PACKAGE_VERSION_COMPATIBLE FALSE)
   else()
     set(PACKAGE_VERSION_COMPATIBLE TRUE)
-    if(PACKAGE_FIND_VERSION STREQUAL PACKAGE_VERSION)
+    if("${PACKAGE_FIND_VERSION}" STREQUAL "${PACKAGE_VERSION}")
       set(PACKAGE_VERSION_EXACT TRUE)
     endif()
   endif()
@@ -557,7 +557,7 @@ get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
 get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-if(_IMPORT_PREFIX STREQUAL "/")
+if("${_IMPORT_PREFIX}" STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 ]]

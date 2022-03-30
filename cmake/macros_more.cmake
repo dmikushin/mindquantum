@@ -27,7 +27,7 @@ macro(python_add_library target)
   if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.17)
     # Position 0 is the library type
     list(GET _args 0 _lib_type)
-    if(_lib_type STREQUAL "MODULE")
+    if("${_lib_type}" STREQUAL "MODULE")
       list(INSERT _args 1 WITH_SOABI)
     endif()
   endif()
