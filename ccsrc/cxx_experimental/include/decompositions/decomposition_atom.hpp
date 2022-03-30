@@ -16,6 +16,7 @@
 #define DECOMPOSITION_ATOM_HPP
 
 #include <array>
+#include <new>
 #include <type_traits>
 
 #include "core/config.hpp"
