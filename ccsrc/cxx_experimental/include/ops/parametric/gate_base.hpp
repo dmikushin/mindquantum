@@ -251,7 +251,12 @@ class ParametricBase {
 
     ParametricBase() = delete;
     ParametricBase(const ParametricBase&) = default;
+
+#if defined(MQ_CLANG_MAJOR) && MQ_CLANG_MAJOR < 9
+    ParametricBase(ParametricBase&&) = default;
+#else
     ParametricBase(ParametricBase&&) noexcept = default;
+#endif  // MQ_CLANG_MAJOR
 
     ParametricBase& operator=(const ParametricBase&) = default;
     ParametricBase& operator=(ParametricBase&&) noexcept = default;
