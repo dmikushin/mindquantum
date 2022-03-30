@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  gcc:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        gcc:
+          - 7  # C++17 earliest version
+          - 8
+          - 9
+          - 10
+          - latest
+    env:
+      CMAKE_VERSION: 3.22.3
+    name: "GCC ${{ matrix.gcc }} • x64"
+    container: "gcc:${{ matrix.gcc }}"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get history and tags for SCM versioning to work
+        run: |
+          git fetch --prune --unshallow
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      - name: Prepare env
+        run: >
+          apt-get update && apt-get install -y python3-dev python3-pip
+          python3-setuptools python3-wheel python3-venv libboost-filesystem-dev
+          --no-install-recommends
+
+      - name: Cache CMake installer
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
+          key: cmake-${{ env.CMAKE_VERSION }}
+
+      - name: Install latest CMake
+        run: |
+          if [ ! -e cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh ]; then
+            wget https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
+          fi
+          bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
+
+      - name: Cache Python virtualenv
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: venv
+          key: gcc-${{ matrix.gcc }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+
+      - name: Cache compiled third-party libraries
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: build/.mqlibs
+          key: gcc-${{ matrix.gcc }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+
+      - name: Configure && build
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure
+  clang:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        clang:
+          - 7
+          - 8
+          - 9
+          - 10   # first version for full C++17 support (with patches)
+          - 11
+          - 12
+          - latest
+    env:
+      CC: clang
+      CXX: clang++
+      CMAKE_VERSION: 3.22.3
+
+    name: "Clang ${{ matrix.clang }} • x64"
+    container: "silkeh/clang:${{ matrix.clang }}"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get history and tags for SCM versioning to work
+        run: |
+          git fetch --prune --unshallow
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      - name: Prepare env
+        run: >
+          apt-get update && apt-get install -y python3-dev python3-pip
+          python3-setuptools python3-wheel python3-venv
+          --no-install-recommends
+
+      - name: Cache CMake installer
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
+          key: cmake-${{ env.CMAKE_VERSION }}
+
+      - name: Install latest CMake
+        run: |
+          if [ ! -e cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh ]; then
+            wget https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
+          fi
+          bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
+
+      - name: Cache Python virtualenv
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: venv
+          key: clang-${{ matrix.clang }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+
+      - name: Cache compiled third-party libraries
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v2
+        with:
+          path: build/.mqlibs
+          key: clang-${{ matrix.clang }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+
+      - name: Configure && build
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure
+  msvc:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+    name: "MSVC • x64"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get history and tags for SCM versioning to work
+        run: |
+          git fetch --prune --unshallow
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      - name: Cache Python virtualenv
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: venv
+          key: msvc-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+
+      - name: Cache compiled third-party libraries
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: build/.mqlibs
+          key: msvc-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+
+      - name: Configure && build
+        run: ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Configure -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
