@@ -53,6 +53,7 @@ target_include_directories(_mindquantum_cxx_cengines PRIVATE ${CMAKE_CURRENT_LIS
 set_output_directory_auto(_mindquantum_cxx_cengines mindquantum/experimental)
 
 pybind11_add_module(_mindquantum_cxx_ops MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/ops/ops.cpp
+pybind11_add_module(_mindquantum_cxx_ops MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/ops/_mindquantum_cxx_ops.cpp
                     ${CMAKE_CURRENT_LIST_DIR}/lib/ops/command.cpp)
 
 target_link_libraries(_mindquantum_cxx_ops PRIVATE mindquantum_cxx)
