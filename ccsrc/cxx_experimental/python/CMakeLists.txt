@@ -18,6 +18,16 @@
 
 # TODO: Create OBJECT libraries to avoid duplicate compilations For that need to get pybind11 dependencies manually...
 
+# ==============================================================================
+
+pybind11_add_module(_mindquantum_cxx MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/_mindquantum_cxx.cpp
+                    ${CMAKE_CURRENT_LIST_DIR}/lib/core/circuit.cpp)
+target_include_directories(_mindquantum_cxx PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(_mindquantum_cxx PRIVATE mindquantum_cxx)
+set_output_directory_auto(_mindquantum_cxx mindquantum/experimental)
+
+# ==============================================================================
+
 pybind11_add_module(
   _mindquantum_cxx_core
   MODULE
@@ -36,6 +46,8 @@ target_include_directories(_mindquantum_cxx_core PRIVATE ${CMAKE_CURRENT_LIST_DI
                                                          ${PROJECT_SOURCE_DIR}/include)
 set_output_directory_auto(_mindquantum_cxx_core mindquantum/experimental)
 
+# ==============================================================================
+
 pybind11_add_module(
   _mindquantum_cxx_cengines
   MODULE
@@ -52,10 +64,13 @@ target_link_libraries(_mindquantum_cxx_cengines PRIVATE mindquantum_cxx)
 target_include_directories(_mindquantum_cxx_cengines PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 set_output_directory_auto(_mindquantum_cxx_cengines mindquantum/experimental)
 
-pybind11_add_module(_mindquantum_cxx_ops MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/ops/ops.cpp
+# ==============================================================================
+
 pybind11_add_module(_mindquantum_cxx_ops MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/ops/_mindquantum_cxx_ops.cpp
                     ${CMAKE_CURRENT_LIST_DIR}/lib/ops/command.cpp)
 
 target_link_libraries(_mindquantum_cxx_ops PRIVATE mindquantum_cxx)
 target_include_directories(_mindquantum_cxx_ops PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 set_output_directory_auto(_mindquantum_cxx_ops mindquantum/experimental)
+
+# ==============================================================================
