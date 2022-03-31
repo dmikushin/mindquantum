@@ -25,11 +25,10 @@ import platform
 import shutil
 import subprocess
 import sys
+from distutils.command.clean import clean
 
 import setuptools
-from setuptools.cmd import Command
 from setuptools.command.build_ext import build_ext
-from setuptools.command.clean import clean
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__)))
 
