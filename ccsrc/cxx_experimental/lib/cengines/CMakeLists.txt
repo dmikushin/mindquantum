@@ -18,6 +18,5 @@
 
 target_sources(
   mindquantum_cxx
-  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cpp_decomposition.cpp ${CMAKE_CURRENT_LIST_DIR}/cpp_graph_mapper.cpp
-          ${CMAKE_CURRENT_LIST_DIR}/cpp_printer.cpp ${CMAKE_CURRENT_LIST_DIR}/cpp_resource_counter.cpp
-          ${CMAKE_CURRENT_LIST_DIR}/write_projectq.cpp)
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cpp_graph_mapper.cpp ${CMAKE_CURRENT_LIST_DIR}/cpp_printer.cpp
+          ${CMAKE_CURRENT_LIST_DIR}/cpp_resource_counter.cpp ${CMAKE_CURRENT_LIST_DIR}/write_projectq.cpp)

@@ -222,10 +222,6 @@ void CppCore::traverse_engine_list() {
             cpp_printer.print_output(circuit_manager_.as_projectq(uncommitted), *output_stream);
         } else if (std::holds_alternative<cengines::cpp::TagRemover>(veng)) {
             // Do nothing
-        } else if (std::holds_alternative<cengines::CppDecomposer>(veng)) {
-            // Intended replacer for C++
-            auto& cpp_decomposer = std::get<cengines::CppDecomposer>(veng);
-            circuit_manager_.transform([&](const auto& circuit) { return cpp_decomposer.decompose_circuit(circuit); });
         } else if (std::holds_alternative<cengines::cpp::InstructionFilter>(veng)) {
             // Not intended in C++
             std::cerr << "In C++ using CppDecomposer "

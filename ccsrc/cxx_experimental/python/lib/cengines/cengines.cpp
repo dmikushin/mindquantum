@@ -14,7 +14,6 @@
 
 #include <pybind11/pybind11.h>
 
-#include "cengines/decomposition.hpp"
 #include "cengines/mapping.hpp"
 #include "cengines/printer.hpp"
 #include "cengines/resource_counter.hpp"
@@ -25,6 +24,5 @@ PYBIND11_MODULE(_mindquantum_cxx_cengines, module) {
 
     init_mapping(module);
     init_printer(module);
-    init_decomposition(module);
     init_resource_counter(module);
 }

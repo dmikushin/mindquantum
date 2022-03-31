@@ -20,7 +20,6 @@
 
 #include <pybind11/pybind11.h>
 
-#include "cengines/decomposition.hpp"
 #include "cengines/instruction_filter.hpp"
 #include "cengines/mapping.hpp"
 #include "cengines/optimisation.hpp"
@@ -83,14 +82,7 @@ bool mindquantum::details::load_cengine(pybind11::handle src, cengines::engine_t
         using caster_t = make_caster<python::cpp::InstructionFilter>;
         return convert_engine<caster_t>(src, engine, type_name);
     }
-    // TODO: Check that name is correct (maybe add _mindquantum_cxx_cengines)
-    else if (type_name == "AutoReplacer" || type_name == "projectq.cengines._replacer._replacer.AutoReplacer") {
-        engine = python::CppDecomposer{};
-        return true;
-    } else if (type_name == "projectq.cengines._mindquantum_cxx_cengines.CppDecomposer") {
-        using caster_t = make_caster<python::CppDecomposer>;
-        return convert_engine<caster_t>(src, engine, type_name);
-    } else {
+    else {
         std::cerr << "Unsupported engine type: " << type_name << std::endl;
     }
 

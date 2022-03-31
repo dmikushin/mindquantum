@@ -23,7 +23,6 @@ pybind11_add_module(
   MODULE
   ${CMAKE_CURRENT_LIST_DIR}/lib/_mindquantum_cxx_core.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/base.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/decomposition.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/engine_list.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/mapping.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/optimisation.cpp
@@ -42,7 +41,6 @@ pybind11_add_module(
   MODULE
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/base.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/cengines.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/decomposition.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/engine_list.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/mapping.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/optimisation.cpp

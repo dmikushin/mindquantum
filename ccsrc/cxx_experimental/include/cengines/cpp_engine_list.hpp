@@ -17,7 +17,6 @@
 
 #include <variant>
 
-#include "cengines/cpp_decomposition.hpp"
 #include "cengines/cpp_graph_mapper.hpp"
 #include "cengines/cpp_mapping.hpp"
 #include "cengines/cpp_optimisation.hpp"
@@ -31,7 +30,7 @@ class TagRemover {};
 }  // namespace cpp
 
 using engine_t = std::variant<cpp::LocalOptimizer, cpp::LinearMapper, cpp::GridMapper, CppGraphMapper, CppPrinter,
-                              ResourceCounter, cpp::TagRemover, cpp::InstructionFilter, CppDecomposer>;
+                              ResourceCounter, cpp::TagRemover, cpp::InstructionFilter>;
 
 }  // namespace mindquantum::cengines
 
