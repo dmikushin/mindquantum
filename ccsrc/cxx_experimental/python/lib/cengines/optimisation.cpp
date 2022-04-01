@@ -12,11 +12,11 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "cengines/optimisation.hpp"
+#include "python/cengines/optimisation.hpp"
 
 #include <pybind11/pybind11.h>
 
-#include "details/python2cpp_conv.hpp"
+#include "python/details/python2cpp_conv.hpp"
 
 #define GET_ATTR_FROM_PYTHON(name) mindquantum::details::get_attr_from_python(src, value, #name, &optim_t::set_##name)
 

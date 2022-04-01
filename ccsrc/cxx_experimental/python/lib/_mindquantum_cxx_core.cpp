@@ -22,9 +22,9 @@
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
 
-#include "cengines/engine_list.hpp"
-#include "core/core.hpp"
-#include "ops/command.hpp"  // required to get the pybind11 type casters
+#include "python/cengines/engine_list.hpp"
+#include "python/core/core.hpp"
+#include "python/ops/command.hpp"  // required to get the pybind11 type casters
 
 namespace py = pybind11;
 

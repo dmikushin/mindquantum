@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "cengines/printer.hpp"
+#include "python/cengines/printer.hpp"
 
 void init_printer(pybind11::module& m) {
     namespace py = pybind11;

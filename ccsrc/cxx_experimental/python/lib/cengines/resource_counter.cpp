@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "cengines/resource_counter.hpp"
+#include "python/cengines/resource_counter.hpp"
 
 #include <fmt/format.h>
 #include <pybind11/pybind11.h>
@@ -21,12 +21,12 @@
 #include <tweedledum/Operators/Standard.h>
 
 #include "cengines/write_projectq.hpp"
-#include "details/python2cpp_conv.hpp"
-#include "details/python_api.hpp"
-#include "ops/command.hpp"
 #include "ops/gates/ph.hpp"
 #include "ops/gates/qubit_operator.hpp"
 #include "ops/gates/time_evolution.hpp"
+#include "python/details/python2cpp_conv.hpp"
+#include "python/details/python_api.hpp"
+#include "python/ops/command.hpp"
 
 // -----------------------------------------------------------------------------
 

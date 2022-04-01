@@ -14,7 +14,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "bindings.hpp"
+#include "python/bindings.hpp"
 
 PYBIND11_MODULE(_mindquantum_cxx, module) {
     namespace py = pybind11;

@@ -14,9 +14,9 @@
 
 #include <pybind11/pybind11.h>
 
-#include "cengines/mapping.hpp"
-#include "cengines/printer.hpp"
-#include "cengines/resource_counter.hpp"
+#include "python/cengines/mapping.hpp"
+#include "python/cengines/printer.hpp"
+#include "python/cengines/resource_counter.hpp"
 
 PYBIND11_MODULE(_mindquantum_cxx_cengines, module) {
     namespace py = pybind11;

@@ -12,9 +12,6 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#ifndef CPP_MACROS_BEGIN_HPP
-#define CPP_MACROS_BEGIN_HPP
-
 #include <type_traits>
 
 namespace mindquantum::details {
@@ -22,18 +19,20 @@ template <typename T>
 using add_cvref = std::add_lvalue_reference_t<std::add_const_t<T>>;
 }  // namespace mindquantum::details
 
-#define DECLARE_ATTRIBUTE(type, name)                                                                                  \
- public:                                                                                                               \
-    DECLARE_GETTER_SETTER(type, name)                                                                                  \
- private:                                                                                                              \
-    type name##_
+#ifndef DECLARE_ATTRIBUTE
+#    define DECLARE_ATTRIBUTE(type, name)                                                                              \
+     public:                                                                                                           \
+        DECLARE_GETTER_SETTER(type, name)                                                                              \
+     private:                                                                                                          \
+        type name##_
+#endif  // !DECLARE_ATTRIBUTE
 
-#define DECLARE_GETTER_SETTER(type, name)                                                                              \
-    void set_##name(mindquantum::details::add_cvref<type> value) {                                                     \
-        name##_ = value;                                                                                               \
-    }                                                                                                                  \
-    auto get_##name() const {                                                                                          \
-        return name##_;                                                                                                \
-    }
-
-#endif /* CPP_MACROS_BEGIN_HPP */
+#ifndef DECLARE_GETTER_SETTER
+#    define DECLARE_GETTER_SETTER(type, name)                                                                          \
+        void set_##name(mindquantum::details::add_cvref<type> value) {                                                 \
+            name##_ = value;                                                                                           \
+        }                                                                                                              \
+        auto get_##name() const {                                                                                      \
+            return name##_;                                                                                            \
+        }
+#endif  // !DECLARE_GETTER_SETTER

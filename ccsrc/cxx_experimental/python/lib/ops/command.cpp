@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "ops/command.hpp"
+#include "python/ops/command.hpp"
 
 #include <complex>
 #include <iostream>
@@ -28,9 +28,9 @@
 #include <tweedledum/Operators/Ising.h>
 #include <tweedledum/Operators/Standard.h>
 
-#include "details/python_api.hpp"
 #include "ops/gates.hpp"
 #include "ops/meta/dagger.hpp"
+#include "python/details/python_api.hpp"
 
 namespace py = pybind11;
 namespace td = tweedledum;

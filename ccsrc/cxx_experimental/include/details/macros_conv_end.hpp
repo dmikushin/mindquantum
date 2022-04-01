@@ -12,11 +12,6 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#ifndef CPP_MACROS_END_HPP
-#define CPP_MACROS_END_HPP
-
 #undef DECLARE_GETTER_SETTER
 #undef DECLARE_ATTRIBUTE
 #undef MACROS_BEGIN_HPP
-
-#endif /* CPP_MACROS_END_HPP */

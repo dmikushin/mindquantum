@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "cengines/base.hpp"
+#include "python/cengines/base.hpp"
 
 void mindquantum::python::cpp::BasicEngine::receive(pybind11::handle) {
     PyErr_SetString(PyExc_NotImplementedError,

@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "cengines/engine_list.hpp"
+#include "python/cengines/engine_list.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -20,12 +20,12 @@
 
 #include <pybind11/pybind11.h>
 
-#include "cengines/instruction_filter.hpp"
-#include "cengines/mapping.hpp"
-#include "cengines/optimisation.hpp"
-#include "cengines/printer.hpp"
-#include "cengines/resource_counter.hpp"
-#include "cengines/tag_remover.hpp"
+#include "python/cengines/instruction_filter.hpp"
+#include "python/cengines/mapping.hpp"
+#include "python/cengines/optimisation.hpp"
+#include "python/cengines/printer.hpp"
+#include "python/cengines/resource_counter.hpp"
+#include "python/cengines/tag_remover.hpp"
 
 namespace py = pybind11;
 
@@ -81,8 +81,7 @@ bool mindquantum::details::load_cengine(pybind11::handle src, cengines::engine_t
              || type_name == "projectq.cengines._replacer._replacer.InstructionFilter") {
         using caster_t = make_caster<python::cpp::InstructionFilter>;
         return convert_engine<caster_t>(src, engine, type_name);
-    }
-    else {
+    } else {
         std::cerr << "Unsupported engine type: " << type_name << std::endl;
     }
 

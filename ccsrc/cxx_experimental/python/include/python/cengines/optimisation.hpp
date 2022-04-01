@@ -21,9 +21,9 @@
 #include <pybind11/cast.h>
 #include <pybind11/pytypes.h>
 
-#include "cengines/base.hpp"
 #include "cengines/cpp_optimisation.hpp"
 #include "details/macros_conv_begin.hpp"
+#include "python/cengines/base.hpp"
 
 namespace mindquantum::python::cpp {
 //! C++ equivalent to projectq.cengines.LocalOptimizer

@@ -14,7 +14,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "ops/command.hpp"
+#include "python/ops/command.hpp"
 
 PYBIND11_MODULE(_mindquantum_cxx_ops, module) {
     namespace py = pybind11;

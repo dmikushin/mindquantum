@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "core/circuit.hpp"
+#include "python/core/circuit.hpp"
 
 #include <vector>
 
@@ -25,9 +25,9 @@
 #include <tweedledum/Parser/tfc.h>
 #include <tweedledum/Utils/Visualization/string_utf8.h>
 
-#include "bindings.hpp"
 #include "ops/gates.hpp"
 #include "ops/parametric/angle_gates.hpp"
+#include "python/bindings.hpp"
 
 namespace py = pybind11;
 namespace td = tweedledum;

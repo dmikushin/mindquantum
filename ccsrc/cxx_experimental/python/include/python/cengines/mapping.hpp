@@ -23,7 +23,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
 
-#include "cengines/base.hpp"
+#include "python/cengines/base.hpp"
 #include "cengines/cpp_graph_mapper.hpp"
 #include "cengines/cpp_mapping.hpp"
 

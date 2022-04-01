@@ -12,11 +12,11 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "core/core.hpp"
+#include "python/core/core.hpp"
 
 #include "cengines/cpp_resource_counter.hpp"
-#include "cengines/resource_counter.hpp"
 #include "core/details/visitor.hpp"
+#include "python/cengines/resource_counter.hpp"
 
 void mindquantum::python::CppCore::flush() {
     base_t::flush();

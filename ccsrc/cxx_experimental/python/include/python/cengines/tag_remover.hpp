@@ -12,35 +12,33 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#ifndef INSTRUCTION_FILTER_HPP
-#define INSTRUCTION_FILTER_HPP
+#ifndef TAG_REMOVER_HPP
+#define TAG_REMOVER_HPP
 
-#include "cengines/base.hpp"
+#include "python/cengines/base.hpp"
 #include "cengines/cpp_engine_list.hpp"
 
 namespace mindquantum::python::cpp {
 //! Class that only exists for compatibility with ProjectQ
 /*!
  * Behaviour: Does nothing
- *
- * \note Using `CppDecomposer` instead of this class is recommended
  */
-class InstructionFilter
+class TagRemover
     : public BasicEngine
-    , public cengines::cpp::InstructionFilter {};
+    , public cengines::cpp::TagRemover {};
 }  // namespace mindquantum::python::cpp
 
 namespace pybind11::detail {
 template <>
-struct type_caster<mindquantum::python::cpp::InstructionFilter> {
+struct type_caster<mindquantum::python::cpp::TagRemover> {
  public:
-    using value_type = mindquantum::python::cpp::InstructionFilter;
+    using value_type = mindquantum::python::cpp::TagRemover;
 
-    PYBIND11_TYPE_CASTER(value_type, _("CppOnlyInstructionFilter"));
+    PYBIND11_TYPE_CASTER(value_type, _("TagRemover_cpp"));
 
     bool load(handle src, bool) {
         return true;
     }
 };
 }  // namespace pybind11::detail
-#endif /* INSTRUCTION_FILTER_HPP */
+#endif /* TAG_REMOVER_HPP */

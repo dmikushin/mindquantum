@@ -12,12 +12,12 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include "cengines/mapping.hpp"
+#include "python/cengines/mapping.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "details/python2cpp_conv.hpp"
+#include "python/details/python2cpp_conv.hpp"
 
 // =============================================================================
 

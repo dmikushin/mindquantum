@@ -1,4 +1,4 @@
-//   Copyright 2020 <Huawei Technologies Co., Ltd>
+//   Copyright 2022 <Huawei Technologies Co., Ltd>
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -12,11 +12,9 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#ifndef MACROS_END_HPP
-#define MACROS_END_HPP
+#ifndef PYTHON_GATE_ADAPTER_HPP
+#define PYTHON_GATE_ADAPTER_HPP
 
-#undef DECLARE_GETTER_SETTER
-#undef DECLARE_ATTRIBUTE
-#undef MACROS_BEGIN_HPP
 
-#endif /* MACROS_END_HPP */
+
+#endif /* PYTHON_GATE_ADAPTER_HPP */
