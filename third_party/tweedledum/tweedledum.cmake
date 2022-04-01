@@ -37,7 +37,7 @@ else()
 
   if(MSVC)
     set(tweedledum_CFLAGS "/D_ITERATOR_DEBUG_LEVEL=0")
-    set(tweedledum_CXXFLAGS "/D_ITERATOR_DEBUG_LEVEL=0 /Zc:__cplusplus")
+    set(tweedledum_CXXFLAGS "/D_ITERATOR_DEBUG_LEVEL=0 /Zc:__cplusplus /EHsc")
     list(APPEND CMAKE_OPTION -DCMAKE_DEBUG_POSTFIX=d)
   endif()
 
