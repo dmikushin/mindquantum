@@ -16,13 +16,8 @@
 #
 # ==============================================================================
 
-if(MSVC)
-  set(VER 3.4.0)
-  set(MD5 "4c527a9171d71a72a9d4186e65bea559")
-else()
-  set(VER 3.3.9)
-  set(MD5 "609286804b0f79be622ccf7f9ff2b660")
-endif()
+set(VER 3.4.0)
+set(MD5 "4c527a9171d71a72a9d4186e65bea559")
 set(REQ_URL "https://gitlab.com/libeigen/eigen/-/archive/${VER}/eigen-${VER}.tar.gz")
 
 mindquantum_add_pkg(
