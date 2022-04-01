@@ -97,7 +97,7 @@ function Call-CMake {
         Write-Output "Calling CMake with: cmake $args"
         Write-Output "**********"
     }
-    Call-Cmd cmake @args
+    Call-Cmd $CMAKE @args
 }
 
 function Test-CommandExists{
@@ -138,7 +138,7 @@ elseif ($IsWinEnv -eq 1) {
     elseif (Test-CommandExists wmic) {
         $tmp = (wmic cpu get NumberOfLogicalProcessors /value) -Join ' '
         if ($tmp -match "\s*[a-zA-Z]+=([0-9]+)") {
-            $n_jobs_default = $Matches.1
+            $n_jobs_default = $Matches[1]
         }
     }
 }
@@ -265,7 +265,7 @@ if ($Quiet.IsPresent) {
     $cmake_make_silent = 1
 }
 
-if ($B -ne "" -Or $Build -ne "") {
+if ([bool]$B -Or [bool]$Build) {
     $build_dir = "$B" + "$Build"
 }
 
@@ -276,7 +276,7 @@ elseif ($Jobs -ne 0) {
     $n_jobs = $Jobs
 }
 
-if ($Venv -ne "") {
+if ([bool]$Venv) {
     $python_venv_path = "$Venv"
 }
 
@@ -285,17 +285,17 @@ $cmake_extra_args = @()
 foreach($arg in $args) {
     if ("$arg" -match "[Ww]ith[Oo]ut-?([a-zA-Z0-9_]+)") {
         $enable_lib = 0
-        $library = ($Matches.1).Tolower()
+        $library = ($Matches[1]).Tolower()
     }
     elseif("$arg" -match "[Ww]ith-?([a-zA-Z0-9_]+)") {
         $enable_lib = 1
-        $library = ($Matches.1).Tolower()
+        $library = ($Matches[1]).Tolower()
     }
     else {
         $cmake_extra_args += $arg
     }
 
-    if ((($third_party_libraries -eq $library) -join " ") -eq "") {
+    if (-Not [bool](($third_party_libraries -eq $library) -join " ")) {
         Write-Output ('Unkown library for {0}' -f $arg)
         exit 1
     }
@@ -371,7 +371,7 @@ if($IsWinEnv) {
 }
 
 $activate_path = "$python_venv_path\bin\Activate.ps1"
-if (Test-Path -Path $BASEPATH\venv\Scripts\activate.ps1) {
+if (Test-Path -Path $BASEPATH\venv\Scripts\activate.ps1 -PathType Leaf) {
     $activate_path = "$python_venv_path\Scripts\Activate.ps1"
 }
 
@@ -380,6 +380,69 @@ if ($dry_run -ne 1) {
 } else {
     Write-Output ". $activate_path"
 }
+
+# ------------------------------------------------------------------------------
+# Locate cmake or cmake3
+
+$has_cmake = 0
+
+foreach($_cmake in @("$python_venv_path\Scripts\cmake",
+                     "$python_venv_path\Scripts\cmake.exe",
+                     "$python_venv_path\bin\cmake",
+                     "$python_venv_path\bin\cmake.exe")) {
+    if(Test-Path -Path "$_cmake") {
+        $CMAKE = "$_cmake"
+        $has_cmake = 1
+        break
+    }
+}
+
+$cmake_minimum_str = Get-Content -TotalCount 40 -Path $BASEPATH\CMakeLists.txt
+if ("$cmake_minimum_str" -Match "cmake_minimum_required\(VERSION\s+([0-9\.]+)\)") {
+    $cmake_version_min = $Matches[1]
+}
+else {
+    $cmake_version_min = "3.17"
+}
+
+if(-Not $has_cmake -eq 1) {
+    if(Test-CommandExists cmake3) {
+        $CMAKE = "cmake3"
+    }
+    elseif (Test-CommandExists cmake) {
+        $CMAKE = "cmake"
+    }
+
+    if ([bool]"$CMAKE") {
+        $cmake_version_str = Invoke-Expression -Command "$CMAKE --version"
+        if ("$cmake_version_str" -Match "cmake version ([0-9\.]+)") {
+            $cmake_version = $Matches[1]
+        }
+
+        if ([bool]"$cmake_version" -And [bool]"$cmake_version_min" `
+          -And ([System.Version]"$cmake_version_min" -lt [System.Version]"$cmake_version")) {
+              $has_cmake=1
+          }
+    }
+}
+
+if ($has_cmake -eq 0) {
+    Write-Output "Installing CMake inside the Python virtual environment"
+    Call-Cmd $PYTHON -m pip install -U "cmake>=$cmake_version_min"
+    foreach($_cmake in @("$python_venv_path\Scripts\cmake",
+                         "$python_venv_path\Scripts\cmake.exe",
+                         "$python_venv_path\bin\cmake",
+                         "$python_venv_path\bin\cmake.exe")) {
+        if(Test-Path -Path "$_cmake") {
+            $CMAKE = "$_cmake"
+            $has_cmake = 1
+            break
+        }
+    }
+}
+
+# ------------------------------------------------------------------------------
+
 
 if ($created_venv -eq 1) {
     $pkgs = @("pip", "setuptools", "wheel", "build", "pybind11")
@@ -435,7 +498,7 @@ if ($enable_gpu -eq 1) {
 if ($force_local_pkgs -eq 1) {
     $cmake_args += "-DMQ_FORCE_LOCAL_PKGS=all"
 }
-elseif ("$local_pkgs" -ne "") {
+elseif ([bool]"$local_pkgs") {
     $cmake_args += "-DMQ_FORCE_LOCAL_PKGS=`"$local_pkgs`""
 }
 

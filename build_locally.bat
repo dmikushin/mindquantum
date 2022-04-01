@@ -248,6 +248,71 @@ if NOT exist !python_venv_path! (
 
 call :call_cmd !python_venv_path!\Scripts\activate.bat
 
+rem ------------------------------------------------------------------------------
+rem Locate cmake or cmake3
+
+rem If from the virtual environment, it's always good
+set has_cmake=0
+if exist !python_venv_path!\Scripts\cmake.exe (
+   set CMAKE=!python_venv_path!\Scripts\cmake.exe
+   goto: done_cmake
+) else (
+  if exist !python_venv_path!\bin\cmake.exe (
+     set CMAKE=!python_venv_path!\bin\cmake.exe
+     goto: done_cmake
+  )
+)
+
+rem -------------------------------------
+
+set cmake_version_min=3.17
+set cmake_major_min=3
+set cmake_minor_min=17
+
+where cmake
+if %ERRORLEVEL% == 0 (
+   set CMAKE=cmake
+   goto :has_cmake
+)
+where cmake3
+if %ERRORLEVEL% == 0 (
+   set CMAKE=cmake3
+   goto :has_cmake
+)
+
+goto :install_cmake
+
+:has_cmake
+
+for /F "tokens=*" %%i in ('cmake --version') do (
+  set cmake_version_str=%%i
+  goto :done_get_cmake_version
+)
+
+:done_get_cmake_version
+
+for %%i in (!cmake_version_str!) do set cmake_version=%%i
+
+for /F "tokens=1,2 delims=." %%a in ("!cmake_version!") do (
+    set cmake_major=%%a
+    set cmake_minor=%%b
+)
+
+if !cmake_major_min! LEQ !cmake_major! (
+   if !cmake_minor_min! LEQ !cmake_minor! (
+      goto :done_cmake
+   )
+)
+
+:install_cmake
+
+echo Installing CMake inside the Python virtual environment
+call :call_cmd !PYTHON! -m pip install -U "cmake>=!cmake_version_min!"
+
+:done_cmake
+
+rem ------------------------------------------------------------------------------
+
 if !created_venv! == 1 (
   set pkgs=pip setuptools wheel build pybind11
 

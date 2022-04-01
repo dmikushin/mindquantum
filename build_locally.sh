@@ -73,7 +73,7 @@ call_cmake() {
         echo "Calling CMake with: cmake " "$@"
         echo "**********"
     fi
-    call_cmd cmake "$@"
+    call_cmd $CMAKE "$@"
 }
 
 # ==============================================================================
@@ -83,6 +83,22 @@ function join_by {
     if shift 2; then
         printf %s "$f" "${@/#/$d}"
     fi
+}
+
+# ==============================================================================
+
+function version_less_equal() {
+    local a_major=$(echo $1 | cut -d. -f1)
+    local a_minor=$(echo $1 | cut -d. -f2)
+    local b_major=$(echo $2 | cut -d. -f1)
+    local b_minor=$(echo $2 | cut -d. -f2)
+
+    if [ $a_major -le $b_major ]; then
+        if [ $a_minor -le $b_minor ]; then
+            return 0
+        fi
+    fi
+    return 1
 }
 
 # ==============================================================================
@@ -306,6 +322,42 @@ if [ ! -d "$python_venv_path" ]; then
 fi
 
 call_cmd source "$python_venv_path/bin/activate"
+
+# ------------------------------------------------------------------------------
+# Locate cmake or cmake3
+
+has_cmake=0
+
+if [ -f "$python_venv_path/bin/cmake" ]; then
+    CMAKE="$python_venv_path/bin/cmake"
+    has_cmake=1
+fi
+
+cmake_version_min=$(grep -oP 'cmake_minimum_required\(VERSION\s+\K[0-9\.]+' $BASEPATH/CMakeLists.txt)
+
+if [ $has_cmake -ne 1 ]; then
+    if command -v cmake > /dev/null 2>&1; then
+        CMAKE=cmake
+    elif command -v cmake3 > /dev/null 2>&1; then
+        CMAKE=cmake3
+    fi
+
+    if [[ -n "$CMAKE" ]]; then
+        cmake_version=$("$CMAKE" --version | head -1 | cut -d' ' -f3)
+
+        if version_less_equal "$cmake_version_min" "$cmake_version"; then
+            has_cmake=1
+        fi
+    fi
+fi
+
+if [ $has_cmake -eq 0 ]; then
+    echo "Installing CMake inside the Python virtual environment"
+    call_cmd $PYTHON -m pip install -U "cmake>=$cmake_version_min"
+    CMAKE="$python_venv_path/bin/cmake"
+fi
+
+# ------------------------------------------------------------------------------
 
 if [ $created_venv -eq 1 ]; then
     pkgs=(pip setuptools wheel build pybind11)
