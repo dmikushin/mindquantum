@@ -18,10 +18,15 @@
 
 # lint_cmake: -whitespace/indent
 
+# This is a CMake 3.19 addition
 include(CheckCompilerFlag OPTIONAL RESULT_VARIABLE _check_compiler_flag)
 if(NOT _check_compiler_flag)
   include(Internal/CMakeCheckCompilerFlag)
 endif()
+# This is a CMake 3.18 addition
+include(CheckLinkerFlag)
+
+# ==============================================================================
 
 # Check if a language has been enabled without attempting to enable it
 #
@@ -39,6 +44,92 @@ function(is_language_enabled _lang _var)
         TRUE
         PARENT_SCOPE)
   endif()
+endfunction()
+
+# ------------------------------------------------------------------------------
+
+# ~~~
+# Setup a language for use with MindQuantum
+#
+# setup_language(<lang>)
+#
+# This function creates 3 targets that are used throughout MindQuantum in order to store compiler and linker flags:
+#   - <lang>_try_compile
+#   - <lang>_try_compile_flagcheck
+#   - <lang>_mindquantum
+#
+# The first two are used in try_compile() calls while the last one should contain the definite list of compiler and
+# linker options that MindQuantum requires for all targets.
+# ~~~
+function(setup_language lang)
+  add_library(${lang}_try_compile_flagcheck INTERFACE)
+  add_library(${lang}_try_compile INTERFACE)
+  add_library(${lang}_mindquantum INTERFACE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+
+# ~~~
+# Append a list of compile definitions to some of the language specific targets (see setup_language())
+#
+# mq_add_compile_definitions([TRYCOMPILE, TRYCOMPILE_FLAGCHECK]
+#                           <definition>, [<definitions>, ...])
+#
+# Always modify the <LANG>_mindquantum target. If any of TRYCOMPILE, TRYCOMPILE_FLAGCHECK is also specified, then modify
+# the corresponding target.
+# ~~~
+function(mq_add_compile_definitions)
+  cmake_parse_arguments(PARSE_ARGV 0 MACD "TRYCOMPILE;TRYCOMPILE_FLAGCHECK" "" "")
+
+  foreach(lang C CXX CUDA NVCXX DPCXX)
+    is_language_enabled(${lang} _enabled)
+    if(_enabled)
+      target_compile_definitions(${lang}_mindquantum
+                                 INTERFACE "$<$<COMPILE_LANGUAGE:${lang}>:${MACD_UNPARSED_ARGUMENTS}>")
+      if(MACD_TRYCOMPILE)
+        target_compile_definitions(${lang}_try_compile
+                                   INTERFACE "$<$<COMPILE_LANGUAGE:${lang}>:${MACD_UNPARSED_ARGUMENTS}>")
+      endif()
+      if(MACD_TRYCOMPILE_FLAGCHECK)
+        target_compile_definitions(${lang}_try_compile_flagcheck
+                                   INTERFACE "$<$<COMPILE_LANGUAGE:${lang}>:${MACD_UNPARSED_ARGUMENTS}>")
+      endif()
+    endif()
+  endforeach()
+endfunction()
+
+# ------------------------------------------------------------------------------
+
+# ~~~
+# Return the human name of a compiler language
+#
+# get_language_name(<lang> <out-var>)
+# ~~~
+function(get_language_name lang var)
+  if("${lang}" STREQUAL "C")
+    set(_lang_textual "C")
+  elseif("${lang}" STREQUAL "CXX")
+    set(_lang_textual "C++")
+  elseif("${lang}" STREQUAL "CUDA")
+    set(_lang_textual "CUDA")
+  elseif("${lang}" STREQUAL "Fortran")
+    set(_lang_textual "Fortran")
+  elseif("${lang}" STREQUAL "HIP")
+    set(_lang_textual "HIP")
+  elseif("${lang}" STREQUAL "ISPC")
+    set(_lang_textual "ISPC")
+  elseif("${lang}" STREQUAL "NVCXX")
+    set(_lang_textual "NVHPC-C++")
+  elseif("${lang}" STREQUAL "OBJC")
+    set(_lang_textual "Objective-C")
+  elseif("${lang}" STREQUAL "OBJCXX")
+    set(_lang_textual "Objective-C++")
+  else()
+    message(SEND_ERROR "check_source_compiles: ${lang}: unknown language.")
+  endif()
+  set(${var}
+      ${_lang_textual}
+      PARENT_SCOPE)
 endfunction()
 
 # ==============================================================================
@@ -76,6 +167,26 @@ function(real_path path var)
       "${_resolved_path}"
       PARENT_SCOPE)
 endfunction()
+
+# ==============================================================================
+
+# ~~~
+# Macro used to disable CUDA support in MindQuantum
+#
+# disable_cuda([<msg>])
+# ~~~
+macro(disable_cuda)
+  if(${ARGC} GREATER 0)
+    set(_msg "${ARGV0}")
+  else()
+    set(_msg "inexistent CUDA/NVHPC compiler, NVHPC < 20.11")
+  endif()
+  message(STATUS "Disabling CUDA due to ${_msg} or error during compiler setup")
+  # cmake-lint: disable=C0103
+  set(ENABLE_CUDA
+      OFF
+      CACHE INTERNAL "Enable building of CUDA/NVHPC libraries")
+endmacro()
 
 # ==============================================================================
 
@@ -224,7 +335,7 @@ endfunction()
 # ~~~
 function(apply_patches working_directory)
   set(_execute_patch_args)
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18 AND ENABLE_CMAKE_DEBUG)
     list(APPEND _execute_patch_args ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE)
   endif()
 
@@ -284,20 +395,38 @@ endfunction()
 # ~~~
 # Convenience function to test for the existence of some compiler flags for a a particular language
 #
-# check_compiler_flag(<lang> <var_prefix> <flags1> [<flags2>...])
+# check_compiler_flag(<lang> <out-var> [FLAGCHECK] <flags1> [<flags2>...])
 #
 # Check whether a compiler option is valid for the <lang> compiler. For each set of compiler options provided in the
 # lists <flagsN>, it will test whether one of the element can be used by the corresponding compiler. If a flag is valid,
-# it will be added to the GLOBAL property named <prefix>_<lang> as well as to a variable with the same name. If the
-# property already exists, any valid flag is appended to the current value.
+# it will be added to the variable returned by this function.
 #
-# Each call to this function also sets the _added_count variable to the number of flags added automatically (if any).
+# If FLAGCHECK is specified, call the compiler directly using execute_process() instead of using
+# cmake_check_compiler_flag() as we expect that no output file will be produced.
+#
+# Note that this function will use the flags contained in either <LANG>_try_compile or <LANG>_try_compile_flagcheck (if
+# FLAGCHECK is passed as an argument)
 # ~~~
-function(check_compiler_flags lang var_prefix)
+function(check_compiler_flags lang out_var)
+  cmake_parse_arguments(PARSE_ARGV 2 CCF "FLAGCHECK" "" "")
+
   # cmake-lint: disable=C0103,E1120
   set(_${lang}_opts)
 
-  foreach(_flag_list ${ARGN})
+  if(CCF_FLAGCHECK)
+    set(_target ${lang}_try_compile_flagcheck)
+  else()
+    set(_target ${lang}_try_compile)
+  endif()
+
+  get_target_property(_required_flags ${_target} INTERFACE_COMPILE_OPTIONS)
+  if(NOT _required_flags)
+    unset(_required_flags)
+  endif()
+
+  get_language_name(${lang} _lang_textual)
+
+  foreach(_flag_list ${CCF_UNPARSED_ARGUMENTS})
     separate_arguments(_flag_list)
 
     foreach(_flag ${_flag_list})
@@ -306,7 +435,46 @@ function(check_compiler_flags lang var_prefix)
       string(REGEX REPLACE "^-+" "" _flag_name ${_flag_name})
       string(REGEX REPLACE "[-:/,=]" "_" _flag_name ${_flag_name})
 
-      cmake_check_compiler_flag(${lang} ${_flag} ${lang}_compiler_has_${_flag_name})
+      if(NOT CCF_FLAGCHECK)
+        set(CMAKE_REQUIRED_FLAGS ${_required_flags})
+        cmake_check_compiler_flag(${lang} ${_flag} ${lang}_compiler_has_${_flag_name})
+      else()
+        set(_var ${lang}_compiler_has_${_flag_name})
+
+        if(NOT DEFINED "${_var}")
+          message(CHECK_START "Performing Test ${_var}")
+          set(_cmd ${CMAKE_${lang}_COMPILER} ${_flag} ${_required_flags})
+          execute_process(
+            COMMAND ${_cmd}
+            RESULT_VARIABLE _result
+            OUTPUT_VARIABLE _output
+            ERROR_VARIABLE _error)
+
+          if(_result EQUAL 0)
+            set(${_var}
+                1
+                CACHE INTERNAL "Test ${_var}")
+            message(CHECK_PASS "Success")
+            file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
+                 "Performing ${_lang_textual} FLAG CHECK Test ${_var} with the following command line:\n${_cmd}\n"
+                 "has succeeded\n\n")
+          else()
+            message(CHECK_FAIL "Failed")
+            set(${_var}
+                ""
+                CACHE INTERNAL "Test ${_var}")
+            file(
+              APPEND
+              ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+              "Performing ${_lang_textual} FLAG CHECK Test ${_var} with the following command line:\n${_cmd}\n"
+              "has failed with the following output:\n"
+              "${_output}\n"
+              "And the following error output:\n"
+              "${_error}\n\n")
+          endif()
+        endif()
+      endif()
+
       if(${lang}_compiler_has_${_flag_name})
         list(APPEND _${lang}_opts ${_flag})
         break()
@@ -314,93 +482,91 @@ function(check_compiler_flags lang var_prefix)
     endforeach()
   endforeach()
 
-  # Is there a property that already corresponds to this?
-  get_property(_opts GLOBAL PROPERTY ${var_prefix}_${lang})
-  if(_opts)
-    list(APPEND _opts ${_${lang}_opts})
-  else()
-    define_property(
-      GLOBAL
-      PROPERTY ${var_prefix}_${lang}
-      BRIEF_DOCS "Compiler flags for ${var_prefix}"
-      FULL_DOCS "Compiler flags for ${var_prefix}")
-    set(_opts ${_${lang}_opts})
-  endif()
-
-  # Set GLOBAL property so that other parts of the code can have access to it
-  set_property(GLOBAL PROPERTY ${var_prefix}_${lang} ${_opts})
-
-  list(LENGTH _${lang}_opts _added_count)
-  set(_added_count
-      ${_added_count}
-      PARENT_SCOPE)
-  set(_added_flags
+  set(${out_var}
       ${_${lang}_opts}
-      PARENT_SCOPE)
-
-  # Also set a variable for convenience
-  set(${var_prefix}_${lang}
-      ${_opts}
       PARENT_SCOPE)
 endfunction()
 
 # ~~~
 # Convenience function to test for the existence of some compiler flags for a set of languages.
 #
-# test_compile_option(<prefix>
+# test_compile_option(<name>
 #                     LANGS <lang1> [<lang2>...]
 #                     FLAGS <flags1> [<flags2>...]
-#                     [AUTO_ADD_CO]
+#                     [FLAGCHECK, NO_MQ_TARGET, NO_TRYCOMPILE_TARGET, NO_TRYCOMPILE_FLAGCHECK_TARGET]
 #                     [GENEX <genex>])
 #
-# Check that a compiler option can be applied to each of the specified languages <lang>. For each set of compiler
+# Check that a compiler option can be applied to each of the specified languages <langN>. For each set of compiler
 # options provided in the lists <flagsN>, it will test whether one of the element can be used by the corresponding
-# compiler. If a flag is valid, it will be added to the GLOBAL property named <prefix>_<lang> as well as to a variable
-# with the same name.
-# If AUTO_ADD_CO is specified, the compiler option will be automatically added globally using
-# add_compile_option(...). By default, the generator expression used in that function call restricts the compile option
-# to the current language (ie. $<$<COMPILE_LANGUAGE:@lang@>:${_flag}>). This can be changed by using the <genex>
-# argument (which defaults to "$<COMPILE_LANGUAGE:@lang@>").
+# compiler. If a flag is valid, it will be added to the language-specific targets (unless a corresponding negating flag
+# was specified):
+#  - <name>_<LANG> (created if does not exist already)
+#  - <LANG>_mindquantum
+#  - <LANG>_try_compile
+#  - <LANG>_try_compile_flagcheck (only if FLACHECK is passed as argument
+#
+# In addition, regardless of whether a language is enabled or not, this function will set a variable in the caller's
+# scope named <name>_<LANG> to TRUE/FALSE depending on whether one or more flags were found.
 #
 # NB: This function calls check_compiler_flags() internally.
-#
 # ~~~
-function(test_compile_option prefix)
-  cmake_parse_arguments(PARSE_ARGV 1 TEST_CO "AUTO_ADD_CO" "GENEX" "LANGS;FLAGS")
+function(test_compile_option name)
+  # cmake-lint: disable=R0912,R0915,C0103
+  cmake_parse_arguments(PARSE_ARGV 1 TCO "FLAGCHECK;NO_MQ_TARGET;NO_TRYCOMPILE_TARGET;NO_TRYCOMPILE_FLAGCHECK_TARGET"
+                        "GENEX" "LANGS;FLAGS")
 
-  if(NOT TEST_CO_LANGS)
+  if(NOT TCO_LANGS)
     message(FATAL_ERROR "Missing LANGS argument")
   endif()
-  if(NOT TEST_CO_FLAGS)
+  if(NOT TCO_FLAGS)
     message(FATAL_ERROR "Missing FLAGS argument")
   endif()
 
-  if(NOT TEST_CO_GENEX)
-    set(TEST_CO_GENEX "$<COMPILE_LANGUAGE:@lang@>")
+  if(NOT TCO_GENEX)
+    set(TCO_GENEX "$<COMPILE_LANGUAGE:@lang@>")
+  else()
+    set(TCO_GENEX "$<AND:$<COMPILE_LANGUAGE:@lang@>,${TCO_GENEX}>")
   endif()
 
-  # cmake-lint: disable=C0103
-  foreach(lang ${TEST_CO_LANGS})
+  # ------------------------------------
+
+  set(_ccf_args)
+  if(TCO_FLAGCHECK)
+    list(APPEND _ccf_args FLAGCHECK)
+  endif()
+
+  # ------------------------------------
+
+  foreach(lang ${TCO_LANGS})
+    set(_has_flags FALSE)
     is_language_enabled(${lang} _enabled)
     if(_enabled)
-      check_compiler_flags(${lang} ${prefix} ${TEST_CO_FLAGS})
-
-      set(${prefix}_${lang}
-          ${${prefix}_${lang}}
-          PARENT_SCOPE)
-
-      if(TEST_CO_AUTO_ADD_CO AND _added_flags)
-        string(CONFIGURE "${TEST_CO_GENEX}" _genex @ONLY)
-        list(LENGTH ${prefix}_${lang} _L)
-        math(EXPR _start_idx "${_L} - ${_added_count}")
-        list(SUBLIST ${prefix}_${lang} ${_start_idx} -1 _added_flags)
-        foreach(_flag ${_added_flags})
-          add_compile_options("$<${_genex}:${_flag}>")
-        endforeach()
+      if(NOT TARGET ${name}_${lang})
+        add_library(${name}_${lang} INTERFACE)
       endif()
-    else()
-      set(${prefix}_${lang} PARENT_SCOPE)
+
+      check_compiler_flags(${lang} _${lang}_flags ${_ccf_args} ${TCO_FLAGS})
+      string(CONFIGURE "${TCO_GENEX}" _genex @ONLY)
+
+      if(NOT "${_${lang}_flags}" STREQUAL "")
+        set(_has_flags TRUE)
+
+        target_compile_options(${name}_${lang} INTERFACE "$<${_genex}:${_${lang}_flags}>")
+        if(NOT TCO_NO_MQ_TARGET)
+          target_compile_options(${lang}_mindquantum INTERFACE "$<${_genex}:${_${lang}_flags}>")
+        endif()
+        if(NOT TCO_NO_TRYCOMPILE_TARGET)
+          target_compile_options(${lang}_try_compile INTERFACE ${_${lang}_flags})
+        endif()
+        if(TCO_FLAGCHECK AND NOT TCO_NO_TRYCOMPILE_FLAGCHECK_TARGET)
+          target_compile_options(${lang}_try_compile_flagcheck INTERFACE ${_${lang}_flags})
+        endif()
+      endif()
     endif()
+
+    set(${name}_${lang}
+        ${_has_flags}
+        PARENT_SCOPE)
   endforeach()
 endfunction()
 
@@ -409,35 +575,34 @@ endfunction()
 # ~~~
 # Convenience function to test for the existence of some compiler flags for a a particular language
 #
-# check_link_flag(<lang> <var_prefix> [VERBATIM] <flags1> [<flags2>...])
+# check_link_flag(<lang> <out-var> [VERBATIM] <flags1> [<flags2>...])
 #
 # Check whether a linker option is valid for the <lang> linker. For each set of linker options provided in the lists
 # <flagsN>, it will test whether one of the element can be used by the corresponding compiler. If a flag is valid, it
-# will be added to the GLOBAL property named <prefix>_<lang> as well as to a variable with the same name. If the
-# property already exists, any valid flag is appended to the current value.
+# will be added to the variable returned by this function.
 #
 # If VERBATIM is passed as argument, the flag is passed onto the linker without prepending the 'LINKER:' prefix.
 #
-# Each call to this function also sets the _added_count variable to the number of flags added automatically (if any).
+# Note that this function will use the compiler flags contained <LANG>_try_compile
 # ~~~
-function(check_link_flags lang var_prefix)
+function(check_link_flags lang out_var)
+  cmake_parse_arguments(PARSE_ARGV 2 CLF "VERBATIM" "" "")
+
   # cmake-lint: disable=R0915,C0103,E1120
-
-  cmake_parse_arguments(PARSE_ARGV 2 CHECK_LF "VERBATIM" "" "")
   set(_${lang}_link_opts)
-  # This is a CMake 3.18 addition
-  include(CheckLinkerFlag OPTIONAL RESULT_VARIABLE _check_linker_flags)
 
-  set(_wrapper_flag ${CMAKE_${lang}_LINKER_WRAPPER_FLAG})
-  list(GET _wrapper_flag -1 _last)
-  set(_separate_options FALSE)
-  if("${_last}" STREQUAL " ")
-    set(_separate_options TRUE)
-    list(REMOVE_AT _wrapper_flag -1)
+  get_target_property(_required_flags ${lang}_try_compile INTERFACE_COMPILE_OPTIONS)
+  if(NOT _required_flags)
+    unset(_required_flags)
   endif()
-  string(REPLACE ";" " " _wrapper_flag "${_wrapper_flag}")
 
-  foreach(_flag_list ${CHECK_LF_UNPARSED_ARGUMENTS})
+  # NB: speed up compilation when using CUDA
+  if("${lang}" STREQUAL "CUDA")
+    list(GET CMAKE_CUDA_ARCHITECTURES 0 _cuda_arch)
+    set(CMAKE_CUDA_ARCHITECTURES ${_cuda_arch})
+  endif()
+
+  foreach(_flag_list ${CLF_UNPARSED_ARGUMENTS})
     separate_arguments(_flag_list)
 
     foreach(_flag ${_flag_list})
@@ -445,140 +610,99 @@ function(check_link_flags lang var_prefix)
       string(SUBSTRING ${_flag} 1 -1 _flag_name)
       string(REGEX REPLACE "^-+" "" _flag_name ${_flag_name})
       string(REGEX REPLACE "[-:/,=]" "_" _flag_name ${_flag_name})
-      if(CHECK_LF_VERBATIM)
+      if(CLF_VERBATIM)
         set(_prefix)
       else()
         set(_prefix "LINKER:")
       endif()
 
-      if(_check_linker_flags)
-        check_linker_flag(${lang} "${_prefix}${_flag}" ${lang}_linker_has_${_flag_name})
-      else()
-        if(NOT CHECK_LF_VERBATIM)
-          if(_separate_options)
-            string(REPLACE "," ";" _flags ${_flag})
-            set(_expanded_flag)
-            foreach(subflag ${_flags})
-              set(_expanded_flag "${_expanded_flag} ${_wrapper_flag} ${subflag}")
-            endforeach()
-          else()
-            set(_expanded_flag "${_wrapper_flag}${_flag}")
-          endif()
-        else()
-          set(_expanded_flag "${_flag}")
-        endif()
-
-        set(CMAKE_REQUIRED_LINK_OPTIONS ${_expanded_flag})
-        check_compiler_flag(${lang} "" ${lang}_linker_has_${_flag_name})
-      endif()
-
+      set(CMAKE_REQUIRED_FLAGS ${_required_flags})
+      check_linker_flag(${lang} "${_prefix}${_flag}" ${lang}_linker_has_${_flag_name})
       if(${lang}_linker_has_${_flag_name})
-        list(APPEND _${lang}_link_opts ${_flag})
+        list(APPEND _${lang}_link_opts "${_prefix}${_flag}")
         break()
       endif()
     endforeach()
   endforeach()
 
-  # Is there a property that already corresponds to this?
-  get_property(_opts GLOBAL PROPERTY ${var_prefix}_${lang})
-  if(_opts)
-    list(APPEND _opts ${_${lang}_link_opts})
-  else()
-    define_property(
-      GLOBAL
-      PROPERTY ${var_prefix}_${lang}
-      BRIEF_DOCS "Linker flags ${var_prefix}"
-      FULL_DOCS "Linker flags ${var_prefix}")
-    set(_opts ${_${lang}_link_opts})
-  endif()
-
-  # Set GLOBAL property so that other parts of the code can have access to it
-  set_property(GLOBAL PROPERTY ${var_prefix}_${lang} ${_opts})
-
-  list(LENGTH _${lang}_link_opts _added_count)
-  set(_added_count
-      ${_added_count}
-      PARENT_SCOPE)
-  set(_added_flags
+  set(${out_var}
       ${_${lang}_link_opts}
-      PARENT_SCOPE)
-
-  # Also set a variable for convenience
-  set(${var_prefix}_${lang}
-      ${_opts}
       PARENT_SCOPE)
 endfunction()
 
 # ~~~
 # Convenience function to test for the existence of some linker flags for a set of languages.
 #
-# test_link_option(<prefix>
-#                  LANGS <lang1> [<lang2>...]
-#                  FLAGS <flags1> [<flags2>...]
-#                  [AUTO_ADD_LO]
-#                  [VERBATIM]
-#                  [GENEX <genex>])
+# test_linker_option(<name>
+#                    LANGS <lang1> [<lang2>...]
+#                    FLAGS <flags1> [<flags2>...]
+#                    [VERBATIM, NO_MQ_TARGET]
+#                    [GENEX <genex>])
 #
-# Check that a linker option can be applied to each of the specified languages <lang>. For each set of linker
+# Check that a linker option can be applied to each of the specified languages <langN>. For each set of linker
 # options provided in the lists <flagsN>, it will test whether one of the element can be used by the corresponding
-# linker. If a flag is valid, it will be added to the GLOBAL property named <prefix>_<lang> as well as to a variable
-# with the same name.
+# linker. If a flag is valid, it will be added to the language-specific targets (unless a corresponding negating flag
+# was specified):
+#  - <name>_<LANG> (created if does not exist already)
+#  - <LANG>_mindquantum
+#  - <LANG>_try_compile
+#  - <LANG>_try_compile_flagcheck (only if FLACHECK is passed as argument
+#
 # If VERBATIM is passed as argument, the flag is passed onto the linker without prepending the 'LINKER:' prefix.
-# If AUTO_ADD_LO is specified, the linker option will be automatically added globally using
-# add_compile_option(...). By default, the generator expression used in that function call restricts the compile option
-# to the current language (ie. $<$<LINK_LANGUAGE:@lang@>:LINKER:${_flag}>). This can be changed by using the <genex>
-# argument (which defaults to "$<LINK_LANGUAGE:@lang@>").
+#
+# In addition, regardless of whether a language is enabled or not, this function will set a variable in the caller's
+# scope named <name>_<LANG> to TRUE/FALSE depending on whether one or more flags were found.
 #
 # NB: This function calls check_link_flags() internally.
 # ~~~
-function(test_link_option prefix)
-  cmake_parse_arguments(PARSE_ARGV 1 TEST_LO "AUTO_ADD_LO;VERBATIM" "GENEX" "LANGS;FLAGS")
+function(test_linker_option name)
+  cmake_parse_arguments(PARSE_ARGV 1 TLO "VERBATIM;NO_MQ_TARGET" "GENEX" "LANGS;FLAGS")
 
-  if(NOT TEST_LO_LANGS)
+  if(NOT TLO_LANGS)
     message(FATAL_ERROR "Missing LANGS argument")
   endif()
-  if(NOT TEST_LO_FLAGS)
+  if(NOT TLO_FLAGS)
     message(FATAL_ERROR "Missing FLAGS argument")
   endif()
 
-  if(NOT TEST_LO_GENEX)
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-      set(TEST_LO_GENEX "$<LINK_LANGUAGE:@lang@>")
-    else()
-      set(TEST_LO_GENEX "1")
-    endif()
+  if(NOT TLO_GENEX)
+    set(TLO_GENEX "$<LINK_LANGUAGE:@lang@>")
+  else()
+    set(TLO_GENEX "$<AND:$<LINK_LANGUAGE:@lang@>,${TLO_GENEX}>")
   endif()
 
+  # ------------------------------------
+
   # cmake-lint: disable=C0103
-  foreach(lang ${TEST_LO_LANGS})
+  foreach(lang ${TLO_LANGS})
+    set(_has_flags FALSE)
     is_language_enabled(${lang} _enabled)
     if(_enabled)
-      set(_args ${TEST_LO_FLAGS})
-      if(TEST_LO_VERBATIM)
+      if(NOT TARGET ${name}_${lang})
+        add_library(${name}_${lang} INTERFACE)
+      endif()
+
+      set(_args)
+      if(TLO_VERBATIM)
         set(_args "VERBATIM;${_args}")
       endif()
-      check_link_flags(${lang} ${prefix} ${_args})
+      check_link_flags(${lang} _${lang}_flags ${_args} ${TLO_FLAGS})
 
-      set(${prefix}_${lang}
-          ${${prefix}_${lang}}
-          PARENT_SCOPE)
+      string(CONFIGURE "${TLO_GENEX}" _genex @ONLY)
 
-      if(TEST_LO_AUTO_ADD_LO AND _added_flags)
-        string(CONFIGURE "${TEST_LO_GENEX}" _genex @ONLY)
-        list(LENGTH ${prefix}_${lang} _L)
-        math(EXPR _start_idx "${_L} - ${_added_count}")
-        list(SUBLIST ${prefix}_${lang} ${_start_idx} -1 _added_flags)
-        foreach(_flag ${_added_flags})
-          if(TEST_LO_VERBATIM)
-            add_link_options("$<${_genex}:${_flag}>")
-          else()
-            add_link_options("$<${_genex}:LINKER:${_flag}>")
-          endif()
-        endforeach()
+      if(NOT "${_${lang}_flags}" STREQUAL "")
+        set(_has_flags TRUE)
+
+        target_link_options(${name}_${lang} INTERFACE "$<${_genex}:${_${lang}_flags}>")
+        if(NOT TCO_NO_MQ_TARGET)
+          target_link_options(${lang}_mindquantum INTERFACE "$<${_genex}:${_${lang}_flags}>")
+        endif()
       endif()
-    else()
-      set(${prefix}_${lang} PARENT_SCOPE)
     endif()
+
+    set(${name}_${lang}
+        ${_has_flags}
+        PARENT_SCOPE)
   endforeach()
 endfunction()
 

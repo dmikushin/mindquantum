@@ -41,7 +41,5 @@ add_library(mq_projectq INTERFACE)
 target_sources(mq_projectq INTERFACE projectq.h projectq_utils.h)
 
 target_compile_definitions(mq_projectq INTERFACE INTRIN)
-get_property(_intrin_flags GLOBAL PROPERTY _intrin_flag_CXX)
-target_compile_options(mq_projectq INTERFACE ${_intrin_flags})
 target_include_directories(mq_projectq INTERFACE ${CMAKE_CURRENT_LIST_DIR})
-target_link_libraries(mq_projectq INTERFACE projectq)
+target_link_libraries(mq_projectq INTERFACE projectq intrin_flag_CXX)

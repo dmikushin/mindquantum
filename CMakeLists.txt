@@ -16,12 +16,13 @@
 #
 # ==============================================================================
 
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.20) # mainly because of NVHPC support
 
-cmake_policy(VERSION 3.0...3.20)
+cmake_policy(VERSION 3.0...3.23)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/commands)
 
 # ==============================================================================
 # Macro definitions
@@ -32,6 +33,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/macros.cmake)
 # Create the MindQuantum project
 
 project(MindQuantum LANGUAGES C CXX)
+setup_language(C)
+setup_language(CXX)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -65,6 +68,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/packages.cmake)
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/compiler_flags.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/linker_flags.cmake)
+
+is_language_enabled(C, _c_enabled)
+add_library(mindquantum_setup INTERFACE)
+target_link_libraries(mindquantum_setup INTERFACE CXX_mindquantum $<$<BOOL:${_c_enabled}>:C_mindquantum>
+                                                  $<$<BOOL:${ENABLE_CUDA}>:CUDA_mindquantum;NVCXX_mindquantum>)
 
 # ==============================================================================
 # Some more macro definitions

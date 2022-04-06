@@ -20,75 +20,92 @@
 
 # NB: no -Wl, here, CMake automatically adds the correct prefix for the linker
 if(LINKER_STRIP_ALL)
-  test_link_option(
-    _linker_flags
-    LANGS CXX DPCXX CUDA NVCXX
+  test_linker_option(
+    linker_flags
+    LANGS C CXX DPCXX CUDA NVCXX
     FLAGS "--strip-all -s"
-    AUTO_ADD_LO
-    GENEX "$<AND:$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>,$<COMPILE_LANGUAGE:@lang@>>")
+    GENEX "$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>")
 endif()
 
-test_link_option(
-  _linker_flags
-  LANGS CXX DPCXX CUDA NVCXX
-  FLAGS "-z,now"
-  AUTO_ADD_LO)
+test_linker_option(
+  linker_flags
+  LANGS C CXX DPCXX CUDA NVCXX
+  FLAGS "-z,now")
 
 # ------------------------------------------------------------------------------
 
 if(LINKER_NOEXECSTACK)
-  test_link_option(
-    _link_no_execstack
-    LANGS CXX DPCXX CUDA NVCXX
-    FLAGS "-z,noexecstack"
-    AUTO_ADD_LO)
+  test_linker_option(
+    link_no_execstack
+    LANGS C CXX DPCXX CUDA NVCXX
+    FLAGS "-z,noexecstack")
 endif()
 
 # ------------------------------------------------------------------------------
 
 if(LINKER_RELRO)
-  test_link_option(
-    _link_relro
-    LANGS CXX DPCXX CUDA NVCXX
-    FLAGS "-z,relro"
-    AUTO_ADD_LO)
+  test_linker_option(
+    link_relro
+    LANGS C CXX DPCXX CUDA NVCXX
+    FLAGS "-z,relro")
+endif()
+
+# ------------------------------------------------------------------------------
+
+if(ENABLE_CUDA)
+  # NB: simply copy over the compiler options to linker options since they are the same
+  foreach(_src_target nvhpc_cuda_flags_NVCXX nvhpc_cuda_version_flags_NVCXX)
+    get_target_property(_flag ${_src_target} INTERFACE_COMPILE_OPTIONS)
+    foreach(_dst_target ${_src_target} NVCXX_mindquantum NVCXX_try_compile NVCXX_try_compile_flagcheck)
+      target_link_options(${_dst_target} INTERFACE ${_flag})
+    endforeach()
+  endforeach()
+
+  get_target_property(_flag nvhpc_gpu_compute_capability_NVCXX INTERFACE_COMPILE_OPTIONS)
+  foreach(_dst_target nvhpc_gpu_compute_capability_NVCXX NVCXX_mindquantum)
+    target_link_options(${_dst_target} INTERFACE ${_flag})
+  endforeach()
+
+  # NB: only copy one of the -gpu=ccXX flags for try_compile targets
+  list(GET _flag 0 _flag)
+  foreach(_dst_target NVCXX_try_compile NVCXX_try_compile_flagcheck)
+    target_link_options(${_dst_target} INTERFACE ${_flag})
+  endforeach()
 endif()
 
 # ------------------------------------------------------------------------------
 
 if(ENABLE_STACK_PROTECTION)
-  test_link_option(
-    _stack_protection
-    LANGS CXX DPCXX
+  test_linker_option(
+    stack_protection
+    LANGS C CXX DPCXX
     FLAGS "-fstack-protector-all"
-    AUTO_ADD_LO VERBATIM)
+    VERBATIM)
 endif()
 
 # ------------------------------------------------------------------------------
 
 if(ENABLE_RUNPATH)
   if(LINKER_DTAGS)
-    test_link_option(
-      _linker_dtags
-      LANGS CXX DPCXX CUDA NVCXX
-      FLAGS "--enable-new-dtags"
-      AUTO_ADD_LO)
+    test_linker_option(
+      linker_dtags
+      LANGS C CXX DPCXX CUDA NVCXX
+      FLAGS "--enable-new-dtags")
   endif()
 else()
   if(LINKER_DTAGS)
-    test_link_option(
-      _linker_dtags
-      LANGS CXX DPCXX CUDA NVCXX
-      FLAGS "--disable-new-dtags"
-      AUTO_ADD_LO)
+    test_linker_option(
+      linker_dtags
+      LANGS C CXX DPCXX CUDA NVCXX
+      FLAGS "--disable-new-dtags")
   endif()
 
   if(CUDA_STATIC)
-    test_link_option(
-      _nvhpc_static_flags
+    test_linker_option(
+      nvhpc_static_flags
       LANGS NVCXX
       FLAGS "-static-nvidia" "-Mnorpath"
-      AUTO_ADD_LO VERBATIM)
+      VERBATIM)
   endif()
 endif()
 
@@ -113,7 +130,7 @@ endif()
 # ==============================================================================
 
 if(_cmake_rpath_check)
-  foreach(_lang CXX CUDA NVCXX DPCXX)
+  foreach(_lang C CXX CUDA NVCXX DPCXX)
     is_language_enabled(${_lang} _enabled)
     if(_enabled)
       message(CHECK_START "Performing extended CMake RPATH test for ${_lang}")
@@ -140,12 +157,15 @@ set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
 
       # ------------------------------------
 
+      get_target_property(_linker_flags linker_dtags_${_lang} INTERFACE_LINK_OPTIONS)
+
       message(CHECK_START "Compiling test library (${_lang})")
       set(_binary_dir ${CMAKE_BINARY_DIR}/cmake-ldtest-${_lang})
+      get_target_property(_linker_dtags linker_dtags_${_lang} INTERFACE_LINK_OPTIONS)
       try_compile(
         _create_shared_lib_${lang} ${_binary_dir}
         ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest cmake-ldtest
-        CMAKE_FLAGS -DCMAKE_VERBOSE_MAKEFILE=ON -DLINKER_FLAGS=${_linker_dtags_CXX}
+        CMAKE_FLAGS -DCMAKE_VERBOSE_MAKEFILE=ON -DLINKER_FLAGS=${_linker_dtags}
         OUTPUT_VARIABLE _compile_output)
       if(_create_shared_lib_${lang})
         message(CHECK_PASS "succeeded")

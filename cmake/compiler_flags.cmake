@@ -49,88 +49,134 @@ endif()
 
 if(MSVC)
   test_compile_option(
-    _compile_msvc_flags
+    compile_msvc_flags
     LANGS CXX
-    FLAGS "/Zc:__cplusplus"
-    AUTO_ADD_CO)
+    FLAGS "/Zc:__cplusplus")
 
   test_compile_option(
-    _compile_msvc_mt_flags
-    LANGS CXX
+    compile_msvc_mt_flags
+    LANGS C CXX
     FLAGS "/MT"
-    AUTO_ADD_CO
-    GENEX "$<AND:$<CONFIG:RELEASE>,$<BOOL:${ENABLE_MT}>,$<COMPILE_LANGUAGE:@lang@>>")
+    GENEX "$<AND:$<CONFIG:RELEASE>,$<BOOL:${ENABLE_MT}>>"
+    NO_TRYCOMPILE_TARGET NO_TRYCOMPILE_FLAGCHECK_TARGET)
   test_compile_option(
-    _compile_msvc_mt_flags
-    LANGS CXX
+    compile_msvc_mt_flags
+    LANGS C CXX
     FLAGS "/MTd"
-    AUTO_ADD_CO
-    GENEX "$<AND:$<OR:$<CONFIG:DEBUG>,$<CONFIG:RELWITHDEBINFO>>,$<BOOL:${ENABLE_MT}>,$<COMPILE_LANGUAGE:@lang@>>")
+    GENEX "$<AND:$<OR:$<CONFIG:DEBUG>,$<CONFIG:RELWITHDEBINFO>>,$<BOOL:${ENABLE_MT}>>"
+    NO_TRYCOMPILE_TARGET NO_TRYCOMPILE_FLAGCHECK_TARGET)
 
   test_compile_option(
-    _compile_msvc_md_flags
-    LANGS CXX
+    compile_msvc_md_flags
+    LANGS C CXX
     FLAGS "/MD"
-    AUTO_ADD_CO
-    GENEX "$<AND:$<CONFIG:RELEASE>,$<BOOL:${ENABLE_MD}>,$<COMPILE_LANGUAGE:@lang@>>")
+    GENEX "$<AND:$<CONFIG:RELEASE>,$<BOOL:${ENABLE_MD}>>"
+    NO_TRYCOMPILE_TARGET NO_TRYCOMPILE_FLAGCHECK_TARGET)
   test_compile_option(
-    _compile_msvc_md_flags
-    LANGS CXX
+    compile_msvc_md_flags
+    LANGS C CXX
     FLAGS "/MDd"
-    AUTO_ADD_CO
-    GENEX "$<AND:$<OR:$<CONFIG:DEBUG>,$<CONFIG:RELWITHDEBINFO>>,$<BOOL:${ENABLE_MD}>,$<COMPILE_LANGUAGE:@lang@>>")
+    GENEX "$<AND:$<OR:$<CONFIG:DEBUG>,$<CONFIG:RELWITHDEBINFO>>,$<BOOL:${ENABLE_MD}>>"
+    NO_TRYCOMPILE_TARGET NO_TRYCOMPILE_FLAGCHECK_TARGET)
+endif()
 
+# ------------------------------------------------------------------------------
+
+if(ENABLE_CUDA)
+  test_compile_option(
+    nvhpc_flagcheck_flags FLAGCHECK
+    LANGS NVCXX
+    FLAGS "--flagcheck"
+    NO_MQ_TARGET NO_TRYCOMPILE_TARGET)
+
+  test_compile_option(
+    nvhpc_cxx_standard_flags FLAGCHECK
+    LANGS NVCXX
+    FLAGS "-std=c++20 -std=c++17")
+
+  set(_flag -gpu=cuda${MQ_CUDA_VERSION})
+  test_compile_option(
+    nvhpc_cuda_version_flags FLAGCHECK
+    LANGS NVCXX
+    FLAGS "${_flag}")
+
+  if(NOT nvhpc_cuda_version_flags_NVCXX)
+    disable_cuda("NVHPC not supporting ${_flag}")
+  endif()
+  unset(_flag)
+
+  set(_args)
+  foreach(_cc ${CMAKE_CUDA_ARCHITECTURES})
+    test_compile_option(
+      nvhpc_gpu_compute_capability FLAGCHECK
+      LANGS NVCXX
+      FLAGS "-gpu=cc${_cc}" ${_args})
+    # Only add multiple -gpu=ccXX for the "real" target and no the try_compile ones in order to speed up the
+    # compilations in the case of calls to try_compile()
+    set(_args NO_TRYCOMPILE_TARGET NO_TRYCOMPILE_FLAGCHECK_TARGET)
+  endforeach()
+
+  test_compile_option(
+    nvhpc_cuda_flags FLAGCHECK
+    LANGS NVCXX
+    FLAGS "-stdpar" "-cuda")
+
+  if(NOT nvhpc_cuda_flags_NVCXX)
+    disable_cuda("NVHPC not supporting -stdpar -cuda")
+  endif()
+
+  # For all the languages except NVCXX, use NVHPC's filename extension detection for the language
+  target_compile_options(NVCXX_mindquantum INTERFACE "$<$<AND:$<OR:$<C_COMPILER_ID:NVHPC>,\
+$<CXX_COMPILER_ID:NVHPC>,$<CUDA_COMPILER_ID:NVHPC>>,$<NOT:$<COMPILE_LANGUAGE:NVCXX>>>:-x none>")
 endif()
 
 # ------------------------------------------------------------------------------
 
 test_compile_option(
-  _compile_flags_release
-  LANGS CXX DPCXX
+  compile_flags_release
+  LANGS C CXX DPCXX
   FLAGS "-ffast-math /fp:fast -fast" "-O3 /Ox"
-  AUTO_ADD_CO
-  GENEX "$<AND:$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>,$<COMPILE_LANGUAGE:@lang@>>")
+  GENEX "$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>")
 
 # --------------------------------------
 
 if(X86_64)
   test_compile_option(
-    _intrin_flag
-    LANGS CXX DPCXX
+    intrin_flag
+    LANGS C CXX DPCXX
+    NO_MQ_TARGET NO_TRYCOMPILE_TARGET NO_TRYCOMPILE_FLAGCHECK_TARGET
     FLAGS "-mavx2 -xCORE-AVX2 /QxCORE-AVX2 /arch:AVX2")
 elseif(AARCH64)
   test_compile_option(
-    _intrin_flag
-    LANGS CXX DPCXX
+    intrin_flag
+    LANGS C CXX DPCXX
+    NO_MQ_TARGET NO_TRYCOMPILE_TARGET NO_TRYCOMPILE_FLAGCHECK_TARGET
     FLAGS "-march=armv8.5-a -march=armv8.4-a -march=armv8.3-a -march=armv8.2-a")
 endif()
 
 # --------------------------------------
 
 test_compile_option(
-  _dpcpp_flags
+  dpcpp_flags
   LANGS DPCXX
-  FLAGS "-fsycl"
-  AUTO_ADD_CO)
+  FLAGS "-fsycl")
 
 # --------------------------------------
 
 if(ENABLE_PROFILING)
   test_compile_option(
-    _profiling_flags
-    LANGS CXX DPCXX
-    FLAGS "-pg -prof-gen /Qprof-gen" "-fprofile-instr-generate"
-    AUTO_ADD_CO)
+    profiling_flags
+    LANGS C CXX DPCXX
+    FLAGS "-pg -prof-gen /Qprof-gen" "-fprofile-instr-generate")
 endif()
 
 # --------------------------------------
 
 if(ENABLE_STACK_PROTECTION)
   test_compile_option(
-    _stack_protection
-    LANGS CXX DPCXX
-    FLAGS "-fstack-protector-all"
-    AUTO_ADD_CO)
+    stack_protection
+    LANGS C CXX DPCXX
+    FLAGS "-fstack-protector-all")
 endif()
 
 # ------------------------------------------------------------------------------
@@ -150,7 +196,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/compiler_test.cmake)
 
 # --------------------------------------
 
-add_compile_definitions(
+mq_add_compile_definitions(
   "$<$<BOOL:${USE_OPENMP}>:USE_OPENMP>" "$<$<BOOL:${USE_PARALLEL_STL}>:USE_PARALLEL_STL>"
   "$<$<BOOL:${ENABLE_OPENMP}>:ENABLE_OPENMP>" "$<$<BOOL:${VERSION_INFO}>:VERSION_INFO=${VERSION_INFO}>"
   "$<$<AND:$<CONFIG:RELEASE>,$<COMPILE_LANGUAGE:CXX>>:_FORTIFY_SOURCE=2>")
@@ -158,8 +204,8 @@ add_compile_definitions(
 # ==============================================================================
 # Platform specific flags
 
-if(WIN32)
-  add_compile_definitions(_USE_MATH_DEFINES _CRT_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN _ITERATOR_DEBUG_LEVEL=0)
+if(MSVC)
+  mq_add_compile_definitions(_USE_MATH_DEFINES _CRT_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN _ITERATOR_DEBUG_LEVEL=0)
 endif()
 
 # ==============================================================================

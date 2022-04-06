@@ -18,7 +18,7 @@
 
 add_library(mindquantum_cxx STATIC)
 set_target_properties(mindquantum_cxx PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-target_link_libraries(mindquantum_cxx PUBLIC cxx20_compat)
+target_link_libraries(mindquantum_cxx PUBLIC cxx20_compat mindquantum_setup)
 
 # Minimum required is C++17 but really, some features require C++20 and some workarounds are enabled if only C++17 is
 # available but with no guarantees beyond a successful compilation.

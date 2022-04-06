@@ -32,20 +32,33 @@ parse:
         OUTPUT: 1
         CONTENT: 1
         NEWLINE_STYLE: 1
+    check_compiler_flags:
+      pargs:
+        nargs: 2+
+        flags:
+          - FLAGCHECK
     test_compile_option:
       pargs:
         nargs: 1+
         flags:
-          - AUTO_ADD_CO
+          - FLAGCHECK
+          - NO_MQ_TARGET
+          - NO_TRYCOMPILE_TARGET
+          - NO_TRYCOMPILE_FLAGCHECK_TARGET
       kwargs:
         LANGS: +
         FLAGS: +
         GENEX: 1
-    test_link_option:
+    check_link_flags:
+      pargs:
+        nargs: 2+
+        flags:
+          - VERBATIM
+    test_linker_option:
       pargs:
         nargs: 1+
         flags:
-          - AUTO_ADD_LO
+          - NO_MQ_TARGET
           - VERBATIM
       kwargs:
         LANGS: +
@@ -55,6 +68,9 @@ parse:
       kwargs:
         COMMAND: +
         WORKING_DIRECTORY: 1
+    mq_add_compile_definitions:
+      pargs:
+        nargs: +
     mindquantum_add_pkg:
       pargs:
         nargs: 1
