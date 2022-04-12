@@ -32,8 +32,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/macros.cmake)
 # ==============================================================================
 # Create the MindQuantum project
 
-project(MindQuantum LANGUAGES C CXX)
-setup_language(C)
+project(MindQuantum LANGUAGES CXX)
 setup_language(CXX)
 
 # Set a default build type if none was specified

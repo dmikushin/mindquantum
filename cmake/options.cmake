@@ -118,6 +118,14 @@ option(USE_VERBOSE_MAKEFILE "Use verbose Makefiles" ON)
 
 # ==============================================================================
 # ==============================================================================
+# C related options
+
+if(ENABLE_QUEST)
+  enable_language(C)
+  setup_language(C)
+endif()
+
+# ==============================================================================
 # Python related options
 
 if(PYTHON_VIRTUALENV_COMPAT)
