@@ -25,6 +25,7 @@ cmake_debug_mode=0
 cmake_make_silent=0
 cmake_generator='Unix Makefiles'
 configure_only=0
+cuda_arch=''
 do_clean=0
 do_clean_build_dir=0
 do_clean_cache=0
@@ -179,12 +180,16 @@ help_message() {
     echo '  --ninja              Build using Ninja instead of make'
     echo '  --quiet              Disable verbose build rules'
     echo '  --show-libraries     Show all known third-party libraries'
-    echo '  --venv [dir]         Path to Python virtual environment'
+    echo '  --venv=[dir]         Path to Python virtual environment'
     echo "                       Defaults to: $python_venv_path"
     echo '  --with-<library>     Build the third-party <library> from source'
     echo '                       (ignored if --local-pkgs is passed, except for projectq and quest)'
     echo '  --without-<library>  Do not build the third-party library from source'
     echo '                       (ignored if --local-pkgs is passed, except for projectq and quest)'
+    echo ''
+    echo 'CUDA related options:'
+    echo '  --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.'
+    echo '                       Only useful if --gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.'
     echo ''
     echo 'Any options after "--" will be passed onto CMake during the configuration step'
     echo -e '\nExample calls:'
@@ -240,6 +245,9 @@ while getopts hcnB:j:-: OPT; do
                          ;;
         configure-only ) no_arg;
                          configure_only=1
+                         ;;
+        cuda-arch )      needs_arg;
+                         cuda_arch=$(echo "$OPTARG" | tr ',' ';')
                          ;;
         cxx )            no_arg;
                          enable_cxx=1
@@ -391,22 +399,14 @@ cmake_args=(-DIN_PLACE_BUILD:BOOL=ON
             -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
             -DENABLE_PROJECTQ:BOOL="${CMAKE_BOOL[$enable_projectq]}"
             -DENABLE_QUEST:BOOL="${CMAKE_BOOL[$enable_quest]}"
+            -DENABLE_CMAKE_DEBUG:BOOL="${CMAKE_BOOL[$cmake_debug_mode]}"
+            -DENABLE_CUDA:BOOL="${CMAKE_BOOL[$enable_gpu]}"
+            -DENABLE_CXX_EXPERIMENTAL:BOOL="${CMAKE_BOOL[$enable_cxx]}"
+            -DUSE_VERBOSE_MAKEFILE:BOOL="${CMAKE_BOOL[! $cmake_make_silent]}"
             -G "${cmake_generator}")
 
-if [[ $cmake_debug_mode -eq 1 ]]; then
-    cmake_args+=(-DENABLE_CMAKE_DEBUG:BOOL=ON)
-fi
-
-if [[ $cmake_make_silent -eq 1 ]]; then
-    cmake_args+=(-DUSE_VERBOSE_MAKEFILE:BOOL=OFF)
-fi
-
-if [[ $enable_cxx -eq 1 ]]; then
-    cmake_args+=(-DENABLE_CXX_EXPERIMENTAL:BOOL=ON)
-fi
-
-if [[ $enable_gpu -eq 1 ]]; then
-    cmake_args+=(-DENABLE_CUDA:BOOL=ON)
+if [[ $enable_gpu -eq 1 && -n "$cuda_arch" ]]; then
+    cmake_args+=(-DCMAKE_CUDA_ARCHITECTURES:STRING="$cuda_arch")
 fi
 
 local_pkgs_str=$(join_by , "${local_pkgs[@]}")

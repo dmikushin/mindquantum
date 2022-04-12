@@ -25,6 +25,7 @@ rem Default values
 set build_type=Release
 set cmake_debug_mode=0
 set cmake_make_silent=0
+set cuda_arch=
 set configure_only=0
 set do_clean=0
 set do_clean_build_dir=0
@@ -112,6 +113,19 @@ rem ============================================================================
   if /I "%1" == "/ConfigureOnly" (
     set configure_only=1
     shift & goto :initial
+  )
+
+  if /I "%1" == "/CudaArch" (
+    set value=%2
+    if not defined value goto :arg_cuda_arch
+    if "!value:~0,1!" == "/" (
+      :arg_cuda_arch
+      echo %BASENAME%: option requires an argument -- '/CudaArch'
+      goto :EOF
+    )
+    call :ToCMakeList value
+    set cuda_arch=!value!
+    shift & shift & goto :initial
   )
 
   if /I "%1" == "/Cxx" (
@@ -343,7 +357,10 @@ if !cmake_make_silent! == 1 set cmake_args=!cmake_args! -DUSE_VERBOSE_MAKEFILE:B
 
 if !enable_cxx! == 1 set cmake_args=!cmake_args! -DENABLE_CXX_EXPERIMENTAL:BOOL=ON
 
-if !enable_gpu! == 1 set cmake_args=!cmake_args! -DENABLE_CUDA:BOOL=ON
+if !enable_gpu! == 1 (
+  set cmake_args=!cmake_args! -DENABLE_CUDA:BOOL=ON
+  if NOT "!cuda_arch!" == "" set cmake_args=!cmake_args! -DCMAKE_CUDA_ARCHITECTURES:STRING=!cuda_arch!
+)
 
 if !enable_projectq! == 1 (
   set cmake_args=!cmake_args! -DENABLE_PROJECTQ:BOOL=ON
@@ -390,7 +407,7 @@ if !do_configure! == 1 goto :do_configure
 goto :done_configure
 
 :do_configure
-call :call_cmake -S "!source_dir!" -B "!build_dir!" !cmake_args! !unparsed_args!
+call :call_cmake -S !source_dir! -B !build_dir! !cmake_args! !unparsed_args!
 
 :done_configure
 
@@ -433,6 +450,11 @@ set %~1=!%~1:W=w!
 set %~1=!%~1:X=x!
 set %~1=!%~1:Y=y!
 set %~1=!%~1:Z=z!
+exit /B 0
+
+:ToCMakeList
+set %~1=!%~1: =;!
+set %~1=!%~1:,=;!
 exit /B 0
 
 :call_cmd
@@ -491,7 +513,7 @@ exit /B 0
   echo   /cxx                (experimental) Enable MindQuantum C++ support
   echo   /Debug              Build in debug mode
   echo   /DebugCMake         Enable debugging mode for CMake configuration step
-  echo   /gpu                Enable GPU support
+  echo   /Gpu                Enable GPU support
   echo   /j,/Jobs [N]        Number of parallel jobs for building
   echo                       Defaults to: !n_jobs_default!
   echo   /LocalPkgs          Compile third-party dependencies locally
@@ -504,6 +526,10 @@ exit /B 0
   echo                       (ignored if /LocalPkgs is passed, except for projectq and quest)
   rem echo   /Without*library*   Do not build the third-party library from source (*library* is case-insensitive)
   rem echo                       (ignored if /LocalPkgs is passed, except for projectq and quest)
+  echo
+  echo CUDA related options:
+  echo   /CudaArch *arch*    Comma-separated list of architectures to generate device code for.
+  echo                       Only useful if /Gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.
   echo
   echo NB: at the first unknown option, the argument parsing stops and all options from there onwards are passed onto
   echo     CMake

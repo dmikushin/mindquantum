@@ -35,13 +35,18 @@ Param(
     [switch]$n,
 
     # Integer options
-    [int]$J,
-    [int]$Jobs,
+    [ValidateRange("Positive")][int]$J,
+    [ValidateRange("Positive")][int]$Jobs,
 
     # String options
-    [string]$B,
-    [string]$Build,
-    [string]$Venv
+    [ValidateNotNullOrEmpty()][string]$B,
+    [ValidateNotNullOrEmpty()][string]$Build,
+    [ValidateNotNullOrEmpty()][string]$CudaArch,
+    [ValidateNotNullOrEmpty()][string]$Venv,
+
+    # CMake arguments
+    [ValidateNotNullOrEmpty()][string]$G,
+    [ValidateNotNullOrEmpty()][string]$A
 )
 
 $BASENAME = Split-Path $MyInvocation.MyCommand.Path -Leaf
@@ -59,6 +64,7 @@ $build_type = "Release"
 $cmake_debug_mode = 0
 $cmake_make_silent = 0
 $configure_only = 0
+$cuda_arch=""
 $do_clean = 0
 $do_clean_build_dir = 0
 $do_clean_cache = 0
@@ -201,6 +207,9 @@ function help_message() {
     Write-Output '                      (ignored if --local-pkgs is passed, except for projectq and quest)'
     Write-Output '  -Without<library>   Do not build the third-party library from source (<library> is case-insensitive)'
     Write-Output '                      (ignored if --local-pkgs is passed, except for projectq and quest)'
+    Write-Output 'CUDA related options:'
+    Write-Output '  -CudaArch <arch>    Comma-separated list of architectures to generate device code for.'
+    Write-Output '                      Only useful if --gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.'
     Write-Output ''
     Write-Output 'Any options not matching one of the above will be passed on to CMake during the configuration step'
     Write-Output ''
@@ -213,7 +222,7 @@ function help_message() {
 
 # ==============================================================================
 
-if ($n.IsPresent -Or $DryRun.IsPresent) {
+if ($n.IsPresent -or $DryRun.IsPresent) {
     $dry_run = 1
 }
 
@@ -234,7 +243,7 @@ if ($CleanVenv.IsPresent) {
     $do_clean_venv = 1
 }
 
-if ($C.IsPresent -Or $Configure.IsPresent) {
+if ($C.IsPresent -or $Configure.IsPresent) {
     $do_configure = 1
 }
 if ($ConfigureOnly.IsPresent) {
@@ -265,8 +274,12 @@ if ($Quiet.IsPresent) {
     $cmake_make_silent = 1
 }
 
-if ([bool]$B -Or [bool]$Build) {
+if ([bool]$B -or [bool]$Build) {
     $build_dir = "$B" + "$Build"
+}
+
+if ([bool]$CudaArch) {
+    $cuda_arch = $CudaArch.Replace(' ', ';').Replace(',', ';')
 }
 
 if ($J -ne 0) {
@@ -282,6 +295,14 @@ if ([bool]$Venv) {
 
 # Parse -With<library> and -Without<library>
 $cmake_extra_args = @()
+
+if([bool]$G) {
+    $cmake_extra_args += "-G `"$G`""
+}
+if([bool]$A) {
+    $cmake_extra_args += "-A `"$A`""
+}
+
 foreach($arg in $args) {
     if ("$arg" -match "[Ww]ith[Oo]ut-?([a-zA-Z0-9_]+)") {
         $enable_lib = 0
@@ -317,7 +338,7 @@ foreach($arg in $args) {
 $local_pkgs = ($local_pkgs -join ',')
 
 
-if ($H.IsPresent -Or $Help.IsPresent) {
+if ($H.IsPresent -or $Help.IsPresent) {
     help_message
     exit 1
 }
@@ -477,22 +498,15 @@ if ($dry_run -ne 1) {
 $cmake_args = @('-DIN_PLACE_BUILD:BOOL=ON'
                 '-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON'
                 "-DENABLE_PROJECTQ:BOOL={0}" -f $CMAKE_BOOL[$enable_projectq]
-                "-DENABLE_QUEST:BOOL={0}" -f $CMAKE_BOOL[$enable_quest])
+                "-DENABLE_QUEST:BOOL={0}" -f $CMAKE_BOOL[$enable_quest]
+                "-DENABLE_CMAKE_DEBUG:BOOL={0}" -f $CMAKE_BOOL[$cmake_debug_mode]
+                "-DENABLE_CUDA:BOOL={0}" -f $CMAKE_BOOL[$enable_gpu]
+                "-DENABLE_CXX_EXPERIMENTAL:BOOL={0}" -f $CMAKE_BOOL[$enable_cxx]
+                "-DUSE_VERBOSE_MAKEFILE:BOOL={0}" -f $CMAKE_BOOL[-not $cmake_make_silent]
+               )
 
-if ($cmake_debug_mode -eq 1) {
-    $cmake_args += "-DENABLE_CMAKE_DEBUG:BOOL=ON"
-}
-
-if ($cmake_make_silent -eq 1) {
-    $cmake_args += "-DUSE_VERBOSE_MAKEFILE:BOOL=OFF"
-}
-
-if ($enable_cxx -eq 1) {
-    $cmake_args += "-DENABLE_CXX_EXPERIMENTAL:BOOL=ON"
-}
-
-if ($enable_gpu -eq 1) {
-    $cmake_args += "-DENABLE_CUDA:BOOL=ON"
+if ($enable_gpu -eq 1 -and [bool]$cuda_arch) {
+    $cmake_args += "-DCMAKE_CUDA_ARCHITECTURES:STRING=`"$cuda_arch`""
 }
 
 if ($force_local_pkgs -eq 1) {
@@ -516,7 +530,7 @@ if($n_jobs -ne -1) {
 # ------------------------------------------------------------------------------
 # Build
 
-if (-Not (Test-Path -Path "$build_dir" -PathType Container) -Or $do_clean_build_dir -eq 1) {
+if (-Not (Test-Path -Path "$build_dir" -PathType Container) -or $do_clean_build_dir -eq 1) {
     $do_configure=1
 }
 elseif ($do_clean_cache -eq 1) {
