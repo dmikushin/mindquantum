@@ -170,7 +170,7 @@ if(ENABLE_CUDA)
   elseif(NOT "$ENV{CUDAARCHS}" STREQUAL "")
     message(STATUS "CUDAARCHS environment variable present: $ENV{CUDAARCHS}")
   endif()
-  list(SORT CMAKE_CUDA_ARCHITECTURES ORDER ASCENDING)
+  list(SORT CMAKE_CUDA_ARCHITECTURES ORDER DESCENDING)
 
   # NB: NVHPC < 20.11 will fail this test since they do not support -x c++
   check_language(NVCXX)
