@@ -60,6 +60,10 @@ else()
     list(APPEND PATCHES ${CMAKE_CURRENT_LIST_DIR}/patch/fix-missing-std-launder.patch008)
   endif()
 
+  if(Boost_DIR)
+    list(APPEND CMAKE_OPTION -DBoost_DIR=${Boost_DIR})
+  endif()
+
   mindquantum_add_pkg(
     tweedledum
     VER 1.1.0
