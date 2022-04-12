@@ -27,6 +27,7 @@ target_include_directories(mindquantum_python_interface INTERFACE ${CMAKE_CURREN
 
 pybind11_add_module(_mindquantum_cxx MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/_mindquantum_cxx.cpp
                     ${CMAKE_CURRENT_LIST_DIR}/lib/core/circuit.cpp)
+force_at_least_cxx17_workaround(_mindquantum_cxx)
 target_link_libraries(_mindquantum_cxx PRIVATE mindquantum_cxx mindquantum_python_interface)
 set_output_directory_auto(_mindquantum_cxx mindquantum/experimental)
 
@@ -45,6 +46,7 @@ pybind11_add_module(
   ${CMAKE_CURRENT_LIST_DIR}/lib/core/core.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/ops/command.cpp)
 
+force_at_least_cxx17_workaround(_mindquantum_cxx_core)
 target_link_libraries(_mindquantum_cxx_core PRIVATE mindquantum_cxx mindquantum_python_interface)
 set_output_directory_auto(_mindquantum_cxx_core mindquantum/experimental)
 
@@ -62,6 +64,7 @@ pybind11_add_module(
   ${CMAKE_CURRENT_LIST_DIR}/lib/cengines/resource_counter.cpp
   ${CMAKE_CURRENT_LIST_DIR}/lib/ops/command.cpp)
 
+force_at_least_cxx17_workaround(_mindquantum_cxx_cengines)
 target_link_libraries(_mindquantum_cxx_cengines PRIVATE mindquantum_cxx mindquantum_python_interface)
 set_output_directory_auto(_mindquantum_cxx_cengines mindquantum/experimental)
 
@@ -70,6 +73,7 @@ set_output_directory_auto(_mindquantum_cxx_cengines mindquantum/experimental)
 pybind11_add_module(_mindquantum_cxx_ops MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/ops/_mindquantum_cxx_ops.cpp
                     ${CMAKE_CURRENT_LIST_DIR}/lib/ops/command.cpp)
 
+force_at_least_cxx17_workaround(_mindquantum_cxx_ops)
 target_link_libraries(_mindquantum_cxx_ops PRIVATE mindquantum_cxx mindquantum_python_interface)
 set_output_directory_auto(_mindquantum_cxx_ops mindquantum/experimental)
 

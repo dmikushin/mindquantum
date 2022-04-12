@@ -96,6 +96,31 @@ endfunction()
 # ==============================================================================
 
 check_cxx_code_compiles(
+  compiler_has_implicit_template_deduction_guides
+  MQ_HAS_IMPLICIT_TEMPLATE_DEDUCTION_GUIDES
+  cxx_std_20
+  [[
+#ifdef __has_include
+# if __has_include(<version>)
+#   include <version>
+# endif
+#endif
+#include <tuple>
+
+struct A{ int a; };
+struct B{ int b; };
+
+template<class... Ts> struct Agg: Ts... {};
+
+int main() {
+     Agg agg{A{1}, B{1}};
+     return agg.a + agg.b;
+}
+]])
+
+# --------------------------------------
+
+check_cxx_code_compiles(
   compiler_has_remove_cvref_t
   MQ_HAS_REMOVE_CVREF_T
   cxx_std_20
@@ -109,7 +134,7 @@ check_cxx_code_compiles(
 
 int main() {
 #if __cpp_lib_remove_cvref >= 201711L
-    return 0;
+   return 0;
 #else
    std::remove_cvref_t<const int&> i(0);
    return i;

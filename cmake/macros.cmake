@@ -191,6 +191,20 @@ endmacro()
 # ==============================================================================
 
 # ~~~
+# Force at least C++17 for some older compilers:
+#   - GCC 7.0
+#
+# force_at_least_cxx17_workaround(<target>)
+# ~~~
+function(force_at_least_cxx17_workaround target)
+  if(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
+    set_target_properties(${target} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED TRUE)
+  endif()
+endfunction()
+
+# ==============================================================================
+
+# ~~~
 # (helper function) Copy a property from a source target to a destination target if set
 #
 # _copy_target_property(<source> <destination> <property>)

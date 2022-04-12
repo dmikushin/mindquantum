@@ -20,9 +20,8 @@ add_library(mindquantum_cxx STATIC)
 set_target_properties(mindquantum_cxx PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_link_libraries(mindquantum_cxx PUBLIC cxx20_compat mindquantum_setup)
 
-# Minimum required is C++17 but really, some features require C++20 and some workarounds are enabled if only C++17 is
-# available but with no guarantees beyond a successful compilation.
-target_compile_features(mindquantum_cxx PUBLIC cxx_std_17)
+target_compile_features(mindquantum_cxx PUBLIC $<IF:$<COMPILE_FEATURES:cxx_std_20>,cxx_std_20,cxx_std_17>)
+force_at_least_cxx17_workaround(mindquantum_cxx)
 
 add_subdirectory(include)
 add_subdirectory(lib)
