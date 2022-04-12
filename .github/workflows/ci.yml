@@ -69,8 +69,14 @@ jobs:
           path: build/.mqlibs
           key: ${{ matrix.runs-on }}-python-${{ matrix.python }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
-      - name: Configure && build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure
+      - name: Configure
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure-only -c
+
+      - name: Build
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake
+
+  # ============================================================================
+
   gcc:
     runs-on: ubuntu-latest
     strategy:
@@ -128,8 +134,14 @@ jobs:
           path: build/.mqlibs
           key: gcc-${{ matrix.gcc }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
-      - name: Configure && build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure
+      - name: Configure
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure-only -c
+
+      - name: Build
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake
+
+  # ============================================================================
+
   clang:
     runs-on: ubuntu-latest
     strategy:
@@ -192,8 +204,14 @@ jobs:
           path: build/.mqlibs
           key: clang-${{ matrix.clang }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
-      - name: Configure && build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure
+      - name: Configure
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure-only -c
+
+      - name: Build
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake
+
+  # ============================================================================
+
   msvc:
     runs-on: windows-latest
     strategy:
@@ -221,8 +239,14 @@ jobs:
           path: build/.mqlibs
           key: msvc-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
-      - name: Configure && build
-        run: ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Configure -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
+      - name: Configure
+        run: ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -ConfigureOnly -C -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
+
+      - name: Build
+        run: ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
+
+  # ============================================================================
+
   nvhpc:
     runs-on: ubuntu-latest
     strategy:
@@ -279,5 +303,8 @@ jobs:
           path: build/.mqlibs
           key: nvhpc-${{ matrix.nvhpc }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
-      - name: Configure && build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure --gpu
+      - name: Configure
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu --configure-only -c
+
+      - name: Build
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu
