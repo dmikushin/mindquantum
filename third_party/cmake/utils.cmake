@@ -47,7 +47,7 @@ if("${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
 elseif(NOT WIN32)
   find_program(
     _make_exec
-    NAMES make gmake
+    NAMES make gmake mingw32-make
     DOC "Path to make command" REQUIRED)
 endif()
 

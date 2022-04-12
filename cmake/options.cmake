@@ -22,7 +22,11 @@ include(CMakeDependentOption)
 # MindQuantum feature selection
 
 option(ENABLE_PROJECTQ "Enable ProjectQ support" ON)
-option(ENABLE_QUEST "Enable QuEST support" ON)
+set(_enable_quest_init ON)
+if(WIN32 OR MSYS)
+  set(_enable_quest_init OFF)
+endif()
+option(ENABLE_QUEST "Enable QuEST support" ${_enable_quest_init})
 option(ENABLE_GITEE "Use Gitee instead of GitHub for checking out third-party dependencies" OFF)
 option(ENABLE_CXX_EXPERIMENTAL "Enable the new (experimental) C++ backend" OFF)
 option(PATCH_USE_NATIVE_ENCODING "Patch files use the native OS encofing (otherwise force LF)" OFF)
@@ -121,8 +125,15 @@ option(USE_VERBOSE_MAKEFILE "Use verbose Makefiles" ON)
 # C related options
 
 if(ENABLE_QUEST)
-  enable_language(C)
-  setup_language(C)
+  if(WIN32 OR MSYS)
+    message(WARNING "Disabling QuEST support on Windows or MSYS")
+    set(ENABLE_QUEST
+        OFF
+        CACHE BOOL "Enable QuEST support" FORCE)
+  else()
+    enable_language(C)
+    setup_language(C)
+  endif()
 endif()
 
 # ==============================================================================

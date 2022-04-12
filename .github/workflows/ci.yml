@@ -256,6 +256,76 @@ jobs:
 
   # ============================================================================
 
+  msys2:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - msystem: MINGW64
+            installdeps: >-
+              git
+              patch
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-cmake
+              mingw-w64-x86_64-python
+              mingw-w64-x86_64-python-pip
+            cmake_generator: -- -G "MSYS Makefiles"
+
+          - msystem: MSYS
+            installdeps: >-
+              git
+              base-devel
+              gcc
+              cmake
+              python-devel
+              python-pip
+              gmp-devel
+            cmake_generator:
+
+    name: "MSYS2 ${{ matrix.msystem }} • x64"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get history and tags for SCM versioning to work
+        run: |
+          git fetch --prune --unshallow
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      - name: Setup MSYS
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: false
+          install: ${{ matrix.installdeps }}
+
+      - name: Cache Python virtualenv
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: venv
+          key: msys2-${{ matrix.msystem }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+
+      - name: Cache compiled third-party libraries
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: build/.mqlibs
+          key: msys2-${{ matrix.msystem }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+
+      - name: Configure
+        shell: msys2 {0}
+        run: >-
+          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure-only -c
+          ${{ matrix.cmake_generator }}
+
+      - name: Build
+        shell: msys2 {0}
+        run: ./build_locally.sh --cxx --with-projectq --debug-cmake
+
+  # ============================================================================
+
   nvhpc:
     runs-on: ubuntu-latest
     strategy:

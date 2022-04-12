@@ -23,7 +23,7 @@ CMAKE_BOOL=(OFF ON)
 build_type='Release'
 cmake_debug_mode=0
 cmake_make_silent=0
-cmake_generator='Unix Makefiles'
+cmake_generator=''
 configure_only=0
 cuda_arch=''
 do_clean=0
@@ -402,8 +402,12 @@ cmake_args=(-DIN_PLACE_BUILD:BOOL=ON
             -DENABLE_CMAKE_DEBUG:BOOL="${CMAKE_BOOL[$cmake_debug_mode]}"
             -DENABLE_CUDA:BOOL="${CMAKE_BOOL[$enable_gpu]}"
             -DENABLE_CXX_EXPERIMENTAL:BOOL="${CMAKE_BOOL[$enable_cxx]}"
-            -DUSE_VERBOSE_MAKEFILE:BOOL="${CMAKE_BOOL[! $cmake_make_silent]}"
-            -G "${cmake_generator}")
+            -DUSE_VERBOSE_MAKEFILE:BOOL="${CMAKE_BOOL[! $cmake_make_silent]}")
+
+if [[ -n "$cmake_generator" ]]; then
+    cmake_args+=(-G "${cmake_generator}")
+fi
+
 
 if [[ $enable_gpu -eq 1 && -n "$cuda_arch" ]]; then
     cmake_args+=(-DCMAKE_CUDA_ARCHITECTURES:STRING="$cuda_arch")

@@ -16,7 +16,16 @@
 #
 # ==============================================================================
 
-if(UNIX)
+if(MSYS)
+  if("$ENV{MSYSTEM}" STREQUAL "MSYS")
+    set(OS_NAME "MSYS-MSYS")
+  elseif("$ENV{MSYSTEM}" STREQUAL "MINGW64")
+    set(OS_NAME "MSYS-MINGW64")
+  else()
+    set(OS_NAME "MSYS-unsupported")
+  endif()
+  set(OS_RELEASE 0)
+elseif(UNIX)
   if(APPLE)
     set(OS_NAME
         "OSX"
@@ -69,6 +78,8 @@ if(UNIX)
     endif()
   endif() # APPLE
 endif() # UNIX
+
+message(STATUS "Detected system: ${OS_NAME}")
 
 # ==============================================================================
 

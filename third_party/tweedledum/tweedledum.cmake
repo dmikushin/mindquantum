@@ -45,6 +45,20 @@ else()
     set(tweedledum_CFLAGS "/D_ITERATOR_DEBUG_LEVEL=0")
     set(tweedledum_CXXFLAGS "/D_ITERATOR_DEBUG_LEVEL=0 /Zc:__cplusplus /EHsc")
     list(APPEND CMAKE_OPTION -DCMAKE_DEBUG_POSTFIX=d)
+  elseif("${OS_NAME}" STREQUAL "MSYS-MINGW64")
+    set(tweedledum_CFLAGS "-DNT64")
+    set(tweedledum_CXXFLAGS "-DNT64")
+    mq_add_compile_definitions(NT64)
+
+    # NB: requires CMake >= 3.18
+    find_package(Python 3.6.0 COMPONENTS Development.Embed)
+    list(APPEND CMAKE_OPTION -DPYTHON_LIBRARY=${Python_LIBRARIES})
+  elseif("${OS_NAME}" STREQUAL "MSYS-MSYS")
+    # NB: 200809 because of strdup() (otherwise 200112 for posix_memalign())
+    set(tweedledum_CFLAGS "-D_POSIX_C_SOURCE=200809")
+    set(tweedledum_CXXFLAGS "-D_POSIX_C_SOURCE=200809")
+
+    mq_add_compile_definitions(_POSIX_C_SOURCE=200809)
   endif()
 
   set(PATCHES
