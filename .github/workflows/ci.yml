@@ -11,11 +11,11 @@ jobs:
       matrix:
         runs-on: [ubuntu-latest]
         python:
-        - 3.6
-        - 3.7
-        - 3.8
-        - 3.9
-        - '3.10'
+          - 3.6
+          - 3.7
+          - 3.8
+          - 3.9
+          - '3.10'
     env:
       CMAKE_VERSION: 3.22.3
     name: "Python ${{ matrix.python }} • ${{ matrix.runs-on }} • x64"
@@ -51,7 +51,8 @@ jobs:
       - name: Install latest CMake
         run: |
           if [ ! -e cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh ]; then
-            wget https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
+            url_base='https://github.com/Kitware/CMake/releases/download'
+            wget ${url_base}/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
           fi
           sudo bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
 
@@ -60,6 +61,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
+          # yamllint disable-line rule:line-length
           key: ${{ matrix.runs-on }}-python-${{ matrix.python }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
@@ -67,6 +69,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: build/.mqlibs
+          # yamllint disable-line rule:line-length
           key: ${{ matrix.runs-on }}-python-${{ matrix.python }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
       - name: Configure
@@ -116,7 +119,8 @@ jobs:
       - name: Install latest CMake
         run: |
           if [ ! -e cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh ]; then
-            wget https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
+            url_base='https://github.com/Kitware/CMake/releases/download'
+            wget ${url_base}/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
           fi
           bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
 
@@ -186,7 +190,8 @@ jobs:
       - name: Install latest CMake
         run: |
           if [ ! -e cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh ]; then
-            wget https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
+            url_base='https://github.com/Kitware/CMake/releases/download'
+            wget ${url_base}/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
           fi
           bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
 
@@ -240,10 +245,14 @@ jobs:
           key: msvc-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
       - name: Configure
-        run: ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -ConfigureOnly -C -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
+        run: >-
+           ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -ConfigureOnly -C
+           -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
 
       - name: Build
-        run: ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
+        run: >-
+           ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake
+           -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
 
   # ============================================================================
 
@@ -285,7 +294,8 @@ jobs:
       - name: Install latest CMake
         run: |
           if [ ! -e cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh ]; then
-            wget https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
+            url_base='https://github.com/Kitware/CMake/releases/download'
+            wget ${url_base}/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
           fi
           bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
 
