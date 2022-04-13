@@ -110,7 +110,7 @@ function Test-CommandExists{
     Param ($command)
 
     $oldPreference = $ErrorActionPreference
-    $ErrorActionPreference = ‘stop’
+    $ErrorActionPreference = 'Stop'
 
     try {
         if(Get-Command $command) {
@@ -364,7 +364,7 @@ else {
 
 # ==============================================================================
 
-$ErrorActionPreference="stop"
+$ErrorActionPreference = 'Stop'
 
 cd $BASEPATH
 

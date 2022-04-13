@@ -39,7 +39,7 @@ if(ENABLE_CXX_EXPERIMENTAL)
     set(_include_boost TRUE)
   endif()
 
-  if(NOT MSVC)
+  if(NOT MSVC AND NOT "${OS_NAME}" STREQUAL "MinGW")
     include(${CMAKE_CURRENT_LIST_DIR}/gmp/gmp.cmake)
   else()
     set(_include_boost TRUE)

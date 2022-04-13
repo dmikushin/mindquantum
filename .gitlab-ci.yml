@@ -21,7 +21,8 @@ default:
         --no-install-recommends
     - |
       if [ ! -e cmake-${CMAKE_VERSION}-linux-x86_64.sh ]; then
-      wget --no-check-certificate "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh"
+        url_base='https://github.com/Kitware/CMake/releases/download'
+        wget ${url_base}/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
       fi
       bash cmake-${CMAKE_VERSION}-linux-x86_64.sh --skip-license --prefix=/usr/local
 

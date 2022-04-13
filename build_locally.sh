@@ -330,7 +330,18 @@ if [ ! -d "$python_venv_path" ]; then
     call_cmd $PYTHON -m venv "$python_venv_path"
 fi
 
-call_cmd source "$python_venv_path/bin/activate"
+if [ -f "$python_venv_path/bin/activate" ]; then
+    call_cmd source "$python_venv_path/bin/activate"
+elif [ -f "$python_venv_path/Scripts/activate" ]; then
+    call_cmd source "$python_venv_path/Scripts/activate"
+    # If on Windows, potentially need to fix the PATH format
+    if command -v cygpath >/dev/null 2>&1; then
+        new_path=$(cygpath --unix "$PATH")
+        export PATH="$new_path"
+    fi
+else
+    die "Unable to activate Python virtual environment!"
+fi
 
 # ------------------------------------------------------------------------------
 # Locate cmake or cmake3
@@ -342,7 +353,12 @@ if [ -f "$python_venv_path/bin/cmake" ]; then
     has_cmake=1
 fi
 
-cmake_version_min=$(grep -oP 'cmake_minimum_required\(VERSION\s+\K[0-9\.]+' "$BASEPATH/CMakeLists.txt")
+if command -v dos2unix >/dev/null 2>&1; then
+    dos2unix -n "$BASEPATH/CMakeLists.txt" "$BASEPATH/tmp.txt"
+    cmake_version_min=$(grep -oP 'cmake_minimum_required\(VERSION\s+\K[0-9\.]+' "$BASEPATH/tmp.txt")
+else
+    cmake_version_min=$(grep -oP 'cmake_minimum_required\(VERSION\s+\K[0-9\.]+' "$BASEPATH/CMakeLists.txt")
+fi
 
 if [ $has_cmake -ne 1 ]; then
     if command -v cmake > /dev/null 2>&1; then

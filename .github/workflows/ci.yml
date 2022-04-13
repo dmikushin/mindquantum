@@ -1,3 +1,5 @@
+---
+
 name: CI
 
 on:
@@ -129,7 +131,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: gcc-${{ matrix.gcc }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: gcc-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: ${{ !env.ACT }}
@@ -200,7 +202,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: clang-${{ matrix.clang }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: clang-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: ${{ !env.ACT }}
@@ -253,6 +255,73 @@ jobs:
         run: >-
            ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake
            -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
+
+  # ============================================================================
+
+  # NB: Disabled due to compilation error in tweedledum library
+  # mingw64:
+  #   runs-on: windows-2022
+  #   strategy:
+  #     fail-fast: false
+  #   name: "MINGW64 • x64"
+  #   env:
+  #     BOOST_VERSION: 1.78.0
+  #     BOOST_PATH: ${{github.workspace}}/boost/boost
+
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     - name: Get history and tags for SCM versioning to work
+  #       run: |
+  #         git fetch --prune --unshallow
+  #         git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+  #     - name: Cache Python virtualenv
+  #       if: ${{ !env.ACT }}
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: venv
+  #         key: mingw64-python-venv-${{ hashFiles('build_locally.ps1') }}-${{ secrets.cache_ver }}
+
+  #     - name: Cache compiled third-party libraries
+  #       if: ${{ !env.ACT }}
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: build/.mqlibs
+  #         key: mingw64-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+
+  #     # - name: Setup MinGW
+  #     #   uses: egor-tensin/setup-mingw@v2
+
+  #     - name: Cache boost
+  #       uses: actions/cache@v2
+  #       id: cache-boost
+  #       with:
+  #         path: ${{ env.BOOST_PATH }}
+  #         key: boost-${{ env.BOOST_VERSION }}
+
+  #     - name: Download and install Boost
+  #       uses: MarkusJx/install-boost@v2.2.0
+  #       if: steps.cache-boost.outputs.cache-hit != 'true'
+  #       id: install-boost
+  #       with:
+  #         boost_version: ${{ env.BOOST_VERSION }}
+  #         platform_version: 2022
+  #         toolset: mingw
+
+  #     - name: Configure
+  #       env:
+  #         BOOST_ROOT: ${{ env.BOOST_PATH }}
+  #       run: >-
+  #          ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -ConfigureOnly -C
+  #          -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON -G "MinGW Makefiles"
+
+  #     - name: Build
+  #       env:
+  #         BOOST_ROOT: ${{ env.BOOST_PATH }}
+  #       run: >-
+  #          ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake
+  #          -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON -G "MinGW Makefiles"
 
   # ============================================================================
 
@@ -326,6 +395,61 @@ jobs:
 
   # ============================================================================
 
+  cygwin:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+    name: "Cygwin • x64"
+    steps:
+      - run: git config --global core.autocrlf input
+
+      - uses: actions/checkout@v2
+
+      - name: Get history and tags for SCM versioning to work
+        run: |
+          git fetch --prune --unshallow
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      - name: Setup Cygwin
+        uses: cygwin/cygwin-install-action@v2
+        with:
+          packages: >-
+            autoconf automake binutils m4 make cmake patch
+            gzip bzip2 tar xz
+            flex file findutils groff gawk sed libtool gettext wget curl grep dos2unix
+            git
+            gcc-core gcc-g++
+            libgmp-devel
+            python3 python3-devel python3-pip python3-virtualenv
+
+      - name: Cache Python virtualenv
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: venv
+          key: cygwin-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+
+      - name: Cache compiled third-party libraries
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v3
+        with:
+          path: build/.mqlibs
+          key: cygwin-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+
+      - name: Configure
+        env:
+          PATH: C:\cygwin\bin
+        shell: bash --noprofile --norc -e -o pipefail -o igncr {0}
+        run: ./build_locally.sh --cxx --with-projectq --without-quest --debug-cmake --configure-only -c
+
+      - name: Build
+        env:
+          PATH: C:\cygwin\bin
+        shell: bash --noprofile --norc -e -o pipefail -o igncr {0}
+        run: ./build_locally.sh --cxx --with-projectq --without-quest --debug-cmake
+
+  # ============================================================================
+
   nvhpc:
     runs-on: ubuntu-latest
     strategy:
@@ -374,7 +498,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: nvhpc-${{ matrix.nvhpc }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: nvhpc-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: ${{ !env.ACT }}
@@ -388,3 +512,78 @@ jobs:
 
       - name: Build
         run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu
+
+  # ============================================================================
+
+  # NB: Disabled due to compilation error in tweedledum library
+  # intel:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       - name: ICX-ICPX
+  #         cc: icx
+  #         cxx: icpx
+  #         apt_pkg: intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+  #       - name: DPC++
+  #         cc: dpcpp
+  #         cxx: dpcpp
+  #         apt_pkg: intel-oneapi-compiler-dpcpp-cpp
+
+  #   name: "Intel ${{ matrix.name }} • x64"
+  #   env:
+  #     CC: ${{ matrix.cc }}
+  #     CXX: ${{ matrix.cxx }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     - name: Get history and tags for SCM versioning to work
+  #       run: |
+  #         git fetch --prune --unshallow
+  #         git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+  #     - name: Setup Intel APT
+  #       run: |
+  #         wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+  #         sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+  #         echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+  #         sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/oneAPI.list" -o APT::Get::List-Cleanup="0"
+
+  #     - name: Prepare env
+  #       run: >
+  #         apt-get update && apt-get install -y python3-dev python3-pip
+  #         python3-setuptools python3-wheel python3-venv
+  #         ${{ matrix.apt_pkg }}
+  #         --no-install-recommends
+
+  #     - name: Cache Python virtualenv
+  #       if: ${{ !env.ACT }}
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: venv
+  #         key: intel-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+
+  #     - name: Cache compiled third-party libraries
+  #       if: ${{ !env.ACT }}
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: build/.mqlibs
+  #         key: >-
+  #           intel-${{ matrix.cc }}-${{ matrix.cxx }}-clang-third-party-libs-${{ hashFiles('third_party/**') }}
+  #           -${{ secrets.cache_ver }}
+
+  #     - name: Configure
+  #       run: |
+  #         source /opt/intel/oneapi/compiler/latest/env/vars.sh
+  #         if [ -f /opt/intel/oneapi/tbb/latest/env/vars.sh ]; then
+  #           source /opt/intel/oneapi/tbb/latest/env/vars.sh
+  #         fi
+  #         ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu --configure-only -c
+
+  #     - name: Build
+  #       run: |
+  #         source /opt/intel/oneapi/compiler/latest/env/vars.sh
+  #         if [ -f /opt/intel/oneapi/tbb/latest/env/vars.sh ]; then
+  #           source /opt/intel/oneapi/tbb/latest/env/vars.sh
+  #         fi
+  #         ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu

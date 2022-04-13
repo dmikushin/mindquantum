@@ -27,8 +27,10 @@ set(gmp_CFLAGS "-fPIC -O3 -D_FORTIFY_SOURCE=2")
 set(gmp_CXXFLAGS "-fPIC -O3 -D_FORTIFY_SOURCE=2")
 
 if(MSYS)
-  message(WARNING "Build of gmp on MSYS2 is broken. Please install the gmp-devel (MSYS) or mingw-w64-x86_64-gmp "
+  message(WARNING "Build of gmp on MSYS2 is broken. Make sure to install the gmp-devel (MSYS) or mingw-w64-x86_64-gmp "
                   "(MINGW64) packages instead.")
+elseif(CYGWIN)
+  message(WARNING "Build of gmp on Cygwin is broken. Make sure to install the libgmp-devel package instead.")
 endif()
 
 mindquantum_add_pkg(

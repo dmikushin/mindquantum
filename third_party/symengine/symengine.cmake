@@ -39,6 +39,13 @@ if(MSVC)
     # Boost was locally built, make sure we use that one
     list(APPEND CMAKE_OPTION -DBOOST_ROOT=${Boost_DIRPATH} -DBoost_NO_SYSTEM_PATHS:BOOL=ON)
   endif()
+elseif("${OS_NAME}" STREQUAL "MinGW")
+  list(APPEND CMAKE_OPTION -DINTEGER_CLASS=boostmp -DCMAKE_DEBUG_POSTFIX=d)
+
+  if(Boost_DIRPATH)
+    # Boost was locally built, make sure we use that one
+    list(APPEND CMAKE_OPTION -DBOOST_ROOT=${Boost_DIRPATH} -DBoost_NO_SYSTEM_PATHS:BOOL=ON)
+  endif()
 endif()
 
 set(PATCHES ${CMAKE_CURRENT_LIST_DIR}/patch/fix-cmakelists.patch001

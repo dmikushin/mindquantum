@@ -159,11 +159,14 @@ diff --git a/include/tweedledum/Utils/Source.h b/include/tweedledum/Utils/Source
 index 32c66aa..b11cdca 100644
 --- a/include/tweedledum/Utils/Source.h
 +++ b/include/tweedledum/Utils/Source.h
-@@ -5,7 +5,13 @@
+@@ -5,7 +5,16 @@
  #pragma once
  
  #include <cstdint>
-+#if __has_include(<filesystem>)
++#if __has_include(<version>)
++#  include <version>
++#endif
++#if __has_include(<filesystem>) && __cpp_lib_filesystem >= 201703
  #include <filesystem>
 +#define fs_ns std
 +#else
@@ -215,10 +218,10 @@ index 32c66aa..b11cdca 100644
 +      fs_ns::filesystem::path const& file_path)
      {
          std::string content;
-+#if __has_include(<filesystem>)
++#if __has_include(<filesystem>) && __cpp_lib_filesystem >= 201703
          std::ifstream input_file(file_path);
 +#else
-+        std::ifstream input_file(file_path.native());
++        std::ifstream input_file(file_path.string<std::string>());
 +#endif
          if (input_file.is_open()) {
              input_file.seekg(0, input_file.end);
@@ -238,11 +241,14 @@ diff --git a/include/tweedledum/Utils/SourceManager.h b/include/tweedledum/Utils
 index 3f425e4..ecccda2 100644
 --- a/include/tweedledum/Utils/SourceManager.h
 +++ b/include/tweedledum/Utils/SourceManager.h
-@@ -7,7 +7,13 @@
+@@ -7,7 +7,16 @@
  #include "Source.h"
  
  #include <cstdint>
-+#if __has_include(<filesystem>)
++#if __has_include(<version>)
++#  include <version>
++#endif
++#if __has_include(<filesystem>) && __cpp_lib_filesystem >= 201703
  #include <filesystem>
 +#define fs_ns std
 +#else
@@ -271,11 +277,14 @@ diff --git a/src/Parser/QASM/PPLexer.h b/src/Parser/QASM/PPLexer.h
 index 367ed6e..09ea1f6 100644
 --- a/src/Parser/QASM/PPLexer.h
 +++ b/src/Parser/QASM/PPLexer.h
-@@ -9,7 +9,11 @@
+@@ -9,7 +9,14 @@
  #include "tweedledum/Utils/Source.h"
  #include "tweedledum/Utils/SourceManager.h"
  
-+#if __has_include(<filesystem>)
++#if __has_include(<version>)
++#  include <version>
++#endif
++#if __has_include(<filesystem>) && __cpp_lib_filesystem >= 201703
  #include <filesystem>
 +#else
 +#include <boost/filesystem.hpp>
@@ -287,7 +296,7 @@ index 367ed6e..09ea1f6 100644
  
      bool add_target_file(std::string_view path)
      {
-+#if __has_include(<filesystem>)
++#if __has_include(<filesystem>) && __cpp_lib_filesystem >= 201703
          Source const* source = source_manager_.add_file(path);
 +#else
 +        Source const* source = source_manager_.add_file(path.data());
@@ -303,7 +312,7 @@ index da0426c..552f0e4 100644
  {
      Circuit circuit;
      SourceManager source_manager;
-+#if __has_include(<filesystem>)
++#if __has_include(<filesystem>) && __cpp_lib_filesystem >= 201703
      source_manager.add_file(path);
 +#else
 +    source_manager.add_file(path.data());

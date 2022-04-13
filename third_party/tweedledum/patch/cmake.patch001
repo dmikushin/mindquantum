@@ -58,7 +58,7 @@ index d81e701..93a8745 100644
 +# endif
 +#endif
 +int main() {
-+#if __cpp_lib_filesystem >= 201703
++#if __has_include(<filesystem>) && __cpp_lib_filesystem >= 201703
 +    return 0;
 +#else
 +#error std::filesystem not supported
