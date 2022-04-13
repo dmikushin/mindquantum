@@ -16,6 +16,8 @@
 #
 # ==============================================================================
 
+set(OS_NAME "Unknown")
+set(OS_RELEASE 0)
 if(MSYS)
   if("$ENV{MSYSTEM}" STREQUAL "MSYS")
     set(OS_NAME "MSYS-MSYS")
@@ -24,7 +26,10 @@ if(MSYS)
   else()
     set(OS_NAME "MSYS-unsupported")
   endif()
-  set(OS_RELEASE 0)
+elseif(MINGW)
+  set(OS_NAME "MinGW")
+elseif(CYGWIN)
+  set(OS_NAME "Cygwin")
 elseif(UNIX)
   if(APPLE)
     set(OS_NAME
@@ -72,9 +77,6 @@ elseif(UNIX)
           OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
         set(OS_RELEASE ${_nix_version})
       endif()
-    else()
-      set(OS_NAME "unknown")
-      set(OS_RELEASE "0")
     endif()
   endif() # APPLE
 endif() # UNIX
