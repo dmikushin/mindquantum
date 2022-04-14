@@ -131,7 +131,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: gcc-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: gcc-${{ matrix.gcc }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: ${{ !env.ACT }}
@@ -202,7 +202,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: clang-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: clang-${{ matrix.clang }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: ${{ !env.ACT }}
@@ -498,7 +498,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: nvhpc-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: nvhpc-${{ matrix.nvhpc }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: ${{ !env.ACT }}
