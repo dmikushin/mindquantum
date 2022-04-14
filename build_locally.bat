@@ -25,22 +25,24 @@ rem Default values
 set build_type=Release
 set cmake_debug_mode=0
 set cmake_make_silent=0
-set cuda_arch=
 set configure_only=0
+set cuda_arch=
 set do_clean=0
 set do_clean_build_dir=0
 set do_clean_cache=0
 set do_clean_venv=0
 set do_configure=0
+set do_update_venv=0
 set dry_run=0
 set enable_cxx=0
 set enable_gpu=0
 set enable_projectq=1
 set enable_quest=0
 set force_local_pkgs=0
-set ninja=0
 set n_jobs=-1
 set n_jobs_default=0
+set ninja=0
+
 for /f  "tokens=2 delims==" %%d in ('wmic cpu get NumberOfLogicalProcessors /value ^| findstr "="') do @set /A n_jobs_default+=%%d >NUL
 
 set source_dir=%BASEPATH%
@@ -182,6 +184,11 @@ rem ============================================================================
     goto :EOF
   )
 
+  if /I "%1" == "/UpdateVenv" (
+    set do_update_venv=1
+    shift & goto :initial
+  )
+
   if /I "%1" == "/Venv" (
     set value=%2
     if not defined value goto :arg_venv
@@ -258,8 +265,15 @@ if NOT exist !python_venv_path! (
   set created_venv=1
   echo Creating Python virtualenv: !PYTHON! -m venv !python_venv_path!
   call :call_cmd !PYTHON! -m venv !python_venv_path!
+  goto :activate_venv
 )
 
+if !do_update_venv! == 1 (
+  echo Updating Python virtualenv: !PYTHON! -m venv --upgrade !python_venv_path!
+  call :call_cmd !PYTHON! -m venv --upgrade !python_venv_path!
+)
+
+:activate_venv
 call :call_cmd !python_venv_path!\Scripts\activate.bat
 
 rem ------------------------------------------------------------------------------
@@ -267,21 +281,24 @@ rem Locate cmake or cmake3
 
 rem If from the virtual environment, it's always good
 set has_cmake=0
+set cmake_from_venv=0
 if exist !python_venv_path!\Scripts\cmake.exe (
    set CMAKE=!python_venv_path!\Scripts\cmake.exe
+   set cmake_from_venv=1
    goto: done_cmake
 ) else (
   if exist !python_venv_path!\bin\cmake.exe (
      set CMAKE=!python_venv_path!\bin\cmake.exe
+     set cmake_from_venv=1
      goto: done_cmake
   )
 )
 
 rem -------------------------------------
 
-set cmake_version_min=3.17
+set cmake_version_min=3.20
 set cmake_major_min=3
-set cmake_minor_min=17
+set cmake_minor_min=20
 
 where cmake
 if %ERRORLEVEL% == 0 (
@@ -327,14 +344,23 @@ call :call_cmd !PYTHON! -m pip install -U "cmake>=!cmake_version_min!"
 
 rem ------------------------------------------------------------------------------
 
-if !created_venv! == 1 (
-  set pkgs=pip setuptools wheel build pybind11
+if !created_venv! == 1 goto :update_venv
+if !do_update_venv! == 1 goto :update_venv
 
-  rem  TODO(dnguyen): add wheel delocation package for Windows once we figure this out
+goto :done_update_venv
 
-  echo Updating Python packages: !PYTHON! -m pip install -U !pkgs!
-  call :call_cmd !PYTHON! -m pip install -U !pkgs!
-)
+:update_venv
+
+set pkgs=pip setuptools wheel build pybind11
+
+if !cmake_from_venv! == 1 set pkgs=!pkgs! cmake
+
+rem  TODO(dnguyen): add wheel delocation package for Windows once we figure this out
+
+echo Updating Python packages: !PYTHON! -m pip install -U !pkgs!
+call :call_cmd !PYTHON! -m pip install -U !pkgs!
+
+:done_update_venv
 
 if NOT !dry_run! == 1 (
    for /F %%i in ('!PYTHON! -c "import site; print(site.getsitepackages()[0])"') do set site_pkg_dir=%%i

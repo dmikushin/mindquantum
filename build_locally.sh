@@ -22,8 +22,8 @@ CMAKE_BOOL=(OFF ON)
 
 build_type='Release'
 cmake_debug_mode=0
-cmake_make_silent=0
 cmake_generator=''
+cmake_make_silent=0
 configure_only=0
 cuda_arch=''
 do_clean=0
@@ -31,6 +31,7 @@ do_clean_build_dir=0
 do_clean_cache=0
 do_clean_venv=0
 do_configure=0
+do_update_venv=0
 dry_run=0
 enable_cxx=0
 enable_gpu=0
@@ -191,6 +192,9 @@ help_message() {
     echo '  --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.'
     echo '                       Only useful if --gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.'
     echo ''
+    echo 'Python related options:'
+    echo '  --update-venv        Update the python virtual environment'
+    echo ''
     echo 'Any options after "--" will be passed onto CMake during the configuration step'
     echo -e '\nExample calls:'
     echo "$PROGRAM -B build"
@@ -280,6 +284,9 @@ while getopts hcnB:j:-: OPT; do
                          print_show_libraries
                          exit 1
                          ;;
+        update-venv )    no_arg;
+                         do_update_venv=1
+                         ;;
         venv )           needs_arg;
                          python_venv_path="$OPTARG"
                          ;;
@@ -328,6 +335,9 @@ if [ ! -d "$python_venv_path" ]; then
     created_venv=1
     echo "Creating Python virtualenv: $PYTHON -m venv $python_venv_path"
     call_cmd $PYTHON -m venv "$python_venv_path"
+elif [ $do_update_venv -eq 1 ]; then
+    echo "Updating Python virtualenv: $PYTHON -m venv --upgrade $python_venv_path"
+    call_cmd $PYTHON -m venv --upgrade "$python_venv_path"
 fi
 
 if [ -f "$python_venv_path/bin/activate" ]; then
@@ -347,10 +357,16 @@ fi
 # Locate cmake or cmake3
 
 has_cmake=0
+cmake_from_venv=0
 
 if [ -f "$python_venv_path/bin/cmake" ]; then
     CMAKE="$python_venv_path/bin/cmake"
     has_cmake=1
+    cmake_from_venv=1
+elif [ -f "$python_venv_path/Scripts/cmake" ]; then
+    CMAKE="$python_venv_path/Scripts/cmake"
+    has_cmake=1
+    cmake_from_venv=1
 fi
 
 if command -v dos2unix >/dev/null 2>&1; then
@@ -384,13 +400,16 @@ fi
 
 # ------------------------------------------------------------------------------
 
-if [ $created_venv -eq 1 ]; then
+if [[ $created_venv -eq 1 || $do_update_venv -eq 1 ]]; then
     pkgs=(pip setuptools wheel build pybind11)
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         pkgs+=(auditwheel)
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         pkgs+=(delocate)
+    fi
+    if [ $cmake_from_venv -eq 1 ]; then
+        pkgs+=(cmake)
     fi
 
     echo "Updating Python packages: $PYTHON -m pip install -U ${pkgs[*]}"

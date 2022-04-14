@@ -30,6 +30,7 @@ Param(
     [switch]$Ninja,
     [switch]$Quiet,
     [switch]$ShowLibraries,
+    [switch]$UpdateVenv,
     [switch]$c,
     [switch]$h,
     [switch]$n,
@@ -70,6 +71,7 @@ $do_clean_build_dir = 0
 $do_clean_cache = 0
 $do_clean_venv = 0
 $do_configure = 0
+$do_update_venv = 0
 $dry_run = 0
 $enable_cxx = 0
 $enable_gpu = 0
@@ -211,6 +213,9 @@ function help_message() {
     Write-Output '  -CudaArch <arch>    Comma-separated list of architectures to generate device code for.'
     Write-Output '                      Only useful if --gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.'
     Write-Output ''
+    Write-Output 'Python related options:'
+    Write-Output '  -UpdateVenv         Update the python virtual environment'
+    Write-Output ''
     Write-Output 'Any options not matching one of the above will be passed on to CMake during the configuration step'
     Write-Output ''
     Write-Output 'Example calls:'
@@ -248,6 +253,10 @@ if ($C.IsPresent -or $Configure.IsPresent) {
 }
 if ($ConfigureOnly.IsPresent) {
     $configure_only = 1
+}
+
+if ($UpdateVenv.IsPresent) {
+    $do_update_venv = 1
 }
 
 if ($Cxx.IsPresent) {
@@ -386,6 +395,10 @@ if (-Not (Test-Path -Path "$python_venv_path" -PathType Container)) {
     Write-Output "Creating Python virtualenv: $PYTHON -m venv $python_venv_path"
     Call-Cmd $PYTHON -m venv "$python_venv_path"
 }
+elseif ($do_update_venv -eq 1) {
+    Write-Output "Updating Python virtualenv: $PYTHON -m venv --upgrade $python_venv_path"
+    Call-Cmd $PYTHON -m venv --upgrade "$python_venv_path"
+}
 
 if($IsWinEnv) {
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
@@ -406,6 +419,7 @@ if ($dry_run -ne 1) {
 # Locate cmake or cmake3
 
 $has_cmake = 0
+$cmake_from_venv = 0
 
 foreach($_cmake in @("$python_venv_path\Scripts\cmake",
                      "$python_venv_path\Scripts\cmake.exe",
@@ -414,6 +428,7 @@ foreach($_cmake in @("$python_venv_path\Scripts\cmake",
     if(Test-Path -Path "$_cmake") {
         $CMAKE = "$_cmake"
         $has_cmake = 1
+        $cmake_from_venv = 1
         break
     }
 }
@@ -457,6 +472,7 @@ if ($has_cmake -eq 0) {
         if(Test-Path -Path "$_cmake") {
             $CMAKE = "$_cmake"
             $has_cmake = 1
+            $cmake_from_venv = 1
             break
         }
     }
@@ -465,7 +481,7 @@ if ($has_cmake -eq 0) {
 # ------------------------------------------------------------------------------
 
 
-if ($created_venv -eq 1) {
+if ($created_venv -eq 1 -or $do_update_venv -eq 1) {
     $pkgs = @("pip", "setuptools", "wheel", "build", "pybind11")
 
     if($IsLinuxEnv) {
@@ -473,6 +489,10 @@ if ($created_venv -eq 1) {
     }
     elseif($IsMacOSEnv) {
         $pkgs += "delocate"
+    }
+
+    if($cmake_from_venv) {
+        $pkgs += "cmake"
     }
 
     # TODO(dnguyen): add wheel delocation package for Windows once we figure this out
