@@ -24,12 +24,14 @@
 
 namespace mindquantum::ops::parametric {
 namespace details {
+//! Defines a real parameter
 struct real_tag_t {  // NOLINT(altera-struct-pack-align)
     using type = double;
     static auto eval(const basic_t& expr) {
         return eval_double(*expr);
     }
 };
+//! Defines a complex parameter
 struct complex_tag_t {  // NOLINT(altera-struct-pack-align)
     using type = std::complex<double>;
     static auto eval(const basic_t& expr) {

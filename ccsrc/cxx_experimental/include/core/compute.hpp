@@ -26,11 +26,15 @@
 #include "ops/gates/invalid.hpp"
 
 namespace mindquantum::cengines {
+//! Circuit wrapper class that implements the compute-uncompute pattern
 class ComputeCircuit {
  public:
     using cbit_t = tweedledum::Cbit;
 
-    // TODO(dnguyen): Fix this! Need to have a compute region (ie. functor) not like the control case!
+    //! Constructor
+    /*!
+     * \param original A quantum circuit
+     */
     explicit ComputeCircuit(circuit_t& original)
         : original_(original)
         , do_compute_(true)
@@ -38,6 +42,11 @@ class ComputeCircuit {
         , compute_(tweedledum::shallow_duplicate(original)) {
     }
 
+    //! Destructor
+    /*!
+     * Only when the ComputeCircuit object is being destroyed are the instructions added to it so far will be
+     * transferred to the original quantum circuit object.
+     */
     ~ComputeCircuit() {
         no_bits_added_ &= (original_.num_qubits() == non_compute_.num_qubits()
                            && original_.num_cbits() == non_compute_.num_cbits());
@@ -63,6 +72,7 @@ class ComputeCircuit {
     ComputeCircuit& operator=(const ComputeCircuit&) = delete;
     ComputeCircuit& operator=(ComputeCircuit&&) = delete;
 
+    //! For internal-use only
     void done_compute() {
         do_compute_ = false;
         no_bits_added_ = (original_.num_qubits() == compute_.num_qubits()
@@ -70,10 +80,12 @@ class ComputeCircuit {
         non_compute_ = tweedledum::shallow_duplicate(compute_);
     }
 
+    //! Read-write getter to the circuit storing the \e computed instructions
     circuit_t& compute() {
         return compute_;
     }
 
+    //! Read-write getter to the circuit storing the instructions between the compute and uncompute regions
     circuit_t& non_compute() {
         return non_compute_;
     }
@@ -114,11 +126,17 @@ class ComputeCircuit {
 };
 
 namespace details {
+//! Helper class to implement WITH_COMPUTE statements in C++
 class ComputeCircuitProxy {
  public:
+    //! Constructor
+    /*!
+     * \param compute ComputCircuit object to wrap.
+     */
     explicit ComputeCircuitProxy(ComputeCircuit& compute) : compute_(compute) {
     }
 
+    //! Destructor
     ~ComputeCircuitProxy() {
         compute_.done_compute();
     }
@@ -128,6 +146,7 @@ class ComputeCircuitProxy {
     ComputeCircuitProxy& operator=(const ComputeCircuitProxy&) = delete;
     ComputeCircuitProxy& operator=(ComputeCircuitProxy&&) = delete;
 
+    //! Read-write getter to the circuit storing the \e computed instructions
     // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
     operator circuit_t&() & {
         return compute_.compute();

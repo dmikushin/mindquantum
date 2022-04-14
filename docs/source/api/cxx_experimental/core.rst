@@ -12,20 +12,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-API
-===
+C++ core
+========
 
-API of the Python and C++ code of MindQuantum.
-To have a Python frontend and C++ in the backend,
-we make use of `Pybind11 <https://github.com/pybind/pybind11/>`_.
-The C++ code represents quantum circuits with the help of
-`Tweedledum <https://github.com/boschmitt/tweedledum>`_ networks, which can
-also be turned into directed acyclic graphs
-(`DAG <https://en.wikipedia.org/wiki/Directed_acyclic_graph>`_),
-to make some operations more efficient.
-
-.. toctree::
-   :maxdepth: 1
-
-   api/python
-   api/cxx
+.. doxygennamespace:: mindquantum::core
+   :project: mindquantum

@@ -24,3 +24,4 @@ requirements.txt
 .eggs
 cmake-build-debug
 venv
+docs/doxygen

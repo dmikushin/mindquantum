@@ -31,6 +31,7 @@ do_clean_build_dir=0
 do_clean_cache=0
 do_clean_venv=0
 do_configure=0
+do_docs=0
 do_update_venv=0
 dry_run=0
 enable_cxx=0
@@ -174,6 +175,8 @@ help_message() {
     echo '  --cxx                (experimental) Enable MindQuantum C++ support'
     echo '  --debug              Build in debug mode'
     echo '  --debug-cmake        Enable debugging mode for CMake configuration step'
+    echo '  --doc                Setup the Python virtualenv for building the documentation and ask CMake to build the'
+    echo '                       documentation'
     echo '  --gpu                Enable GPU support'
     echo '  -j,--jobs [N]        Number of parallel jobs for building'
     echo "                       Defaults to: $n_jobs_default"
@@ -262,6 +265,10 @@ while getopts hcnB:j:-: OPT; do
         debug-cmake )    no_arg;
                          cmake_debug_mode=1
                          ;;
+        docs )           ;&
+        doc )            no_arg;
+                         do_docs=1
+                         ;;
         gpu )            no_arg;
                          enable_gpu=1
                          ;;
@@ -340,6 +347,7 @@ elif [ $do_update_venv -eq 1 ]; then
     call_cmd $PYTHON -m venv --upgrade "$python_venv_path"
 fi
 
+echo "Activating Python virtual environment: $python_venv_path"
 if [ -f "$python_venv_path/bin/activate" ]; then
     call_cmd source "$python_venv_path/bin/activate"
 elif [ -f "$python_venv_path/Scripts/activate" ]; then
@@ -408,8 +416,13 @@ if [[ $created_venv -eq 1 || $do_update_venv -eq 1 ]]; then
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         pkgs+=(delocate)
     fi
+
     if [ $cmake_from_venv -eq 1 ]; then
         pkgs+=(cmake)
+    fi
+
+    if [ $do_docs -eq 1 ]; then
+        pkgs+=(breathe sphinx sphinx_rtd_theme importlib-metadata myst-parser)
     fi
 
     echo "Updating Python packages: $PYTHON -m pip install -U ${pkgs[*]}"

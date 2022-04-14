@@ -14,3 +14,8 @@
 
 Python
 ======
+
+.. automodule:: mindquantum
+   :members:
+   :special-members: __init__
+   :imported-members:

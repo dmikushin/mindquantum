@@ -21,10 +21,12 @@ import itertools
 import logging
 import multiprocessing
 import os
+import pathlib
 import platform
 import shutil
 import subprocess
 import sys
+import sysconfig
 from distutils.command.clean import clean
 
 import setuptools
@@ -177,7 +179,13 @@ class CMakeBuildExt(build_ext):
         """Build a C/C++ extension using CMake."""
         # pylint: disable=attribute-defined-outside-init
         if on_rtd:
-            important_msgs('skipping CMake build on ReadTheDocs')
+            important_msgs('skipping CMake build on ReadTheDocs and creating dummy extension packages')
+            ext_suffix = sysconfig.get_config_var('EXT_SUFFIX')
+            for ext in self.extensions:
+                dest_path = pathlib.Path(self.get_ext_fullpath(ext.lib_filepath).rstrip(ext_suffix)).with_suffix('.py')
+                if not dest_path.exists():
+                    logging.info('creating empty file at %s', dest_path)
+                    dest_path.write_text('')
             return
         cmake_cmd = get_cmake_command()
         if cmake_cmd is None:

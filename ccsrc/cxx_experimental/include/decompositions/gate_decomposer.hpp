@@ -68,7 +68,6 @@ class GateDecomposer {
      *
      * \tparam o_atom_t Type of atom to look for
      * \return True/false depending on whether the atom can be found or not
-     * \sa has_atom(std::string_view kind, num_control_t num_controls, std::string_view name) const noexcept
      */
     template <typename o_atom_t>
     MQ_NODISCARD bool has_atom() const noexcept;

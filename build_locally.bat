@@ -32,6 +32,7 @@ set do_clean_build_dir=0
 set do_clean_cache=0
 set do_clean_venv=0
 set do_configure=0
+set do_docs=0
 set do_update_venv=0
 set dry_run=0
 set enable_cxx=0
@@ -142,6 +143,13 @@ rem ============================================================================
 
   if /I "%1" == "/DebugCMake" (
     set cmake_debug_mode=1
+    shift & goto :initial
+  )
+
+  if /I "%1" == "/Doc" set result=true
+  if /I "%1" == "/Docs" set result=true
+  if "%result%" == "true" (
+    set do_docs=1
     shift & goto :initial
   )
 
@@ -274,6 +282,7 @@ if !do_update_venv! == 1 (
 )
 
 :activate_venv
+echo Activating Python virtual environment: !python_venv_path!
 call :call_cmd !python_venv_path!\Scripts\activate.bat
 
 rem ------------------------------------------------------------------------------
@@ -354,6 +363,8 @@ goto :done_update_venv
 set pkgs=pip setuptools wheel build pybind11
 
 if !cmake_from_venv! == 1 set pkgs=!pkgs! cmake
+
+if !do_docs! == 1 set pkgs=!pkgs! breathe sphinx sphinx_rtd_theme importlib-metadata myst-parser
 
 rem  TODO(dnguyen): add wheel delocation package for Windows once we figure this out
 
@@ -539,6 +550,8 @@ exit /B 0
   echo   /cxx                (experimental) Enable MindQuantum C++ support
   echo   /Debug              Build in debug mode
   echo   /DebugCMake         Enable debugging mode for CMake configuration step
+  echo   /Doc, /Docs         Setup the Python virtualenv for building the documentation and ask CMake to build the
+  echo                       documentation
   echo   /Gpu                Enable GPU support
   echo   /j,/Jobs [N]        Number of parallel jobs for building
   echo                       Defaults to: !n_jobs_default!
@@ -563,7 +576,7 @@ exit /B 0
   echo Example calls:
   echo %BASENAME% /B build
   echo %BASENAME% /B build /gpu
-  echo %BASENAME% /B build /cxx /WithBoost /Without-Quest
+  echo %BASENAME% /B build /cxx /WithBoost
   echo %BASENAME% /B build "-DCMAKE_CUDA_COMPILER^=/opt/cuda/bin/nvcc"
   EXIT /B 0
 

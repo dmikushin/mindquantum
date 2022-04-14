@@ -12,7 +12,133 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
+.. toctree::
+   :maxdepth: 2
+
+
 .. _installation:
+
+Quick start
+===========
+
+If you are only looking in using MindQuantum on your system, the easiest way of getting started is installing it
+directly from Pypi and use one of the pre-compiled binaries: :ref:`install_from_pypi`.
+
+If you are looking into doing some development with MindQuantum on your local machine, we highly recommend you using one
+of the scripts provided to build MindQuantum locally: :ref:`install_locally`. In that case, you might want to install
+some of the required programs and libraries. See one of the sub-sections under :ref:`requirements` for your particular
+system for more information in order to find out how to achieve that.
+
+.. _install_from_pypi:
+
+Install from Pypi
+-----------------
+
+You can install one of the pre-compiled binary Python packages directly from Pypi using Pip:
+
+.. code-block:: bash
+
+   python3 -m pip install --user mindquantum
+
+.. _install_locally:
+
+Install locally
+---------------
+
+In order to build MindQuantum locally, there are a few scripts that you can use to properly setup a virtual environment
+and all the required build tools (such as CMake). Currently, there are three local build scripts:
+
+- ``build_locally.bat`` (MS-DOS BATCH script)
+- ``build_locally.ps1`` (PowerShell script)
+- ``build_locally.sh`` (Bash script)
+
+Except a few minor differences [1]_, the functionalities of all three scripts are identical. All the scripts accept a
+flag to display the help message (``-h, --help``, ``-H, -Help`, ``/h, /Help`` for Bash, Powershell and MS-DOS
+BATCH). Please invoke the script of your choice in order to view the latest set of functionalities provided by it.
+
+The build scripts mentioned above will perform the following operations in order:
+
+1. Locate the Python 3 executable (either ``python3`` or ``python``)
+
+
+For reference, here is the output of the help message from the Bash script (NB: might differ from the actual help
+message):
+
+.. code-block::
+
+  Build MindQunantum locally (in-source build)
+
+  This is mainly relevant for developers that do not want to always have to reinstall the
+  Python package
+
+  This script will create a Python virtualenv in the MindQuantum root directory and then build
+  all the C++ Python modules and place the generated libraries in their right locations within
+  the MindQuantum folder hierarchy so Python knows how to find them.
+
+  A pth-file will be created in the virtualenv site-packages directory so that the MindQuantum
+  root folder will be added to the Python PATH without the need to modify PYTHONPATH.
+
+  Usage:
+    build_locally.sh [options] [-- cmake_options]
+
+  Options:
+    -h,--help            Show this help message and exit
+    -n                   Dry run; only print commands but do not execute them
+
+    -B,--build [dir]     Specify build directory
+                         Defaults to: /home/damien/code/hiq/mindquantum/build
+    --clean              Run make clean before building
+    --clean-all          Clean everything before building.
+                         Equivalent to --clean-venv --clean-builddir
+    --clean-builddir     Delete build directory before building
+    --clean-cache        Re-run CMake with a clean CMake cache
+    --clean-venv         Delete Python virtualenv before building
+    -c,--configure       Force running the CMake configure step
+    --configure-only     Stop after the CMake configure and generation steps
+                         (ie. before building MindQuantum)
+    --cxx                (experimental) Enable MindQuantum C++ support
+    --debug              Build in debug mode
+    --debug-cmake        Enable debugging mode for CMake configuration step
+    --doc                Setup the Python virtualenv for building the documentation and
+                         ask CMake to build the documentation
+    --gpu                Enable GPU support
+    -j,--jobs [N]        Number of parallel jobs for building
+                         Defaults to: 16
+    --local-pkgs         Compile third-party dependencies locally
+    --ninja              Build using Ninja instead of make
+    --quiet              Disable verbose build rules
+    --show-libraries     Show all known third-party libraries
+    --venv=[dir]         Path to Python virtual environment
+                         Defaults to: /home/damien/code/hiq/mindquantum/venv
+    --with-<library>     Build the third-party <library> from source
+                         (ignored if --local-pkgs is passed, except for projectq and quest)
+    --without-<library>  Do not build the third-party library from source
+                         (ignored if --local-pkgs is passed, except for projectq and quest)
+
+  CUDA related options:
+    --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.
+                         Only useful if --gpu is passed.
+                         See CMAKE_CUDA_ARCHITECTURES for more information.
+
+  Python related options:
+    --update-venv        Update the python virtual environment
+
+  Any options after "--" will be passed onto CMake during the configuration step
+
+  Example calls:
+  build_locally.sh -B build
+  build_locally.sh -B build --gpu
+  build_locally.sh -B build --cxx --with-boost --without-quest --venv=/tmp/venv
+  build_locally.sh -B build -- -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc
+
+
+.. [1] PowerShell and Bash scripts typically have identical functionality sets whereas the MS-DOS BATCH script might
+       not. For example, the latter is not able to automatically detect the minimum CMake version required by
+       MindQuantum by parsing the content of the top-most ``CMakeLists.txt`` file or does not support ``/WithOutXXX``
+       arguments.
+
+
+.. _requirements:
 
 Requirements
 ============
@@ -20,16 +146,14 @@ Requirements
 .. toctree::
    :maxdepth: 2
 
-In order to get started with MindQuantum, you will need to have a C++ compiler installed on your system as well as a few libraries and programs:
 
-    - CMake >= 3.18
+In order to get started with MindQuantum, you will need to have a C++ compiler installed on your system as well as a few
+libraries and programs:
 
-Below you will find detailed installation instructions for various operating systems. If you have the dependencies already installed, you can directly skip to :ref:`mindquantum_installation`.
+    - Python >= 3.5
+    - CMake >= 3.20
 
-Pre-requisite installation
-==========================
-
-Here you will find detailed installation instructions for various operating systems.
+Below you will find detailed installation instructions for various operating systems.
 
 Linux
 -----
@@ -43,18 +167,30 @@ After having installed the build tools (for g++):
 
    sudo apt-get install build-essential
 
-You only need to install Python (and the package manager). For version 3, run
+You only need to install Python (and the package manager). For version 3.x, run
 
 .. code-block:: bash
 
-   sudo apt-get install python3-dev python3-pip
+   sudo apt-get install python3-dev python3-pip python3-venv
 
 
-Then install the rest of the required libraries using the following command:
+If the CMake version provided by Ubuntu is not recent enough (typically the case for Ubuntu <= 21.10), you may want to
+install CMake using Pip:
+
+.. code-block:: bash
+
+   python3 -m pip install --user cmake
+
+Otherwise, install CMake using APT as normal:
 
 .. code-block:: bash
 
    sudo apt-get install cmake
+
+.. note::
+
+   On Ubuntu, you may use the https://apt.kitware.com/ repository. Follow the instruction there in order to install the
+   latest CMake using APT.
 
 ArchLinux/Manjaro
 +++++++++++++++++
@@ -71,7 +207,7 @@ You only need to install Python (and the package manager). For version 3, run
 
    sudo pacman -Syu python python-pip
 
-Then install the rest of the required libraries using the following command:
+Then install CMake using the following command:
 
 .. code-block:: bash
 
@@ -91,14 +227,10 @@ Run the following commands:
    sudo yum check-update -y
 
    scl enable devtoolset-8 bash
-   sudo yum install -y gcc-c++ make git cmake3
+   sudo yum install -y gcc-c++ make git
    sudo yum install -y python3 python3-devel python3-pip
 
-   sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
-    --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
-    --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
-    --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
-    --family cmake
+   sudo python3 -m pip install cmake
 
 CentOS 8
 ++++++++
@@ -107,6 +239,10 @@ Run the following commands:
 
 .. code-block:: bash
 
+   # The following two lines might not be required in all situations.
+   sudo sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+   sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
    sudo dnf config-manager --set-enabled PowerTools
    sudo yum install -y epel-release
    sudo yum check-update -y
@@ -114,17 +250,7 @@ Run the following commands:
    sudo yum install -y gcc-c++ make git
    sudo yum install -y python3 python3-devel python3-pip
 
-   pversion=3.17.3
-   package=cmake
-   wget https://github.com/Kitware/CMake/releases/download/v${pversion}/${package}-${pversion}-Linux-x86_64.tar.gz
-   gunzip -c ${package}-${pversion}-Linux-x86_64.tar.gz | tar -xf -
-   /bin/rm ${package}-${pversion}-Linux-x86_64.tar.gz
-   /bin/mv -vrf ${package}-${pversion}-Linux-x86_64/bin/* /usr/local/bin
-   /bin/mv -vrf ${package}-${pversion}-Linux-x86_64/share/* /usr/local/share
-   /bin/mv -vrf ${package}-${pversion}-Linux-x86_64/doc/* /usr/local/doc
-   /bin/mv -vrf ${package}-${pversion}-Linux-x86_64/man/* /usr/local/man
-   /bin/rm -r ${package}-${pversion}-Linux-x86_64
-
+   sudo python3 -m pip install cmake
 
 Mac OS
 ------
@@ -150,7 +276,8 @@ Install Homebrew with the following command:
 
    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
-Then proceed to install Python as well as a C++ compiler (note: gcc installed via Homebrew may lead to some issues therefore we choose clang):
+Then proceed to install Python as well as a C++ compiler (note: gcc installed via Homebrew may lead to some issues
+therefore we choose clang):
 
 .. code-block:: bash
 
@@ -166,7 +293,8 @@ Then install the rest of the required libraries/programs using the following com
 MacPorts
 ++++++++
 
-Visit `macports.org <https://www.macports.org/install.php>`_ and install the latest version that corresponds to your operating system's version. Afterwards, open a new terminal window.
+Visit `macports.org <https://www.macports.org/install.php>`_ and install the latest version that corresponds to your
+operating system's version. Afterwards, open a new terminal window.
 
 Then, use macports to install Python 3.8 with pip by entering the following command
 
@@ -184,20 +312,48 @@ Then install the rest of the required libraries/programs and a C++ compiler usin
 
 .. code-block:: bash
 
-   sudo port install cmake clang-9.0
+   sudo port install cmake clang-14
 
 
 Windows
 -------
 
-On Windows, we only support installing the some of the dependencies using the `Chocolatey package manager <https://chocolatey.org/>`_. Unfortunately, not all the required libraries can be installed using Chocolatey at the time of this writing. However, we provide some pre-compiled binaries at https://github.com/Huawei-HiQ/windows-binaries/releases/
+On Windows, you may compile MindQuantum using any of the following methods:
 
-In the following, all the commands are to be run from within a PowerShell window. In some cases, you might need to run PowerShell as administrator.
+- :ref:`msvc` 2019 or more recent
+- :ref:`msys2` using either MSYS2-MSYS or MSYS2-MINGW64
+- :ref:`cygwin`
+- :ref:`mingw64`
+
+While we cannot provide an exhaustive guide on how to compile using each of the aforementioned methods, you can use the
+following as a starting point. Also note that most if not all of the above are testing using GitHub actions. When in
+doubt, you may have a look at the workflow configuration file to see exactly how MindQunantum is compiled there.
+
+
+.. _msvc:
+
+Visual Studio
++++++++++++++
+
+You may either install Visual Studio 2019 or more recent using the installer provided by Microsoft or use the
+`Chocolatey package manager <https://chocolatey.org/>`_. Note that in some cases, the automatic build of the Boost
+libraries during the CMake call might fail. In that case, we would suggest that you compile and install those libraries
+separately and then attempt building MindQuantum again.
+
+In the following, all the commands are to be run from within a PowerShell window. In some cases, you might need to run
+PowerShell as administrator.
+
+Pure Windows install
+````````````````````
+
+Install Python using the installer provided at https://www.python.org/downloads/.
 
 Chocolatey
-++++++++++
+``````````
 
-First install Chocolatey using the installer following the instructions on their `website <https://chocolatey.org/docs/installation>`_. Once that is done, you can start by installing some of the required packages. Reboot as needed during the process.
+First install Chocolatey using the installer following the instructions on their `website
+<https://chocolatey.org/docs/installation>`_. Once that is done, you can start by installing some of the required
+packages. Reboot as needed during the process.
 
 .. code-block:: powershell
 
@@ -205,67 +361,99 @@ First install Chocolatey using the installer following the instructions on their
    choco install -y windows-sdk-10-version-2004-all
    choco install -y cmake git
 
-Python
-++++++
-
 Installing Python is as simply as running the following commands:
 
 .. code-block:: powershell
 
-   choco install -y python3 --version 3.8.3
+   choco install -y python3 --version 3.9.11
    cmd /c mklink "C:\Python38\python3.exe" "C:\Python38\python.exe"
 
-.. _mindquantum_installation:
+.. _msys2:
 
-Installation of MindQuantum
-============================
+MSYS2
++++++
 
-The latest version of MindQuantum can be found on Pypi:
-https://pypi.org/project/mindquantum/. In order to start using MindQuantum,
-simply run the following command
+Install MSYS2 using the installer provided at https://www.msys2.org/.
 
-.. code-block:: bash
 
-    python -m pip install --user mindquantum
+MSYS2-MSYS
+``````````
 
-or, alternatively, `clone/download <https://github.com/Huawei-HiQ/HiQSimulator>`_ this repo (e.g., to your /home directory) and run
+From within an MSYS2-MSYS shell, run the following command in order to install the required programs and libraries:
 
 .. code-block:: bash
 
-    cd /home/mindquantum
-    python -m pip install --user .
+   pacman -Syu
+   pacman -S git base-devel gcc cmake python-devel python-pip gmp-devel
+
+MSYS2-MINGW64
+`````````````
+
+From within an MSYS2-MINGW64 shell, run the following command in order to install the required programs and libraries:
+
+.. code-block:: bash
+
+   pacman -Syu
+   pacman -S git patch make mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake \
+                mingw-w64-x86_64-python mingw-w64-x86_64-python-pip
 
 .. note::
 
-   Make sure you also clone the repository's **submodules**
+   When using MSYS2-MINGW64, you will need to use the "MSYS Makefiles" generator for CMake. Simply provide ``-G "MSYS
+   Makefiles"`` on the command line as argument to CMake.
 
-   .. code-block:: bash
+.. _cygwin:
 
-      git clone --recurse-submodules -j4 "URL to repository" mindquantum
+Cygwin
+++++++
+
+Install Cygwin using the installer provided at https://www.cygwin.com/install.html.
+
+Then install the following packages:
+
+- autoconf
+- automake
+- binutils
+- m4
+- make
+- cmake
+- patch
+- gzip
+- bzip2
+- tar
+- xz
+- flex
+- file
+- findutils
+- groff
+- gawk
+- sed
+- libtool
+- gettext
+- wget
+- curl
+- grep
+- dos2unix
+- git
+- gcc-core
+- gcc-g++
+- libgmp-devel
+- python3
+- python3-devel
+- python3-pip
+- python3-virtualenv
 
 
-Mac OS
-------
+.. _mingw64:
 
-On Mac OS, you might want to specify the compiler explicitely so that you benefit from all the functionalities.
+MinGW64
++++++++
 
-Homebrew
-++++++++
+Install MinGW64 by following the instructions at https://www.mingw-w64.org/downloads/.
 
-Run the following command:
+You then will want to install Python; e.g. using the installer provided at https://www.python.org/downloads/ and then
+install CMake using Pip:
 
-.. code-block::
+.. code-block:: bash
 
-   env CC=/usr/local/opt/llvm/bin/clang \
-   CXX=/usr/local/opt/llvm/bin/clang++ \
-   python3 -m pip install --user mindquantum
-
-MacPorts
-++++++++
-
-Run the following command:
-
-.. code-block::
-
-   env CC=clang-mp-9.0 CXX=clang++-mp-9.0 \
-   python3 -m pip install --user mindquantum
+   python -m pip install --user cmake

@@ -78,7 +78,7 @@ add_custom_command(
   COMMAND
     $<TARGET_FILE:Python::Interpreter> ${Sphinx_EXECUTABLE} -b html
     # Tell Breathe where to find the Doxygen output
-    -Dbreathe_projects.HiQSimulator=${DOXYGEN_OUTPUT_DIR}/xml ${SPHINX_SOURCE} ${SPHINX_BUILD}
+    -Dbreathe_projects.mindquantum=${DOXYGEN_OUTPUT_DIR}/xml ${SPHINX_SOURCE} ${SPHINX_BUILD}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   DEPENDS # Other docs files you want to track should go here (or in some variable)
           ${CMAKE_CURRENT_SOURCE_DIR}/source/index.rst ${DOXYGEN_INDEX_FILE}

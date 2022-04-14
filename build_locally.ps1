@@ -25,6 +25,8 @@ Param(
     [switch]$Debug,
     [switch]$DebugCMake,
     [switch]$DryRun,
+    [switch]$Doc,
+    [switch]$Docs,
     [switch]$Gpu,
     [switch]$Help,
     [switch]$Ninja,
@@ -70,6 +72,7 @@ $do_clean = 0
 $do_clean_build_dir = 0
 $do_clean_cache = 0
 $do_clean_venv = 0
+$do_docs = 0
 $do_configure = 0
 $do_update_venv = 0
 $dry_run = 0
@@ -197,6 +200,8 @@ function help_message() {
     Write-Output '  -Cxx                (experimental) Enable MindQuantum C++ support'
     Write-Output '  -Debug              Build in debug mode'
     Write-Output '  -DebugCMake         Enable debugging mode for CMake configuration step'
+    Write-Output '  -Doc, -Docs         Setup the Python virtualenv for building the documentation and ask CMake to build the'
+    Write-Output '                      documentation'
     Write-Output '  -Gpu                Enable GPU support'
     Write-Output '  -J,-Jobs [N]        Number of parallel jobs for building'
     Write-Output ("                      Defaults to: {0}" -f $n_jobs_default)
@@ -255,10 +260,6 @@ if ($ConfigureOnly.IsPresent) {
     $configure_only = 1
 }
 
-if ($UpdateVenv.IsPresent) {
-    $do_update_venv = 1
-}
-
 if ($Cxx.IsPresent) {
     $enable_cxx = 1
 }
@@ -271,6 +272,10 @@ if ($DebugCMake.IsPresent) {
     $cmake_debug_mode = 1
 }
 
+if ($Doc.IsPresent -or $Docs.IsPresent) {
+    $do_docs = 1
+}
+
 if ($Gpu.IsPresent) {
     $enable_gpu = 1
 }
@@ -281,6 +286,10 @@ if ($LocalPkgs.IsPresent) {
 
 if ($Quiet.IsPresent) {
     $cmake_make_silent = 1
+}
+
+if ($UpdateVenv.IsPresent) {
+    $do_update_venv = 1
 }
 
 if ([bool]$B -or [bool]$Build) {
@@ -404,6 +413,7 @@ if($IsWinEnv) {
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 }
 
+Write-Output "Activating Python virtual environment: $python_venv_path"
 $activate_path = "$python_venv_path\bin\Activate.ps1"
 if (Test-Path -Path $BASEPATH\venv\Scripts\activate.ps1 -PathType Leaf) {
     $activate_path = "$python_venv_path\Scripts\Activate.ps1"
@@ -493,6 +503,10 @@ if ($created_venv -eq 1 -or $do_update_venv -eq 1) {
 
     if($cmake_from_venv) {
         $pkgs += "cmake"
+    }
+
+    if($do_docs) {
+        $pkgs += "breathe", "sphinx", "sphinx_rtd_theme", "importlib-metadata", "myst-parser"
     }
 
     # TODO(dnguyen): add wheel delocation package for Windows once we figure this out
