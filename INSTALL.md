@@ -62,19 +62,23 @@ If you plan on distributing the wheel to other people that might not have the sa
 
 ### Build MindQuantum locally
 
-You can setup MindQuantum for local development by using the `build_locally.sh` script. This will do the following:
+You can setup MindQuantum for local development by using one of the local build scripts:
+- `build_locally.bat` (MS-DOS BATCH script)
+- `build_locally.ps1` (PowerShell script)
+- `build_locally.sh` (Bash script)
 
-1. Setup a Python virtual environment in MindQuantum's root directory (`<root-dir>/venv`)
+Except a few minor differences [1]_, the functionalities of all three scripts are identical. All the scripts accept a flag to display the help message (``-h, --help``, ``-H, -Help`, ``/h, /Help`` for Bash, Powershell and MS-DOS BATCH). Please invoke the script of your choice in order to view the latest set of functionalities provided by it.
+
+1. Setup a Python virtual environment
 2. Update the virtual environment's packages and install some required dependencies
 3. Add a PTH-file to the Python virtual environment to make sure that MindQuantum will be detected
 4. Create a build directory and run CMake within it
 5. Compile MindQuantum in-place
 
-The next time you run the script, unless you specify one of the cleaning options, the script will only re-compile MindQuantum.
+The next time you run the script, unless you specify one of the cleaning options or force a CMake configuration step,
+the script will only re-compile MindQuantum.
 
 For more information, have a look at the help message of the scripts which you can access using `./build_locally.sh -h` or `./build_locally.sh --help`. The output is shown below for reference.
-
-Note that any options that you pass _after_ the `--` argument on the command line will be passed on as-is to the underlying CMake command during the configuration step.
 
 
 ## CMake configuration
@@ -83,30 +87,32 @@ Note that any options that you pass _after_ the `--` argument on the command lin
 
 Here is an exhaustive list of all CMake options available for customization
 
-| Option name                     | Description                                                           | Default value |
-|---------------------------------|-----------------------------------------------------------------------|---------------|
-| BUILD_SHARED_LIBS               | Build shared libs                                                     | OFF           |
-| BUILD_TESTING                   | Enable building the test suite                                        | OFF           |
-| CUDA_ALLOW_UNSUPPORTED_COMPILER | Allow the use of an unsupported comipler version for CUDA             | OFF           |
-| CUDA_STATIC                     | Use static versions of the Nvidia CUDA libraries                      | OFF           |
-| ENABLE_CUDA                     | Enable the use of CUDA code                                           | OFF           |
-| ENABLE_CXX_EXPERIMENTAL         | Enable the building of the (new) experimental C++ backend             | OFF           |
-| ENABLE_GITEE                    | Use Gitee instead of GitHub for third-party dependencies              | OFF           |
-| ENABLE_PROFILING                | Enable compilation with profiling flags                               | OFF           |
-| ENABLE_PROJECTQ                 | Enable ProjectQ support                                               | ON            |
-| ENABLE_QUEST                    | Enable Quest support                                                  | ON            |
-| ENABLE_RUNPATH                  | Prefer RUNPATH over RPATH when linking                                | ON            |
-| ENABLE_STACK_PROTECTION         | Enable stack protection during compilation                            | ON            |
-| IN_PLACE_BUILD                  | Build the C++ MindQuantum libraries in-place                          | OFF           |
-| IS_PYTHON_BUILD                 | Whether CMake is called from setup.py                                 | OFF           |
-| LINKER_DTAGS                    | Enable --enable-new-dtags (else use --disable-new-dtags) when linking | ON            |
-| LINKER_NOEXECSTACK              | Use `-z,noexecstack` during linking (if supported)                    | ON            |
-| LINKER_RELRO                    | Use `-z,relro` during linking (if supported)                          | ON            |
-| LINKER_RPATH                    | Use RUNPATH/RPATH related flags when compiling                        | ON            |
-| LINKER_STRIP_ALL                | Use `--strip-all` during linking (if supported)                       | ON            |
-| USE_OPENMP                      | Use the OpenMP library for parallelisation                            | ON            |
-| USE_PARALLEL_STL                | Use the parallel STL for parallelisation (using TBB or else)          | OFF           |
-| USE_VERBOSE_MAKEFILE            | Generate verbose Makefiles                                            | ON            |
+| Option name                     | Description                                                           | Default value       |
+|---------------------------------|-----------------------------------------------------------------------|---------------------|
+| BUILD_SHARED_LIBS               | Build shared libs                                                     | OFF                 |
+| BUILD_TESTING                   | Enable building the test suite                                        | OFF                 |
+| CUDA_ALLOW_UNSUPPORTED_COMPILER | Allow the use of an unsupported comipler version for CUDA             | OFF                 |
+| CUDA_STATIC                     | Use static versions of the Nvidia CUDA libraries                      | OFF                 |
+| ENABLE_CUDA                     | Enable the use of CUDA code                                           | OFF                 |
+| ENABLE_CXX_EXPERIMENTAL         | Enable the building of the (new) experimental C++ backend             | OFF                 |
+| ENABLE_GITEE                    | Use Gitee instead of GitHub for third-party dependencies              | OFF                 |
+| ENABLE_MD                       | Use /MD, /MDd flags when compiling (MSVC only)                        | OFF                 |
+| ENABLE_MT                       | Use /MT, /MTd flags when compiling (MSVC only)                        | OFF                 |
+| ENABLE_PROFILING                | Enable compilation with profiling flags                               | OFF                 |
+| ENABLE_PROJECTQ                 | Enable ProjectQ support                                               | ON                  |
+| ENABLE_QUEST                    | Enable Quest support                                                  | ON (OFF on Windows) |
+| ENABLE_RUNPATH                  | Prefer RUNPATH over RPATH when linking                                | ON                  |
+| ENABLE_STACK_PROTECTION         | Enable stack protection during compilation                            | ON                  |
+| IN_PLACE_BUILD                  | Build the C++ MindQuantum libraries in-place                          | OFF                 |
+| IS_PYTHON_BUILD                 | Whether CMake is called from setup.py                                 | OFF                 |
+| LINKER_DTAGS                    | Enable --enable-new-dtags (else use --disable-new-dtags) when linking | ON                  |
+| LINKER_NOEXECSTACK              | Use `-z,noexecstack` during linking (if supported)                    | ON                  |
+| LINKER_RELRO                    | Use `-z,relro` during linking (if supported)                          | ON                  |
+| LINKER_RPATH                    | Use RUNPATH/RPATH related flags when compiling                        | ON                  |
+| LINKER_STRIP_ALL                | Use `--strip-all` during linking (if supported)                       | ON                  |
+| USE_OPENMP                      | Use the OpenMP library for parallelisation                            | ON                  |
+| USE_PARALLEL_STL                | Use the parallel STL for parallelisation (using TBB or else)          | OFF                 |
+| USE_VERBOSE_MAKEFILE            | Generate verbose Makefiles                                            | ON                  |
 
 ### CMake variables
 

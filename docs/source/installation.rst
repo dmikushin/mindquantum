@@ -58,8 +58,14 @@ BATCH). Please invoke the script of your choice in order to view the latest set 
 
 The build scripts mentioned above will perform the following operations in order:
 
-1. Locate the Python 3 executable (either ``python3`` or ``python``)
+1. Setup a Python virtual environment
+2. Update the virtual environment's packages and install some required dependencies
+3. Add a PTH-file to the Python virtual environment to make sure that MindQuantum will be detected
+4. Create a build directory and run CMake within it
+5. Compile MindQuantum in-place
 
+The next time you run the script, unless you specify one of the cleaning options or force a CMake configuration step,
+the script will only re-compile MindQuantum.
 
 For reference, here is the output of the help message from the Bash script (NB: might differ from the actual help
 message):
