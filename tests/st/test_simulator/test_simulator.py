@@ -26,6 +26,7 @@ from mindquantum.algorithm import qft
 from mindquantum.core import gates as G
 from mindquantum.core.circuit import UN
 from mindquantum.framework.layer import MQAnsatzOnlyLayer
+from mindquantum.simulator import inner_product
 from mindquantum.simulator.simulator import Simulator
 
 
@@ -117,6 +118,9 @@ def _test_non_hermitian_grad_ops(virtual_qc):
 
 
 def generate_test_circuit():
+    tmpg = G.RX('a')
+    rx_matrix_generator = lambda x: tmpg.matrix({'a': x})
+    rx_diff_matrix_generator = lambda x: tmpg.diff_matrix({'a': x}, 'a')
     c = Circuit()
     c += UN(G.H, 3)
     c.x(0).y(1).z(2)
@@ -129,7 +133,7 @@ def generate_test_circuit():
     c += UN(G.H, 3)
     c += UN(G.S, 3)
     c += qft(range(3))
-    c += G.gene_univ_parameterized_gate('fake_x', G.RX(0)._matrix, G.RX(0)._diff_matrix)('a').on(0)
+    c += G.gene_univ_parameterized_gate('fake_x', rx_matrix_generator, rx_diff_matrix_generator)('a').on(0)
     c += G.RX('b').on(1, 2)
     c += G.RX('c').on(2, 0)
     c += UN(G.H, 3)
@@ -267,3 +271,33 @@ def test_non_hermitian_grad_ops():
     f_exp = np.conj(G.RX(2).matrix().T) @ ham.sparse_mat.toarray() @ G.RY(1).matrix()
     f_exp = f_exp[0, 0]
     assert np.allclose(f, f_exp)
+
+
+def test_inner_product():
+    """
+    Description: test inner product of two simulator
+    Expectation: success.
+    """
+    sim1 = Simulator('projectq', 1)
+    sim1.apply_gate(G.RX(1.2).on(0))
+    sim2 = Simulator('projectq', 1)
+    sim2.apply_gate(G.RY(2.1).on(0))
+    val_exp = np.vdot(sim1.get_qs(), sim2.get_qs())
+    val = inner_product(sim1, sim2)
+    assert np.allclose(val_exp, val)
+
+
+def test_copy():
+    """
+    Description: test copy a simulator
+    Expectation: success.
+    """
+    sim = Simulator('projectq', 1)
+    sim.apply_gate(G.RX(1).on(0))
+    sim.flush()
+    sim2 = sim.copy()
+    sim2.apply_gate(G.RX(-1).on(0))
+    sim.reset()
+    qs1 = sim.get_qs()
+    qs2 = sim2.get_qs()
+    assert np.allclose(qs1, qs2)

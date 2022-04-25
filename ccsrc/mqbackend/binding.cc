@@ -44,6 +44,7 @@ using mindquantum::sparse::SparseHamiltonian;
 using mindquantum::sparse::TransposeCsrHdMatrix;
 
 #ifdef ENABLE_PROJECTQ
+using mindquantum::projectq::InnerProduct;
 using mindquantum::projectq::Projectq;
 #endif
 
@@ -84,9 +85,9 @@ PYBIND11_MODULE(mqbackend, m) {
     m.def("get_measure_gate", &GetMeasureGate<MT>);
     // parameter resolver
     py::class_<ParameterResolver<MT>, std::shared_ptr<ParameterResolver<MT>>>(m, "parameter_resolver")
-        .def(py::init<const MST<MT> &, const SS &, const SS &>())
         .def(py::init<>())
-        .def(py::init<const VT<std::string> &, const VT<MT> &, const VT<bool> &>())
+        .def(py::init<const MST<MT> &, const SS &, const SS &, const SS &, const SS &, MT, bool>())
+        .def(py::init<const VT<std::string> &, const VT<MT> &, const VT<bool> &, const VT<bool> &, MT, bool>())
         .def_readonly("data", &ParameterResolver<MT>::data_)
         .def_readonly("no_grad_parameters", &ParameterResolver<MT>::no_grad_parameters_)
         .def_readonly("requires_grad_parameters", &ParameterResolver<MT>::requires_grad_parameters_);
@@ -148,6 +149,7 @@ PYBIND11_MODULE(mqbackend, m) {
         .def("get_qs", &Projectq<MT>::cheat)
         .def("set_qs", &Projectq<MT>::SetState)
         .def("get_circuit_matrix", &Projectq<MT>::GetCircuitMatrix)
+        .def("copy", &Projectq<MT>::Copy)
         .def("hermitian_measure_with_grad",
              py::overload_cast<const VT<Hamiltonian<MT>> &, const VT<BasicGate<MT>> &, const VT<BasicGate<MT>> &,
                                const VVT<MT> &, const VT<MT> &, const VS &, const VS &, size_t, size_t>(
@@ -157,6 +159,7 @@ PYBIND11_MODULE(mqbackend, m) {
                                const VT<BasicGate<MT>> &, const VT<BasicGate<MT>> &, const VT<BasicGate<MT>> &,
                                const VVT<MT> &, const VT<MT> &, const VS &, const VS &, size_t, size_t,
                                const Projectq<MT> &>(&Projectq<MT>::NonHermitianMeasureWithGrad));
+    m.def("cpu_projectq_inner_product", &InnerProduct<MT>);
 #endif
 
 #ifdef ENABLE_QUEST

@@ -17,6 +17,12 @@
 
 from .circuit_text_drawer import brick_model
 from .measure_res_drawer import measure_text_drawer
+from .qubit_bloch_drawer import (
+    decompose,
+    draw_on_jupyter,
+    draw_single_qubit_bloch,
+    draw_single_qubit_bloch_time_evolution,
+)
 
 __all__ = []
 # __all__ = ['brick_model', 'measure_text_drawer']

@@ -19,7 +19,14 @@ import numpy as np
 
 from mindquantum.algorithm.nisq._ansatz import Ansatz
 from mindquantum.core.circuit import UN, Circuit
-from mindquantum.core.gates import BARRIER, RZ, H, IntrinsicOneParaGate, X
+from mindquantum.core.gates import (
+    BARRIER,
+    RZ,
+    H,
+    IntrinsicOneParaGate,
+    ParameterGate,
+    X,
+)
 from mindquantum.utils.type_value_check import (
     _check_input_type,
     _check_int_type,
@@ -28,8 +35,8 @@ from mindquantum.utils.type_value_check import (
 
 
 def _check_intrinsconeparagate(msg, gate_type):
-    if not issubclass(gate_type, IntrinsicOneParaGate):
-        raise TypeError(f"{msg} requires a type of {IntrinsicOneParaGate}, but get {gate_type}")
+    if not issubclass(gate_type, ParameterGate):
+        raise TypeError(f"{msg} requires a type of {ParameterGate}, but get {gate_type}")
 
 
 class IQPEncoding(Ansatz):

@@ -21,16 +21,12 @@ from rich.console import Console
 
 from mindquantum import mqbackend as mb
 from mindquantum.io.display import measure_text_drawer
-from mindquantum.utils.type_value_check import (
-    _check_input_type,
-    _check_int_type,
-    _check_value_should_not_less,
-)
+from mindquantum.utils.f import join_without_empty
 
-from .basic import NoneParameterGate
+from .basic import FunctionalGate
 
 
-class Measure(NoneParameterGate):
+class Measure(FunctionalGate):
     """
     Measurement gate that measure quantum qubits.
 
@@ -85,96 +81,54 @@ class Measure(NoneParameterGate):
         array([0.5 , 0.  , 0.25, 0.25])
     """
 
-    def __init__(self, name=""):
-        _check_input_type('name', str, name)
+    def __init__(self, name=''):
+        super().__init__('Measure', 1)
         self.key = name
-        NoneParameterGate.__init__(self, name)
-        self.name = 'M'
 
     def get_cpp_obj(self):
         out = mb.get_measure_gate(self.key)
         out.obj_qubits = self.obj_qubits
         return out
 
-    def __str__(self):
-        info = ""
-        if self.key and self.obj_qubits:
-            info = f'({self.obj_qubits[0]}, key={self.key})'
-        elif self.key:
-            info = f'(key={self.key})'
-        elif self.obj_qubits:
-            info = f'({self.obj_qubits[0]})'
-        return f"Measure{info}"
-
-    def __repr__(self):
-        return self.__str__()
-
-    def on(self, obj_qubits, ctrl_qubits=None):
-        """
-        Apply this measurement gate on which qubit.
-
-        Args:
-            obj_qubits (int): A non negative int that referring to its index number.
-            ctrl_qubits (int): Should be None for measure gate. Default: None.
-
-        Examples:
-            >>> from mindquantum import Circuit, Measure
-            >>> from mindquantum import Simulator
-            >>> sim = Simulator('projectq', 2)
-            >>> circ = Circuit().h(0).x(1, 0)
-            >>> circ += Measure('q0').on(0)
-            >>> circ += Measure('q1').on(1)
-            >>> circ
-            q0: ──H────●────M(q0)──
-                       │
-            q1: ───────X────M(q1)──
-            >>> res = sim.apply_circuit(circ)
-            >>> res
-            shots: 1
-            Keys: q1 q0│0.00     0.2         0.4         0.6         0.8         1.0
-            ───────────┼───────────┴───────────┴───────────┴───────────┴───────────┴
-                     11│▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-                       │
-            {'11': 1}
-            >>> sim
-            projectq simulator with 2 qubits  (little endian).
-            Current quantum state:
-            1¦11⟩
-        """
-        if ctrl_qubits is not None:
-            raise ValueError("Measure gate can not have control qubit")
-        if obj_qubits is None:
-            raise ValueError("The object qubit of measurement can not be none")
-        _check_int_type('obj_qubits', obj_qubits)
-        _check_value_should_not_less('obj_qubits', 0, obj_qubits)
-        new_gate = Measure(self.key)
-        new_gate.obj_qubits = [obj_qubits]
-        if not new_gate.key:
-            new_gate.key = f'q{obj_qubits}'
-        return new_gate
-
     def __hash__(self):
         return hash(self.key)
 
     def __eq__(self, other):
-        if self.key == other.key:
-            return True
+        if isinstance(other, self.__class__):
+            if self.key == other.key:
+                return True
         return False
+
+    def __extra_prop__(self):
+        prop = super().__extra_prop__()
+        prop['key'] = self.key
+        return prop
+
+    def __type_specific_str__(self):
+        q_s = self.__qubits_expression__()
+        k_s = f"key={self.key}" if self.key else ''
+        return join_without_empty(", ", [q_s, k_s])
+
+    def __str_in_terminal__(self):
+        type_s = self.__type_specific_str__()
+        return f"{self.name}({type_s})" if type_s else self.name
+
+    def __str_in_circ__(self):
+        return f"M({self.key})"
+
+    def on(self, obj_qubits, ctrl_qubits=None):
+        new = super().on(obj_qubits, ctrl_qubits)
+        if len(new.obj_qubits) != 1:
+            raise ValueError("Measure gate only apply on a single qubit")
+        if not new.key:
+            new.key = f"q{new.obj_qubits[0]}"
+        return new
 
     def hermitian(self):
         """Hermitian gate of measure return its self"""
         if not self.obj_qubits:
             raise ValueError("Measurement should apply on some qubit first.")
         return self.__class__(self.key).on(self.obj_qubits[0])
-
-    def check_obj_qubits(self):
-        if not self.obj_qubits:
-            raise ValueError("Empty measure obj qubit")
-        if len(self.obj_qubits) > 1:
-            raise ValueError("Measure gate only apply on a single qubit")
-
-    def define_projectq_gate(self):
-        raise NotImplementedError
 
 
 class MeasureResult:
@@ -340,3 +294,26 @@ be objects of class 'Measurement' "
             console.print(s, style=_MEA_RES_STYLE['style'])
         s = console.export_html(code_format=MEA_HTML_FORMAT, inline_styles=True)
         return '\n'.join(s.split('\n')[1:])
+
+    def svg(self, style=None):
+        """
+        Display current measurement result into SVG picture in jupyter notebook.
+
+        Args:
+            style (dict, str): the style to set svg style. Currently, we support
+                'official'. Default: None.
+        """
+        from mindquantum.io.display._config import _svg_measure_config_official
+        from mindquantum.io.display.measure_res_svg_drawer import SVGMeasure
+
+        supported_style = {
+            'official': _svg_measure_config_official,
+        }
+        if style is None:
+            style = _svg_measure_config_official
+        if isinstance(style, str):
+            if style not in supported_style:
+                raise ValueError(f"Style not found, currently we support {list(supported_style.keys())}")
+            style = supported_style[style]
+        svg = SVGMeasure(self, style)
+        return svg

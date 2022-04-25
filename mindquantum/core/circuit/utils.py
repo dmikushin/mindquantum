@@ -67,7 +67,7 @@ def decompose_single_term_time_evolution(term, para):
             if len(term.terms) != 1:
                 raise ValueError(
                     "Only work for single term time \
-                    evolution operator, but get {}".format(
+evolution operator, but get {}".format(
                         len(term)
                     )
                 )
@@ -82,6 +82,8 @@ def decompose_single_term_time_evolution(term, para):
     out = []
     term = sorted(term)
     rxs = []
+    if not term:
+        raise ValueError("Get constant hamiltonian, please use GlobalPhase gate and give the obj_qubit by yourself.")
     if len(term) == 1:  # single pauli operator
         if term[0][1] == 'X':
             out.append(G.RX(para * 2).on(term[0][0]))
@@ -188,7 +190,6 @@ def _add_ctrl_qubits(circ, ctrl_qubits):
         new_gate = copy.deepcopy(gate)
         if not isinstance(gate, (G.Measure, G.BarrierGate)):
             new_gate.ctrl_qubits = curr_ctrl
-        new_gate.generate_description()
         circ_out += new_gate
     return circ_out
 
@@ -309,7 +310,6 @@ def _apply_circuit(circ, qubits):
         g = copy.deepcopy(g)
         g.obj_qubits = [qubits_map[i] for i in g.obj_qubits]
         g.ctrl_qubits = [qubits_map[i] for i in g.ctrl_qubits]
-        g.generate_description()
         out += g
     return out
 
@@ -383,7 +383,6 @@ def _add_prefix(circ, prefix):
             for k, v in g.coeff.items():
                 pr[f'{prefix}_{k}'] = v
             g.coeff = pr
-            g.generate_description()
         out += g
     return out
 
@@ -483,7 +482,6 @@ def _change_param_name(circ, name_map):
                     raise KeyError(f"Original parameter {k} not in name_map!")
                 pr[name_map[k]] = v
             g.coeff = pr
-            g.generate_description()
         out += g
     return out
 

@@ -1,4 +1,6 @@
-# MindQuantum 0.6.0
+# MindQuantum Release Notes
+
+[查看中文](./RELEASE_CN.md)
 
 ## MindQuantum 0.6.0 Release Notes
 
@@ -6,124 +8,41 @@
 
 #### Better iteration supported for `QubitOperator` and `FermionOperator`
 
-> The following example will be demonstrated with `QubitOperator`
+- Iterate over a multinomial fermion or boson operator and yield each term
+- When the operator has only one item, each fermion or boson can be obtained through `singlet`
 
-- Iter multiple terms `QubitOperator`
+### Add line module
 
-```python
->>> from mindquantum.core.operators import QubitOperator
->>> ops = QubitOperator('X0 Y1', 1) + QubitOperator('Z2 X3', {'a': 3})
-
->>> for idx, o in enumerate(ops):
->>>     print(f'Term {idx}: {o}')
-```
-
-You will get each term of this operator,
-
-```bash
-Term 0: 1 [X0 Y1]
-Term 1: 3*a [Z2 X3]
-```
-
-- Iter single term `QubitOperator`
-
-```python
->>> ops = QubitOperator('X0 Y1', 2)
-
->>> for idx, o in enumerate(ops.singlet()):
->>>     print(f'Word {idx}: {o}')
-```
-
-You will get each word of this operator with coefficient set to identity,
-
-```bash
-Word 0: 1 [X0]
-Word 1: 1 [Y1]
-```
-
-### More built-in circuit supported
-
-- [**general_w_state**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.library.html#mindquantumalgorithmlibrarygeneral-w-state): circuit that can prepare a w state.
-- [**general_ghz_state**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.library.html#mindquantumalgorithmlibrarygeneral-ghz-state): circuit that can prepare a ghz state.
-- [**bitphaseflip_operator**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.library.html#mindquantumalgorithmlibrarybitphaseflip-operator): circuit that can flip the sign of one or multiple calculation base.
-- [**amplitude_encoder**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.library.html#mindquantumalgorithmlibraryamplitude-encoder): circuit that can encode classical number into quantum amplitude.
+- [**general_w_state**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.library.html#mindquantumalgorithmlibrarygeneral-w-state): prepare w-state quantum circuits.
+- [**general_ghz_state**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.library.html#mindquantumalgorithmlibrarygeneral-ghz-state): prepare ghz-state quantum circuits
+- [**bitphaseflip_operator**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.library.html#mindquantumalgorithmlibrarybitphaseflip-operator): bit-flip quantum circuits
+- [**amplitude_encoder**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.library.html#mindquantumalgorithmlibraryamplitude-encoder): amplitude-encoded quantum circuits
 
 ### Richer circuit operation supported
 
-For origin circuit,
+- `shift`: translation qubit
 
-```python
->>> from mindquantum.core.circuit import Circuit
->>> circuit = Circuit().z(0).rx('a', 1, 0).y(1)
-```
-
-```bash
-q0: ──Z──────●─────────
-             │
-q1: ───────RX(a)────Y──
-```
-
-- `shift` operator will shift the qubit index.
-
-```python
-from mindquantum.core.circuit import shift
->>> shift(circuit, 2)
-```
-
-```bash
-q2: ──Z──────●─────────
-             │
-q3: ───────RX(a)────Y──
-```
-
-- Reverse circuit qubits, the circuit will be flipped upside down.
-
-```python
->>> circuit.reverse_qubits()
-```
-
-```bash
-q0: ───────RX(a)────Y──
-             │
-q1: ──Z──────●─────────
-```
+- `reverse_qubits`: flip circuit bit
 
 ### Feature enhancement
 
-- `MaxCutAnsatz`: [**get_partition**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.nisq.html#mindquantumalgorithmnisqmaxcutansatzget-partition)
-- `MaxCutAnsatz`: [**get_cut_value**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.nisq.html#mindquantumalgorithmnisqmaxcutansatzget-cut-value)
-- `Circuit`: [**is_measure_end**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.circuit.html#mindquantumcorecircuitcircuitis-measure-end)
+- `MaxCutAnsatz`: [**get_partition**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.nisq.html#mindquantumalgorithmnisqmaxcutansatzget-partition), get the max-cut cutting solution
+- `MaxCutAnsatz`: [**get_cut_value**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.algorithm.nisq.html#mindquantumalgorithmnisqmaxcutansatzget-cut-value), get the number of cuts for a cutting solution
+- `Circuit`: [**is_measure_end**](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.circuit.html#mindquantumcorecircuitcircuitis-measure-end), determine whether the quantum circuit is the end of the measurement gate
 
-### SVG supported
+### SVG drawing mode that supports quantum circuits
 
-The quantum circuit build by mindquantum now can be showd by SVG in jupyter notebook, just call `svg()` of any `Circuit`.
-
-```python
->>> from mindquantum import *
-
->>> circuit = (qft(range(3)) + BarrierGate(True)).measure_all()
->>> circuit.svg()
-```
-
-![circuit_svg](https://gitee.com/mindspore/mindquantum/raw/master/docs/circuit_svg.png)
+- The quantum circuit build by mindquantum now can be showd by svg in jupyter notebook, just call `svg()` of any quantum circuits.
 
 ### Noise simulator supported
 
-In This version, we can simulate a quantum circuit in noise simulator just by adding different noise channels. The following are supported channels:
+MindQuantum adds the following quantum channels for quantum noise simulation
 
-- [`PauliChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatespaulichannel)
-- [`BitFlipChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatesbitflipchannel)
-- [`PhaseFlipChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatesphaseflipchannel)
-- [`BitPhaseFlipChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatesbitphaseflipchannel)
-- [`DepolarizingChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatesdepolarizingchannel)
-
-### Contributors
-
-Thanks goes to these wonderful people:
-
-yufan, wengwenkang, xuxusheng, wangzidong, yangkang, lujiale, fanyi, zhangwengang, wangkaisheng, zhoufeng, wangsiyuan, gongxiaoqing, chengxianbin, sunxiyin, wenwenkang, lvdingshun, cuijiangyu, chendiqing, zhangkai, Damien Ngyuen, Zotov Yuriy, liqin, zengjinglin, cuixiaopeng.
-
-Contributions of any kind are welcome!
+- [`PauliChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatespaulichannel): Pauli channel
+- [`BitFlipChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatesbitflipchannel): bit-flip channel
+- [`PhaseFlipChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatesphaseflipchannel): phase-flip channel
+- [`BitPhaseFlipChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatesbitphaseflipchannel): bit-phase flip channel
+- [`DepolarizingChannel`](https://mindspore.cn/mindquantum/docs/zh-CN/master/mindquantum.core.gates.html#mindquantumcoregatesdepolarizingchannel): depolarized channel
 
 ## MindQuantum 0.5.0 Release Notes
 
@@ -539,5 +458,6 @@ Initial release of MindQuantum.
 Thanks goes to these wonderful people:
 
 yufan, wengwenkang, xuxusheng, wangzidong, yangkang, lujiale, wangkaisheng, zhoufeng, wangsiyuan, gongxiaoqing, chengxianbin, sunxiyin, wenwenkang, lvdingshun, cuijiangyu, chendiqing, zhangkai, Damien Ngyuen, Zotov Yuriy, liqin, zengjinglin, cuixiaopeng.
+MindQuantum adds the following quantum channels for quantum noise simulation
 
 Contributions of any kind are welcome!

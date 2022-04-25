@@ -193,13 +193,13 @@ def test_gate_obj_mismatch():
     Description: Test raise gate obj mismatch
     Expectation:
     """
-    with pytest.raises(Exception, match=r"requires \d+ qubits"):
+    with pytest.raises(Exception, match=r"requires \d+ qubit"):
         G.X((0, 1))
-    with pytest.raises(Exception, match=r"requires \d+ qubits"):
+    with pytest.raises(Exception, match=r"requires \d+ qubit"):
         G.RX('a').on((1, 2), 0)
-    with pytest.raises(Exception, match=r"requires \d+ qubits"):
+    with pytest.raises(Exception, match=r"requires \d+ qubit"):
         G.RX(1).on((1, 2), 0)
-    with pytest.raises(Exception, match=r"requires \d+ qubits"):
+    with pytest.raises(Exception, match=r"requires \d+ qubit"):
         G.ZZ('a').on(1, 0)
 
 
@@ -214,3 +214,14 @@ def test_gate_obj_ctrl_overlap():
         G.ZZ('a').on((0, 1), (1, 2))
     with pytest.raises(Exception, match=r"cannot have same qubits"):
         G.RX('a').on(1, (1, 2))
+
+
+def test_global_phase():
+    """
+    Description: Test global phase gate
+    Expectation: success
+    """
+    from mindquantum import UN
+
+    c = UN(G.H, 2) + G.GlobalPhase(np.pi).on(1, 0)
+    assert np.allclose(c.get_qs(), np.array([0.5, -0.5, 0.5, -0.5]))

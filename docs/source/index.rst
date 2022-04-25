@@ -57,7 +57,7 @@ When using MindQuantum for research, please cite:
        url         = {https://gitee.com/mindspore/mindquantum}
    }
 
-License
-=======
+MindQuantum License
+===================
 
 Apache License 2.0

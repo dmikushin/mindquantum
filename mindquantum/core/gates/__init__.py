@@ -19,13 +19,7 @@ Gate.
 Gate provides different quantum gate.
 """
 
-from .basic import (
-    HERMITIAN_PROPERTIES,
-    BasicGate,
-    IntrinsicOneParaGate,
-    NoneParameterGate,
-    ParameterGate,
-)
+from .basic import HERMITIAN_PROPERTIES, BasicGate, NoneParameterGate, ParameterGate
 from .basicgate import (
     BARRIER,
     CNOT,
@@ -39,6 +33,7 @@ from .basicgate import (
     ZZ,
     BarrierGate,
     CNOTGate,
+    GlobalPhase,
     H,
     HGate,
     I,
@@ -73,7 +68,6 @@ __all__ = [
     "BasicGate",
     "NoneParameterGate",
     "ParameterGate",
-    "IntrinsicOneParaGate",
     "HERMITIAN_PROPERTIES",
     "BarrierGate",
     "CNOTGate",
@@ -114,6 +108,7 @@ __all__ = [
     "PhaseFlipChannel",
     "BitPhaseFlipChannel",
     "DepolarizingChannel",
+    "GlobalPhase",
 ]
 
 __all__.sort()

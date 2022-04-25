@@ -13,15 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Utils"""
+"""Global config for mindquantum"""
+from .config import context
 
-from .f import ket_string, mod, normalize, random_circuit, random_state
-
-__all__ = [
-    'mod',
-    'normalize',
-    'random_state',
-    'ket_string',
-    'random_circuit',
-]
-__all__.sort()
+__all__ = []
+__all__.extend(config.__all__)

@@ -19,8 +19,9 @@ import os
 import sys
 import warnings
 
-from . import algorithm, core, engine, framework, io, simulator, utils
+from . import algorithm, config, core, engine, framework, io, simulator, utils
 from .algorithm import *
+from .config import *
 from .core import *
 from .core import gates, operators
 from .framework import *
@@ -40,11 +41,11 @@ try:
 except PackageNotFoundError:
     __all__ = []
 
-
 __all__.extend(core.__all__)
 __all__.extend(algorithm.__all__)
 __all__.extend(utils.__all__)
 __all__.extend(simulator.__all__)
 __all__.extend(framework.__all__)
 __all__.extend(io.__all__)
+__all__.extend(config.__all__)
 __all__.sort()
