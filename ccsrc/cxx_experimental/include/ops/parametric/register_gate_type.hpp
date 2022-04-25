@@ -26,19 +26,17 @@
 #include <tweedledum/IR/Instruction.h>
 
 namespace mindquantum::ops::parametric {
-using operator_t = tweedledum::Operator;
-
 //! Register a new gate class
 /*!
  * \tparam operator_t Type of the gate to register
  *
  * \note If the gate is neither a parametric gate or a gate with an angle() method, this method is no-op.
  */
-template <typename operator_t>
+template <typename op_t>
 void register_gate_type()
 #if MQ_HAS_CONCEPTS
-    requires((concepts::ParametricGate<operator_t>) || (concepts::AngleGate<operator_t>)
-             || (concepts::SingleDoubleGate<operator_t>) || (concepts::MultiDoubleGate<operator_t>) )
+    requires((concepts::ParametricGate<op_t>) || (concepts::AngleGate<op_t>) || (concepts::SingleDoubleGate<op_t>)
+             || (concepts::MultiDoubleGate<op_t>) )
 #endif  // MQ_HAS_CONCEPTS
         ;
 

@@ -45,10 +45,10 @@ struct atom_control_type<gate_t, num_controls, typename std::void_t<typename gat
 }  // namespace mindquantum::traits
 
 namespace mindquantum::decompositions::atoms {
-template <typename operator_t, num_control_t num_controls = num_control_t(1L)>
-using Control = typename traits::atom_control_type<operator_t, num_controls>::control_type;
-template <typename operator_t, num_control_t num_controls = num_control_t(1L)>
-using C = Control<operator_t, num_controls>;
+template <typename op_t, num_control_t num_controls = num_control_t(1L)>
+using Control = typename traits::atom_control_type<op_t, num_controls>::control_type;
+template <typename op_t, num_control_t num_controls = num_control_t(1L)>
+using C = Control<op_t, num_controls>;
 }  // namespace mindquantum::decompositions::atoms
 
 #endif /* ATOM_META_HPP */

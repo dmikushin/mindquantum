@@ -163,21 +163,19 @@ test_compile_option(
 
 # --------------------------------------
 
-if(ENABLE_PROFILING)
-  test_compile_option(
-    profiling_flags
-    LANGS C CXX DPCXX
-    FLAGS "-pg -prof-gen /Qprof-gen" "-fprofile-instr-generate")
-endif()
+test_compile_option(
+  profiling_flags
+  LANGS C CXX DPCXX
+  FLAGS "-pg -prof-gen /Qprof-gen" "-fprofile-instr-generate"
+  CMAKE_OPTION ENABLE_PROFILING)
 
 # --------------------------------------
 
-if(ENABLE_STACK_PROTECTION)
-  test_compile_option(
-    stack_protection
-    LANGS C CXX DPCXX
-    FLAGS "-fstack-protector-all")
-endif()
+test_compile_option(
+  stack_protection
+  LANGS C CXX DPCXX
+  FLAGS "-fstack-protector-all"
+  CMAKE_OPTION ENABLE_STACK_PROTECTION)
 
 # ------------------------------------------------------------------------------
 
@@ -190,6 +188,11 @@ if(NOT VERSION_INFO)
   set(VERSION_INFO "\"${_version_info}\"")
 endif()
 
+if(VERSION_INFO MATCHES [=["(.*)\.dev[0-9]+"$]=])
+  message(STATUS "Version info for source code: ${VERSION_INFO} -> \"${CMAKE_MATCH_1}\"")
+  set(VERSION_INFO "\"${CMAKE_MATCH_1}\"")
+endif()
+
 # --------------------------------------
 
 include(${CMAKE_CURRENT_LIST_DIR}/compiler_test.cmake)
@@ -198,14 +201,30 @@ include(${CMAKE_CURRENT_LIST_DIR}/compiler_test.cmake)
 
 mq_add_compile_definitions(
   "$<$<BOOL:${USE_OPENMP}>:USE_OPENMP>" "$<$<BOOL:${USE_PARALLEL_STL}>:USE_PARALLEL_STL>"
-  "$<$<BOOL:${ENABLE_OPENMP}>:ENABLE_OPENMP>" "$<$<BOOL:${VERSION_INFO}>:VERSION_INFO=${VERSION_INFO}>"
-  "$<$<AND:$<CONFIG:RELEASE>,$<COMPILE_LANGUAGE:CXX>>:_FORTIFY_SOURCE=2>")
+  "$<$<BOOL:${ENABLE_OPENMP}>:ENABLE_OPENMP>" "$<$<AND:$<CONFIG:RELEASE>,$<COMPILE_LANGUAGE:CXX>>:_FORTIFY_SOURCE=2>")
 
 # ==============================================================================
 # Platform specific flags
 
 if(MSVC)
+  if(NOT "${CMAKE_C_COMPILER_LAUNCHER}" STREQUAL "" AND NOT "${CMAKE_CXX_COMPILER_LAUNCHER}" STREQUAL "")
+    message(STATUS "Replacing /Zi with /Z7 in compiler flags")
+    string(REPLACE "/Zi" "/Z7" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+    string(REPLACE "/Zi" "/Z7" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    string(REPLACE "/Zi" "/Z7" CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "/Zi" "/Z7" CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL}")
+    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL}")
+  endif()
+
   mq_add_compile_definitions(_USE_MATH_DEFINES _CRT_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN _ITERATOR_DEBUG_LEVEL=0)
 endif()
 
 # ==============================================================================
+
+configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake_config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/core/cmake_config.hpp)
+
+add_library(cmake_config INTERFACE)
+target_include_directories(cmake_config INTERFACE ${CMAKE_CURRENT_BINARY_DIR})

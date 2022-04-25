@@ -61,32 +61,32 @@ constexpr bool kind_compare(std::string_view kind) {
 // =========================================================================
 
 // If operator_t::num_targets exists, integral constant set to that number, else 0
-template <typename operator_t, typename = void>
+template <typename op_t, typename = void>
 struct static_variable_num_targets : std::integral_constant<std::size_t, 0UL> {};
 
-/* NB: Really we should be able to get away with decltype(operator_t::num_targets > 0)
+/* NB: Really we should be able to get away with decltype(op_t::num_targets > 0)
  *     However, if -fms-extensions is given with GCC, then the above would not work for SFINAE anymore. This looks
- *     to be because some implicit conversion to integral is turned on by that flag if `operator_t::num_targets`
+ *     to be because some implicit conversion to integral is turned on by that flag if `op_t::num_targets`
  *     is a function pointer. The comparison with 0 seems to avoid that issue.
  */
-template <typename operator_t>
-struct static_variable_num_targets<operator_t, std::void_t<decltype(operator_t::num_targets > 0)>>
-    : std::integral_constant<std::size_t, operator_t::num_targets> {};
+template <typename op_t>
+struct static_variable_num_targets<op_t, std::void_t<decltype(op_t::num_targets > 0)>>
+    : std::integral_constant<std::size_t, op_t::num_targets> {};
 
 // -------------------------------------------------------------------------
 
-// If operator_t::num_targets() exists, integral constant set to that number, else 0
-template <typename operator_t, typename = void>
+// If op_t::num_targets() exists, integral constant set to that number, else 0
+template <typename op_t, typename = void>
 struct static_method_num_targets : std::integral_constant<std::size_t, 0UL> {};
 
-template <typename operator_t>
+template <typename op_t>
 #if MQ_HAS_CONCEPTS
-struct static_method_num_targets<operator_t, std::void_t<decltype(operator_t::num_targets() > 0)>>
-    : std::integral_constant<std::size_t, operator_t::num_targets()> {
+struct static_method_num_targets<op_t, std::void_t<decltype(op_t::num_targets() > 0)>>
+    : std::integral_constant<std::size_t, op_t::num_targets()> {
 };
 #else
-struct static_method_num_targets<operator_t, std::void_t<decltype(operator_t::num_targets_static() > 0)>>
-    : std::integral_constant<std::size_t, operator_t::num_targets_static()> {
+struct static_method_num_targets<op_t, std::void_t<decltype(op_t::num_targets_static() > 0)>>
+    : std::integral_constant<std::size_t, op_t::num_targets_static()> {
 };
 #endif  //  MQ_HAS_CONCEPTS
 
@@ -100,42 +100,42 @@ template <typename matrix_t>
 struct matrix_const_num_rows<matrix_t, std::void_t<decltype(matrix_t::RowsAtCompileTime)>>
     : std::integral_constant<std::size_t, (matrix_t::RowsAtCompileTime >> 1UL)> {};
 
-// If operator_t has a matrix() method, deduce number of qubits from that, else 0
-template <typename operator_t, typename = void>
+// If op_t has a matrix() method, deduce number of qubits from that, else 0
+template <typename op_t, typename = void>
 struct matrix_fixed_num_qubits : std::integral_constant<std::size_t, 0UL> {};
 
-template <typename operator_t>
-struct matrix_fixed_num_qubits<operator_t, std::void_t<decltype(std::declval<operator_t>().matrix())>>
-    : matrix_const_num_rows<std::remove_cvref_t<decltype(std::declval<operator_t>().matrix())>>::type {};
+template <typename op_t>
+struct matrix_fixed_num_qubits<op_t, std::void_t<decltype(std::declval<op_t>().matrix())>>
+    : matrix_const_num_rows<std::remove_cvref_t<decltype(std::declval<op_t>().matrix())>>::type {};
 
 // -------------------------------------------------------------------------
 
-template <typename operator_t, typename = void>
+template <typename op_t, typename = void>
 struct has_const_num_targets : std::true_type {};
 
-template <typename operator_t>
-struct has_const_num_targets<operator_t, std::void_t<typename operator_t::non_const_num_targets>> : std::false_type {};
+template <typename op_t>
+struct has_const_num_targets<op_t, std::void_t<typename op_t::non_const_num_targets>> : std::false_type {};
 
-template <typename operator_t>
-inline constexpr auto has_const_num_targets_v = has_const_num_targets<operator_t>::value;
+template <typename op_t>
+inline constexpr auto has_const_num_targets_v = has_const_num_targets<op_t>::value;
 
 // -------------------------------------------------------------------------
 
 /* Deduce the number of qubits, either from:
- *   - operator_t::num_targets (static constexpr attribute)
- *   - operator_t::num_targets() (static potentially constexpr method)
- *   - return type of operator_t::matrix() if constant number of rows
+ *   - op_t::num_targets (static constexpr attribute)
+ *   - op_t::num_targets() (static potentially constexpr method)
+ *   - return type of op_t::matrix() if constant number of rows
  *   - else 0
  */
 // clang-format off
-    template <typename operator_t>
+    template <typename op_t>
     inline constexpr auto num_targets = std::conditional_t<
-        (static_variable_num_targets<operator_t>::value > 0),
-        typename static_variable_num_targets<operator_t>::type,
-        std::conditional_t<(static_method_num_targets<operator_t>::value > 0),
-                           typename static_method_num_targets<operator_t>::type,
-                           std::conditional_t<(matrix_fixed_num_qubits<operator_t>::value > 0),
-                                              typename matrix_fixed_num_qubits<operator_t>::type,
+        (static_variable_num_targets<op_t>::value > 0),
+        typename static_variable_num_targets<op_t>::type,
+        std::conditional_t<(static_method_num_targets<op_t>::value > 0),
+                           typename static_method_num_targets<op_t>::type,
+                           std::conditional_t<(matrix_fixed_num_qubits<op_t>::value > 0),
+                                              typename matrix_fixed_num_qubits<op_t>::type,
                                               std::integral_constant<std::size_t, 0UL>>>
         >::value;
 // clang-format on

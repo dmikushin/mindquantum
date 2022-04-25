@@ -27,6 +27,7 @@ cmake_make_silent=0
 configure_only=0
 cuda_arch=''
 do_clean=0
+do_clean_3rdparty=0
 do_clean_build_dir=0
 do_clean_cache=0
 do_clean_venv=0
@@ -34,10 +35,12 @@ do_configure=0
 do_docs=0
 do_update_venv=0
 dry_run=0
+enable_ccache=0
 enable_cxx=0
 enable_gpu=0
 enable_projectq=1
 enable_quest=0
+enable_tests=0
 force_local_pkgs=0
 local_pkgs=()
 n_jobs=-1
@@ -164,7 +167,9 @@ help_message() {
     echo ''
     echo '  -B,--build [dir]     Specify build directory'
     echo "                       Defaults to: $build_dir"
+    echo '  --ccache             If ccache or sccache are found within the PATH, use them with CMake'
     echo '  --clean              Run make clean before building'
+    echo '  --clean-3rdparty     Clean 3rd party installation directory'
     echo '  --clean-all          Clean everything before building.'
     echo '                       Equivalent to --clean-venv --clean-builddir'
     echo '  --clean-builddir     Delete build directory before building'
@@ -184,6 +189,7 @@ help_message() {
     echo '  --ninja              Build using Ninja instead of make'
     echo '  --quiet              Disable verbose build rules'
     echo '  --show-libraries     Show all known third-party libraries'
+    echo '  --test               Build C++ tests'
     echo '  --venv=[dir]         Path to Python virtual environment'
     echo "                       Defaults to: $python_venv_path"
     echo '  --with-<library>     Build the third-party <library> from source'
@@ -231,8 +237,14 @@ while getopts hcnB:j:-: OPT; do
         B | build)       needs_arg;
                          build_dir="$OPTARG"
                          ;;
+        ccache )         no_arg;
+                         enable_ccache=1
+                         ;;
         clean )          no_arg;
                          do_clean=1
+                         ;;
+        clean-3rdparty ) no_arg;
+                         do_clean_3rdparty=1
                          ;;
         clean-all )      no_arg;
                          do_clean_venv=1
@@ -290,6 +302,9 @@ while getopts hcnB:j:-: OPT; do
         show-libraries ) no_arg;
                          print_show_libraries
                          exit 1
+                         ;;
+        test )           no_arg;
+                         enable_tests=1
                          ;;
         update-venv )    no_arg;
                          do_update_venv=1
@@ -450,12 +465,27 @@ cmake_args=(-DIN_PLACE_BUILD:BOOL=ON
             -DENABLE_CMAKE_DEBUG:BOOL="${CMAKE_BOOL[$cmake_debug_mode]}"
             -DENABLE_CUDA:BOOL="${CMAKE_BOOL[$enable_gpu]}"
             -DENABLE_CXX_EXPERIMENTAL:BOOL="${CMAKE_BOOL[$enable_cxx]}"
+            -DBUILD_TESTING:BOOL="${CMAKE_BOOL[$enable_tests]}"
+            -DCLEAN_3RDPARTY_INSTALL_DIR:BOOL="${CMAKE_BOOL[$do_clean_3rdparty]}"
             -DUSE_VERBOSE_MAKEFILE:BOOL="${CMAKE_BOOL[! $cmake_make_silent]}")
 
 if [[ -n "$cmake_generator" ]]; then
     cmake_args+=(-G "${cmake_generator}")
 fi
 
+if [ $enable_ccache -eq 1 ]; then
+    ccache_exec=
+    if command -v ccache > /dev/null 2>&1; then
+        ccache_exec=ccache
+    elif command -v sccache > /dev/null 2>&1; then
+        ccache_exec=sccache
+    fi
+    if [ -n "$ccache_exec" ]; then
+        ccache_exec=$(which "$ccache_exec")
+        cmake_args+=(-DCMAKE_C_COMPILER_LAUNCHER="$ccache_exec")
+        cmake_args+=(-DCMAKE_CXX_COMPILER_LAUNCHER="$ccache_exec")
+    fi
+fi
 
 if [[ $enable_gpu -eq 1 && -n "$cuda_arch" ]]; then
     cmake_args+=(-DCMAKE_CUDA_ARCHITECTURES:STRING="$cuda_arch")

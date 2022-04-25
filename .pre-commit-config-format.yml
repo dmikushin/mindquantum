@@ -102,12 +102,3 @@ repos:
     hooks:
       - id: clang-format
         args: [-i]
-      - id: clang-tidy
-        stages: [manual]
-        args: [-Bbuild, -B.pre-commit-build]
-        exclude: >-
-          (?x)^(
-            .*/kernel[0-9]+\.hpp|
-            .*third_party/.*|
-            .*\.cu
-          )$

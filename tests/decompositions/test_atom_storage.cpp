@@ -154,8 +154,8 @@ class X2Z : public decompositions::GateDecompositionRule<X2Z, std::tuple<ops::X>
         return "X2Z"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op */,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& /* op */,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         //  TODO(dnguyen): I find this syntax redundant, we should find a way to fix this!
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
         atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0]});
@@ -174,8 +174,8 @@ class Z2YDummy
         return "Z2YDummy"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& /* op*/,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         atom<ops::Y>()->apply(circuit, ops::Y{}, qubits);
     }
 };
@@ -192,8 +192,8 @@ class CNOT2CZDummy
         return "CNOT2CZDummy"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& /* op*/,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0], qubits[1]});
         atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0], qubits[1]});
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0], qubits[1]});
@@ -212,8 +212,8 @@ class CNOT2CZ
         return "CNOT2CZ"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& /* op*/,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});
         atom<atoms::C<ops::Z>>()->apply(circuit, ops::Z{}, {qubits[0], qubits[1]});
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});
@@ -343,9 +343,9 @@ TEST_CASE("AtomStorage/decomposition_rule", "[decompositions][atom]") {
 // =============================================================================
 
 TEST_CASE("AtomStorage/get_atom_for", "[decompositions][atom]") {
-    using instruction_t = mindquantum::decompositions::instruction_t;
-    using qubit_t = mindquantum::decompositions::qubit_t;
-    using qubits_t = mindquantum::decompositions::qubits_t;
+    using instruction_t = mindquantum::instruction_t;
+    using qubit_t = mindquantum::qubit_t;
+    using qubits_t = mindquantum::qubits_t;
 
     decompositions::AtomStorage storage;
     REQUIRE(std::size(storage) == 0UL);

@@ -96,6 +96,25 @@ endfunction()
 # ==============================================================================
 
 check_cxx_code_compiles(
+  compiler_has_cxx20_operator_not_equal_synthesis
+  MQ_HAS_OPERATOR_NOT_EQUAL_SYNTHESIS
+  cxx_std_20
+  [[
+struct A {
+    bool operator==(const A& other) const {
+        return false;
+    }
+};
+
+int main() {
+    A a, b;
+    return a != b;
+}
+]])
+
+# --------------------------------------
+
+check_cxx_code_compiles(
   compiler_has_implicit_template_deduction_guides
   MQ_HAS_IMPLICIT_TEMPLATE_DEDUCTION_GUIDES
   cxx_std_20
@@ -186,6 +205,27 @@ int main() {
     return 0;
 #else
 #error std::filesystem not supported
+#endif
+}
+]])
+
+# --------------------------------------
+
+check_cxx_code_compiles(
+  compiler_has_class_non_type_template_args
+  MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
+  cxx_std_20
+  [[
+#ifdef __has_include
+# if __has_include(<version>)
+#   include <version>
+# endif
+#endif
+int main() {
+#if __cpp_nontype_template_args >= 201911L
+    return 0;
+#else
+#error C++20 class types and floating-point types in non-type template parameters
 #endif
 }
 ]])

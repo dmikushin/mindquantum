@@ -16,7 +16,8 @@
 #
 # ==============================================================================
 
-find_package(Catch2 2.7.0 REQUIRED)
+find_package(Catch2 CONFIG REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${Catch2_DIR})
 
 include(CTest)
 include(Catch)

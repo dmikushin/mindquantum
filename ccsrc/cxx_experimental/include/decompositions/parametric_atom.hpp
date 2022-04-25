@@ -37,14 +37,14 @@ using namespace ops::parametric::details;
  *  \tparam num_controls_ Number of control qubits the gate this atom is representing has. Possible values:
  *                        -1 for any number of control qubits, >= 0 for a specified number of control qubits.
  */
-template <typename operator_t, num_target_t num_targets_ = any_target, num_control_t num_controls_ = any_control>
+template <typename op_t, num_target_t num_targets_ = any_target, num_control_t num_controls_ = any_control>
 class ParametricAtom : public traits::controls<num_controls_> {
  public:
     using subs_map_t = mindquantum::ops::parametric::subs_map_t;
     using double_list_t = mindquantum::ops::parametric::double_list_t;
     using param_list_t = mindquantum::ops::parametric::param_list_t;
-    using self_t = ParametricAtom<operator_t, num_targets_, num_controls_>;
-    using kinds_t = std::tuple<operator_t>;
+    using self_t = ParametricAtom<op_t, num_targets_, num_controls_>;
+    using kinds_t = std::tuple<op_t>;
 
     explicit ParametricAtom(AtomStorage& /* storage */) {
         // NB: TrivialAtom has no dependent atoms to insert into the storage
@@ -52,7 +52,7 @@ class ParametricAtom : public traits::controls<num_controls_> {
 
     //! Return the name of this decomposition atom
     MQ_NODISCARD static constexpr std::string_view name() noexcept {
-        return operator_t::kind();
+        return op_t::kind();
     }
 
     //! Return the number of target qubits this decomposition atom is constrained on
@@ -67,7 +67,7 @@ class ParametricAtom : public traits::controls<num_controls_> {
 
     //! Return the number of parameters of this decomposition atom
     MQ_NODISCARD static constexpr auto num_params() noexcept {
-        return num_param_t{operator_t::num_params};
+        return num_param_t{op_t::num_params};
     }
 
     //! Helper function to create an instance of this atom
@@ -97,12 +97,11 @@ class ParametricAtom : public traits::controls<num_controls_> {
      *
      * \note Currently the \c cbits parameter is not used at all! It is here to make the API futureproof.
      */
-    void apply(circuit_t& circuit, const decompositions::operator_t& op, const qubits_t& qubits,
-               const cbits_t& cbits) noexcept;
+    void apply(circuit_t& circuit, const operator_t& op, const qubits_t& qubits, const cbits_t& cbits) noexcept;
 };
 
-template <typename operator_t, num_control_t num_controls_ = any_control>
-using ParametricSimpleAtom = ParametricAtom<operator_t, traits::num_targets<operator_t>, num_controls_>;
+template <typename op_t, num_control_t num_controls_ = any_control>
+using ParametricSimpleAtom = ParametricAtom<op_t, traits::num_targets<op_t>, num_controls_>;
 }  // namespace mindquantum::decompositions
 
 #include "decompositions/parametric_atom.tpp"

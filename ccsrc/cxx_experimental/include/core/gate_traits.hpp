@@ -26,86 +26,86 @@
 
 namespace mindquantum::traits {
 #if MQ_HAS_CONCEPTS
-template <typename operator_t>
+template <typename op_t>
 struct gate_traits {
-    using non_param_type = operator_t;
+    using non_param_type = op_t;
 };
 
-template <concepts::SingleDoubleGate operator_t>
-struct gate_traits<operator_t> {
-    using non_param_type = operator_t;
+template <concepts::SingleDoubleGate op_t>
+struct gate_traits<op_t> {
+    using non_param_type = op_t;
 
     static constexpr auto param(const tweedledum::Operator& op) {
-        return op.cast<operator_t>().param();
+        return op.cast<op_t>().param();
     }
 };
 
-template <concepts::MultiDoubleGate operator_t>
-struct gate_traits<operator_t> {
-    using non_param_type = operator_t;
+template <concepts::MultiDoubleGate op_t>
+struct gate_traits<op_t> {
+    using non_param_type = op_t;
 
     static constexpr auto param(const tweedledum::Operator& op) {
-        return op.cast<operator_t>().params();
+        return op.cast<op_t>().params();
     }
 };
 
-template <concepts::AngleGate operator_t>
-struct gate_traits<operator_t> {
-    using non_param_type = operator_t;
+template <concepts::AngleGate op_t>
+struct gate_traits<op_t> {
+    using non_param_type = op_t;
 
     static constexpr auto param(const tweedledum::Operator& op) {
-        return op.cast<operator_t>().angle();
+        return op.cast<op_t>().angle();
     }
 };
 
-template <concepts::ParametricGate operator_t>
-struct gate_traits<operator_t> {
-    using non_param_type = typename operator_t::non_param_type;
+template <concepts::ParametricGate op_t>
+struct gate_traits<op_t> {
+    using non_param_type = typename op_t::non_param_type;
 
     static constexpr auto param(const tweedledum::Operator& op) {
-        return op.cast<operator_t>().params();
+        return op.cast<op_t>().params();
     }
 };
 #else
 namespace details {
-template <typename operator_t, typename = void>
+template <typename op_t, typename = void>
 struct has_angle : std::false_type {};
 
-template <typename operator_t>
-struct has_angle<operator_t, std::void_t<decltype(std::declval<operator_t>().angle())>> : std::true_type {};
+template <typename op_t>
+struct has_angle<op_t, std::void_t<decltype(std::declval<op_t>().angle())>> : std::true_type {};
 
-template <typename operator_t, typename = void>
+template <typename op_t, typename = void>
 struct has_single_param : std::false_type {};
 
-template <typename operator_t>
-struct has_single_param<operator_t, std::void_t<decltype(std::declval<operator_t>().param())>> : std::true_type {};
+template <typename op_t>
+struct has_single_param<op_t, std::void_t<decltype(std::declval<op_t>().param())>> : std::true_type {};
 
-template <typename operator_t, typename = void>
+template <typename op_t, typename = void>
 struct has_multi_param : std::false_type {};
 
-template <typename operator_t>
-struct has_multi_param<operator_t, std::void_t<decltype(std::declval<operator_t>().params())>> : std::true_type {};
+template <typename op_t>
+struct has_multi_param<op_t, std::void_t<decltype(std::declval<op_t>().params())>> : std::true_type {};
 
-template <typename operator_t>
+template <typename op_t>
 struct param_traits {
-    static auto apply(const operator_t& optor) {
-        if constexpr (has_single_param<operator_t>::value) {
+    static auto apply(const op_t& optor) {
+        if constexpr (has_single_param<op_t>::value) {
             return optor.param();
-        } else if constexpr (has_multi_param<operator_t>::value) {
+        } else if constexpr (has_multi_param<op_t>::value) {
             return optor.params();
-        } else if constexpr (has_angle<operator_t>::value) {
+        } else if constexpr (has_angle<op_t>::value) {
             return optor.angle();
         }
     }
 };
 }  // namespace details
 
-template <typename operator_t>
+template <typename op_t>
 struct gate_traits {
-    using non_param_type = operator_t;
+    using non_param_type = op_t;
 
     static constexpr auto param(const tweedledum::Operator& op) {
-        return details::param_traits<operator_t>::apply(op.cast<operator_t>());
+        return details::param_traits<op_t>::apply(op.cast<op_t>());
     }
 };
 #endif  // MQ_HAS_CONCEPTS

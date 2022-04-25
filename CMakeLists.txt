@@ -73,6 +73,24 @@ add_library(mindquantum_setup INTERFACE)
 target_link_libraries(mindquantum_setup INTERFACE CXX_mindquantum $<$<BOOL:${_c_enabled}>:C_mindquantum>
                                                   $<$<BOOL:${ENABLE_CUDA}>:CUDA_mindquantum;NVCXX_mindquantum>)
 
+if(ENABLE_CMAKE_DEBUG)
+  message(STATUS "Content of language specific targets:")
+  list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
+  set(_targets CXX_mindquantum)
+  if(_c_enabled)
+    list(APPEND _targets C_mindquantum)
+  endif()
+  if(ENABLE_CUDA)
+    list(APPEND _targets CUDA_mindquantum NVCXX_mindquantum)
+  endif()
+
+  include(CMakePrintHelpers)
+  cmake_print_properties(TARGETS ${_targets} PROPERTIES INTERFACE_COMPILE_OPTIONS INTERFACE_INCLUDE_DIRECTORIES
+                                                        INTERFACE_LINK_OPTIONS INTERFACE_LINK_LIBRARIES)
+  list(POP_BACK CMAKE_MESSAGE_INDENT)
+endif()
+
 # ==============================================================================
 # Some more macro definitions
 

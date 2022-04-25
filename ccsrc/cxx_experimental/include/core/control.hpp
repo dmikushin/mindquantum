@@ -100,7 +100,7 @@ class ControlledCircuit {
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define MQ_WITH_CONTROL_IMPL(original, name, unique_name, controls)                                                    \
     mindquantum::cengines::ControlledCircuit unique_name{original, controls};                                          \
-    if (mindquantum::cengines::circuit_t & (name) = static_cast<mindquantum::cengines::circuit_t&>((unique_name)); true)
+    if (mindquantum::circuit_t & (name) = static_cast<mindquantum::circuit_t&>((unique_name)); true)
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define MQ_WITH_CONTROL(original, name, controls) MQ_WITH_CONTROL_IMPL(original, name, MQ_UNIQUE_NAME(name), controls)
 #endif /* CONTROLCIRCUIT_HPP */

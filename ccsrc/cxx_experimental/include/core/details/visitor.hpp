@@ -50,7 +50,7 @@ struct overload : Ts... {
  */
 template <class... Ts>
 overload(Ts...) -> overload<Ts...>;
-#endif /* __cplusplus <= 201703L */
+#endif /* MQ_HAS_IMPLICIT_TEMPLATE_DEDUCTION_GUIDES */
 }  // namespace mindquantum
 
 #endif /* VISITOR_HPP */

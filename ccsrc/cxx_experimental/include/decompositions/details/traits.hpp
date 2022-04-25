@@ -32,13 +32,13 @@
 #include "decompositions/trivial_atom.hpp"
 
 namespace mindquantum::decompositions {
-#if __cplusplus > 201703L
+#if MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
 template <typename derived_t, typename kinds_t, DecompositionRuleParam param, typename... atoms_t>
 class GateDecompositionRule;
 #else
 template <typename derived_t, typename kinds_t, uint32_t, num_control_t, uint32_t, typename... atoms_t>
 class GateDecompositionRuleCXX17;
-#endif  // __cplusplus > 201703L
+#endif  // MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
 }  // namespace mindquantum::decompositions
 
 namespace mindquantum::traits {
@@ -71,7 +71,7 @@ struct atom_traits {
 };
 #endif
 
-#if __cplusplus > 201703L
+#if MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
 template <typename derived_t, typename kinds_t, decompositions::DecompositionRuleParam param, typename... atoms_t>
 struct atom_traits<decompositions::GateDecompositionRule<derived_t, kinds_t, param, atoms_t...>> {
     using type = decompositions::GateDecompositionRule<derived_t, kinds_t, param, atoms_t...>;
@@ -84,16 +84,16 @@ struct atom_traits<decompositions::GateDecompositionRuleCXX17<derived_t, kinds_t
     using type = decompositions::GateDecompositionRuleCXX17<derived_t, kinds_t, num_targets, num_controls, num_params,
                                                             kinds_t, atoms_t...>;
 };
-#endif  // __cplusplus > 201703L
+#endif  // MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
 
-template <typename operator_t, uint32_t num_targets, decompositions::num_control_t num_controls>
-struct atom_traits<decompositions::TrivialAtom<operator_t, num_targets, num_controls>> {
-    using type = decompositions::TrivialAtom<operator_t, num_targets, num_controls>;
+template <typename op_t, uint32_t num_targets, decompositions::num_control_t num_controls>
+struct atom_traits<decompositions::TrivialAtom<op_t, num_targets, num_controls>> {
+    using type = decompositions::TrivialAtom<op_t, num_targets, num_controls>;
 };
 
-template <typename operator_t, uint32_t num_targets, decompositions::num_control_t num_controls>
-struct atom_traits<decompositions::ParametricAtom<operator_t, num_targets, num_controls>> {
-    using type = decompositions::ParametricAtom<operator_t, num_targets, num_controls>;
+template <typename op_t, uint32_t num_targets, decompositions::num_control_t num_controls>
+struct atom_traits<decompositions::ParametricAtom<op_t, num_targets, num_controls>> {
+    using type = decompositions::ParametricAtom<op_t, num_targets, num_controls>;
 };
 
 // -------------------------------------------------------------------------
@@ -103,8 +103,9 @@ template <typename atom_t, typename = void>
 struct has_is_applicable : std::false_type {};
 
 template <typename atom_t>
-struct has_is_applicable<atom_t, std::void_t<decltype(std::declval<atom_t>().is_applicable_impl(
-                                     std::declval<decompositions::instruction_t>()))>> : std::true_type {};
+struct has_is_applicable<
+    atom_t, std::void_t<decltype(std::declval<atom_t>().is_applicable_impl(std::declval<instruction_t>()))>>
+    : std::true_type {};
 
 template <typename atom_t>
 inline constexpr auto has_is_applicable_v = has_is_applicable<atom_t>::value;

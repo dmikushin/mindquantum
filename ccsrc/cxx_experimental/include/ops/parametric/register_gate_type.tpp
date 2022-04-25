@@ -44,14 +44,14 @@ namespace mindquantum::ops::parametric
           void register_gate(std::string_view kind, params_func_t params_func);
      }  // namespace details
 
-     template <typename operator_t>
+     template <typename op_t>
      void register_gate_type()
 #if MQ_HAS_CONCEPTS
-          requires ((concepts::ParametricGate<operator_t>) || (concepts::AngleGate<operator_t>)
-                        || (concepts::SingleDoubleGate<operator_t>) || (concepts::MultiDoubleGate<operator_t>))
+          requires ((concepts::ParametricGate<op_t>) || (concepts::AngleGate<op_t>)
+                        || (concepts::SingleDoubleGate<op_t>) || (concepts::MultiDoubleGate<op_t>))
 #endif // MQ_HAS_CONCEPTS
      {
-          details::register_gate(operator_t::kind(), traits::gate_traits<operator_t>::param);
+          details::register_gate(op_t::kind(), traits::gate_traits<op_t>::param);
      }
 }  // namespace mindquantum::ops::parametric
 

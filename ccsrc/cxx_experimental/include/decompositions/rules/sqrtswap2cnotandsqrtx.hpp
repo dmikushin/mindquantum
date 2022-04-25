@@ -34,8 +34,8 @@ class SqrtSwap2CNOTAndSqrtX
         return "SqrtSwap2CNOTAndSqrtX"sv;
     }
 
-    void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& /* op */, const qubits_t& qubits,
+                    const cbits_t& /* unused */) {
         atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});
         atom<ops::Sx>()->apply(circuit, ops::Sx{}, {qubits[1], qubits[0]});
         atom<atoms::C<ops::X>>()->apply(circuit, ops::X{}, {qubits[0], qubits[1]});

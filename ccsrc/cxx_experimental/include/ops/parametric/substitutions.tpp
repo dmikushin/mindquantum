@@ -29,7 +29,7 @@
 
 namespace mindquantum::ops::parametric {
 
-    template <typename operator_t, typename... args_t>
+    template <typename op_t, typename... args_t>
     auto generate_subs(args_t&&... args)
 
     {
@@ -37,25 +37,25 @@ namespace mindquantum::ops::parametric {
                                                             std::forward<args_t>(args)...);
     }
 
-    template <typename operator_t>
+    template <typename op_t>
     auto generate_subs(const double_list_t& params) {
-        return details::generate_subs<operator_t>(params);
+        return details::generate_subs<op_t>(params);
     }
 
-    template <typename operator_t>
+    template <typename op_t>
     auto generate_subs(const param_list_t& params) {
-        return details::generate_subs<operator_t>(params);
+        return details::generate_subs<op_t>(params);
     }
 
     // -------------------------------------------------------------------------
 
     namespace details {
-        template <typename operator_t, typename T>
+        template <typename op_t, typename T>
         auto generate_subs(const std::vector<T>& params) {
             subs_map_t subs;
             auto idx = 0UL;
             for (const auto& param: params) {
-                subs.emplace(operator_t::create_op().param(idx), to_symengine(param));
+                subs.emplace(op_t::create_op().param(idx), to_symengine(param));
                 ++idx;
             }
             return subs;
@@ -64,15 +64,15 @@ namespace mindquantum::ops::parametric {
         // =========================================================================
 
 #if MQ_HAS_CONCEPTS
-        template <typename operator_t, std::size_t... indices, concepts::expr_or_number... exprs_t>
+        template <typename op_t, std::size_t... indices, concepts::expr_or_number... exprs_t>
 #else
-        template <typename operator_t, std::size_t... indices, typename... exprs_t>
+        template <typename op_t, std::size_t... indices, typename... exprs_t>
 #endif  // MQ_HAS_CONCEPTS
         auto create_subs_from_params(std::index_sequence<indices...> /* indices */, exprs_t&&... exprs) {
-            static_assert(sizeof...(indices) == operator_t::num_params);
+            static_assert(sizeof...(indices) == op_t::num_params);
             static_assert(sizeof...(indices) == sizeof...(exprs));
             return subs_map_t{
-                std::make_pair(operator_t::create_op().param(indices), to_symengine(std::forward<exprs_t>(exprs)))...};
+                std::make_pair(op_t::create_op().param(indices), to_symengine(std::forward<exprs_t>(exprs)))...};
         }
 
     }  // namespace details

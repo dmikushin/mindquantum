@@ -25,36 +25,36 @@ namespace mindquantum::ops::parametric {
 /*!
  * \pre \c sizeof(args_t) == operator_t::num_params()
  */
-template <typename operator_t, typename... args_t>
+template <typename op_t, typename... args_t>
 MQ_NODISCARD static auto generate_subs(args_t&&... args);
 
 //! Generate a substitution dictionary from an array of double
 /*!
  * \sa generate_subs_(const std::vector<T>& param) const;
  */
-template <typename operator_t>
+template <typename op_t>
 MQ_NODISCARD static auto generate_subs(const double_list_t& params);
 
 //! Generate a substitution dictionary from an array of expressions
 /*!
  * \sa generate_subs_(const std::vector<T>& param) const;
  */
-template <typename operator_t>
+template <typename op_t>
 MQ_NODISCARD static auto generate_subs(const param_list_t& params);
 
 namespace details {
 //! Generate a substitution dictionary from an array of elements
 /*!
- * \pre \c size(param) == operator_t::num_params()
+ * \pre \c size(param) == op_t::num_params()
  */
-template <typename operator_t, typename T>
+template <typename op_t, typename T>
 MQ_NODISCARD static auto generate_subs(const std::vector<T>& params);
 
 #if MQ_HAS_CONCEPTS
-template <typename operator_t, std::size_t... indices, concepts::expr_or_number... expr_t>
+template <typename op_t, std::size_t... indices, concepts::expr_or_number... expr_t>
 MQ_NODISCARD static auto create_subs_from_params(std::index_sequence<indices...> /*unused*/, expr_t&&... exprs);
 #else
-template <typename operator_t, std::size_t... indices, typename... args_t>
+template <typename op_t, std::size_t... indices, typename... args_t>
 MQ_NODISCARD static auto create_subs_from_params(std::index_sequence<indices...> /*unused*/, args_t&&... args);
 #endif  // MQ_HAS_CONCEPTS
 }  // namespace details

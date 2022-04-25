@@ -91,8 +91,7 @@ class Rz2RxAndRy
         atom<ops::parametric::Ry>()->apply(circuit, ops::Ry{-PI_VAL_2}, qubits);
     }
 
-    void apply_impl(circuit_t& circuit, const decompositions::operator_t& op, const decompositions::qubits_t& qubits,
-                    const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& op, const qubits_t& qubits, const cbits_t& /* unused */) {
         if (use_positive_decomp_) {
             apply_positive_decomp(circuit, qubits, ops::parametric::get_param(op));
         } else {

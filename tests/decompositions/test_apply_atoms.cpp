@@ -16,7 +16,11 @@
 
 #include <catch2/catch.hpp>
 
-#include "tweedledum/../../tests/check_unitary.h"
+#if __has_include("tweedledum/../../tests/check_unitary.h")
+#    include "tweedledum/../../tests/check_unitary.h"
+#else
+#    include <tweedledum/test/check_unitary.h>
+#endif
 #include "tweedledum/IR/Instruction.h"
 #include "tweedledum/Passes/Utility/shallow_duplicate.h"
 
@@ -65,8 +69,8 @@ class UnitTestAccessor {
 namespace {
 namespace atoms = decompositions::atoms;
 
-using mindquantum::decompositions::operator_t;
-using mindquantum::decompositions::qubit_t;
+using mindquantum::operator_t;
+using mindquantum::qubit_t;
 
 template <typename... args_t>
 auto make_ops_array(args_t&&... args) {
@@ -112,8 +116,8 @@ class X2Z : public decompositions::GateDecompositionRule<X2Z, std::tuple<ops::X>
         return "X2Z"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& /* op*/,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
         atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0]});
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
@@ -197,8 +201,8 @@ class CNOT2CZ
         return "CNOT2CZ"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& /* op*/,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});
         atom<atoms::C<ops::Z>>()->apply(circuit, ops::Z{}, {qubits[0], qubits[1]});
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});
@@ -308,8 +312,8 @@ class H2Rx
         return "H2Rx"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& /* op*/,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         assert(std::size(qubits) == 1);
         atom<ops::parametric::Rx>()->apply(circuit, ops::Rx{PI_VAL}, qubits);
         atom<ops::parametric::Ph>()->apply(circuit, ops::Ph{PI_VAL_2}, qubits);
@@ -333,7 +337,7 @@ TEST_CASE("GateDecompositionRule/H2Rx", "[decompositions][atom]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
 
     const auto h = ops::H();
@@ -382,8 +386,8 @@ class Rx2Rz
         return "Rx2Rz"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& op,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& op,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         assert(std::size(qubits) == 1);
         atom<ops::H>()->apply(circuit, ops::H{}, qubits);
         std::visit(
@@ -424,7 +428,7 @@ TEST_CASE("GateDecompositionRule/Rx2Rz", "[decompositions][atom]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
 
     SECTION("Numeric Rx") {
@@ -512,8 +516,8 @@ class Ph2R
         return "Ph2R"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& op,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& op,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         std::visit(
             [this, &circuit, &qubits](const auto& param) {
                 using param_t = std::remove_cvref_t<decltype(param)>;
@@ -550,7 +554,7 @@ TEST_CASE("GateDecompositionRule/Ph2R", "[decompositions][atom]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
 
     SECTION("Numeric Ph") {

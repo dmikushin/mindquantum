@@ -12,27 +12,9 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#ifndef CXX20_CONFIG_HPP
-#define CXX20_CONFIG_HPP
+#ifndef CMAKE_CONFIG_HPP_IN
+#define CMAKE_CONFIG_HPP_IN
 
-#cmakedefine01 MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
+#define VERSION_INFO @VERSION_INFO@
 
-#cmakedefine01 MQ_HAS_CONCEPTS
-
-#cmakedefine01 MQ_HAS_CONCEPT_LIBRARY
-
-#cmakedefine01 MQ_HAS_IMPLICIT_TEMPLATE_DEDUCTION_GUIDES
-
-#cmakedefine01 MQ_HAS_DETECTED_TS2
-
-#cmakedefine01 MQ_HAS_MAP_CONTAINS
-
-#cmakedefine01 MQ_HAS_OPERATOR_NOT_EQUAL_SYNTHESIS
-
-#cmakedefine01 MQ_HAS_REMOVE_CVREF_T
-
-#cmakedefine01 MQ_HAS_STD_FILESYSTEM
-
-#cmakedefine01 MQ_HAS_STD_LAUNDER
-
-#endif /* CXX20_CONFIG_HPP */
+#endif /* CMAKE_CONFIG_HPP_IN */

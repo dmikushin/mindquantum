@@ -817,8 +817,8 @@ endfunction()
 # Add an external dependency
 #
 # mindquantum_add_pkg(<pkg_name>
-#                     [CMAKE_PKG_NO_COMPONENTS, FORCE_CONFIG_SEARCH, FORCE_EXACT_VERSION, GEN_CMAKE_CONFIG,
-#                        ONLY_MAKE, ONLY_UNPACK, SKIP_BUILD_STEP, SKIP_INSTALL_STEP]
+#                     [CMAKE_PKG_NO_COMPONENTS, FORCE_CONFIG_SEARCH, FORCE_EXACT_VERSION, FORCE_LOCAL_PKG,
+#                        GEN_CMAKE_CONFIG, ONLY_MAKE, ONLY_UNPACK, SKIP_BUILD_STEP, SKIP_INSTALL_STEP]
 #                      [CMAKE_PATH <path-to-cmakefiles-txt>]
 #                      [CUSTOM_CMAKE <custom_cmake>]
 #                      [DIR <pkg-cache-directory>]
@@ -857,6 +857,7 @@ function(mindquantum_add_pkg pkg_name)
       CMAKE_PKG_NO_COMPONENTS
       FORCE_CONFIG_SEARCH
       FORCE_EXACT_VERSION
+      FORCE_LOCAL_PKG
       GEN_CMAKE_CONFIG
       ONLY_MAKE
       ONLY_UNPACK
@@ -902,7 +903,9 @@ function(mindquantum_add_pkg pkg_name)
   message(CHECK_START "Adding external dependency: ${pkg_name}")
   list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
-  if(NOT MQ_FORCE_LOCAL_PKGS AND NOT MQ_${PKG_NAME}_FORCE_LOCAL)
+  if(NOT MQ_FORCE_LOCAL_PKGS
+     AND NOT MQ_${PKG_NAME}_FORCE_LOCAL
+     AND NOT PKG_FORCE_LOCAL_PKG)
     set(_args)
     if(PKG_FORCE_CONFIG_SEARCH)
       list(APPEND _args CONFIG)
@@ -948,6 +951,17 @@ function(mindquantum_add_pkg pkg_name)
   set(${pkg_name}_DIRPATH
       ${${pkg_name}_BASE_DIR}
       CACHE STRING INTERNAL)
+
+  if(CLEAN_3RDPARTY_INSTALL_DIR)
+    file(GLOB _installations ${_mq_local_prefix}/${pkg_name}_${PKG_VER}_*)
+    message(STATUS "Deleting old installation directories (if any):")
+    foreach(_dir ${_installations})
+      if(NOT "${_dir}" STREQUAL "${${pkg_name}_BASE_DIR}")
+        message(STATUS "  - ${_dir}")
+        file(REMOVE_RECURSE "${_dir}")
+      endif()
+    endforeach()
+  endif()
 
   if(EXISTS "${${pkg_name}_BASE_DIR}")
     __find_package(
@@ -1071,9 +1085,6 @@ function(mindquantum_add_pkg pkg_name)
         else()
           set(${pkg_name}_CMAKE_LDFLAGS "-DCMAKE_SHARED_LINKER_FLAGS=${${pkg_name}_LDFLAGS}")
         endif()
-      endif()
-      if(NOT APPLE)
-        list(APPEND PKG_CMAKE_OPTION -G ${CMAKE_GENERATOR})
       endif()
 
       message(STATUS "Calling CMake configure for ${pkg_name}")

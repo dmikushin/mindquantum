@@ -14,7 +14,9 @@
 
 Param(
     # Flags
+    [switch]$CCache,
     [switch]$Clean,
+    [switch]$Clean3rdParty,
     [switch]$CleanAll,
     [switch]$CleanBuildDir,
     [switch]$CleanCache,
@@ -32,6 +34,7 @@ Param(
     [switch]$Ninja,
     [switch]$Quiet,
     [switch]$ShowLibraries,
+    [switch]$Test,
     [switch]$UpdateVenv,
     [switch]$c,
     [switch]$h,
@@ -69,6 +72,7 @@ $cmake_make_silent = 0
 $configure_only = 0
 $cuda_arch=""
 $do_clean = 0
+$do_clean_3rdparty = 0
 $do_clean_build_dir = 0
 $do_clean_cache = 0
 $do_clean_venv = 0
@@ -76,10 +80,12 @@ $do_docs = 0
 $do_configure = 0
 $do_update_venv = 0
 $dry_run = 0
+$enable_ccache = 0
 $enable_cxx = 0
 $enable_gpu = 0
 $enable_projectq = 1
 $enable_quest = 0
+$enable_tests = 0
 $force_local_pkgs = 0
 $local_pkgs = @()
 $n_jobs = -1
@@ -189,7 +195,9 @@ function help_message() {
     Write-Output ''
     Write-Output '  -B,-Build [dir]     Specify build directory'
     Write-Output ("                      Defaults to: {0}" -f $build_dir)
+    Write-Output '  -CCache             If ccache or sccache are found within the PATH, use them with CMake'
     Write-Output '  -Clean              Run make clean before building'
+    Write-Output '  -Clean3rdParty      Clean 3rd party installation directory'
     Write-Output '  -CleanAll           Clean everything before building.'
     Write-Output '                      Equivalent to --clean-venv --clean-builddir'
     Write-Output '  -CleanBuildDir      Delete build directory before building'
@@ -208,6 +216,7 @@ function help_message() {
     Write-Output '  -LocalPkgs          Compile third-party dependencies locally'
     Write-Output '  -Quiet              Disable verbose build rules'
     Write-Output '  -ShowLibraries      Show all known third-party libraries'
+    Write-Output '  -Test               Build C++ tests'
     Write-Output '  -Venv <path>        Path to Python virtual environment'
     Write-Output ("                      Defaults to: {0}" -f $python_venv_path)
     Write-Output '  -With<library>      Build the third-party <library> from source (<library> is case-insensitive)'
@@ -236,8 +245,15 @@ if ($n.IsPresent -or $DryRun.IsPresent) {
     $dry_run = 1
 }
 
+if ($CCache.IsPresent) {
+    $enable_ccache=1
+}
+
 if ($Clean.IsPresent) {
     $do_clean=1
+}
+if ($Clean3rdParty.IsPresent) {
+    $do_clean_3rdparty = 1
 }
 if ($CleanAll.IsPresent) {
     $do_clean_venv = 1
@@ -286,6 +302,10 @@ if ($LocalPkgs.IsPresent) {
 
 if ($Quiet.IsPresent) {
     $cmake_make_silent = 1
+}
+
+if ($Test.IsPresent) {
+    $enable_tests = 1
 }
 
 if ($UpdateVenv.IsPresent) {
@@ -536,8 +556,26 @@ $cmake_args = @('-DIN_PLACE_BUILD:BOOL=ON'
                 "-DENABLE_CMAKE_DEBUG:BOOL={0}" -f $CMAKE_BOOL[$cmake_debug_mode]
                 "-DENABLE_CUDA:BOOL={0}" -f $CMAKE_BOOL[$enable_gpu]
                 "-DENABLE_CXX_EXPERIMENTAL:BOOL={0}" -f $CMAKE_BOOL[$enable_cxx]
+                "-DBUILD_TESTING:BOOL={0}" -f $CMAKE_BOOL[$enable_tests]
+                "-DCLEAN_3RDPARTY_INSTALL_DIR:BOOL={0}" -f $CMAKE_BOOL[$do_clean_3rdparty]
                 "-DUSE_VERBOSE_MAKEFILE:BOOL={0}" -f $CMAKE_BOOL[-not $cmake_make_silent]
                )
+
+if ($enable_ccache -eq 1) {
+    $ccache_exec=''
+    if(Test-CommandExists ccache) {
+        $ccache_exec = 'ccache'
+    }
+    elseif(Test-CommandExists sccache) {
+        $ccache_exec = 'sccache'
+    }
+
+    if ([bool]$ccache_exec) {
+        $ccache_exec = (Get-Command "$ccache_exec").Source
+        $cmake_args += "-DCMAKE_C_COMPILER_LAUNCHER=`"$ccache_exec`""
+        $cmake_args += "-DCMAKE_CXX_COMPILER_LAUNCHER=`"$ccache_exec`""
+    }
+}
 
 if ($enable_gpu -eq 1 -and [bool]$cuda_arch) {
     $cmake_args += "-DCMAKE_CUDA_ARCHITECTURES:STRING=`"$cuda_arch`""
@@ -557,8 +595,14 @@ elseif ($n_jobs -eq -1){
     $n_jobs = $n_jobs_default
 }
 
+$make_args = @()
 if($n_jobs -ne -1) {
     $cmake_args += "-DJOBS:STRING={0}" -f $n_jobs
+    $make_args += "-j `"$n_jobs`""
+}
+
+if($cmake_make_silent -eq 0) {
+    $make_args += "-v"
 }
 
 # ------------------------------------------------------------------------------
@@ -587,6 +631,6 @@ if ($do_clean -eq 1) {
     Call-CMake --build "$build_dir" --target clean
 }
 
-Call-CMake --build "$build_dir" -j "$n_jobs" --config "$build_type"
+Call-CMake --build "$build_dir" --config "$build_type" @make_args
 
 # ==============================================================================

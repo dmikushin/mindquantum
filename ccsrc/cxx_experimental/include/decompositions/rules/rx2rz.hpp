@@ -34,8 +34,7 @@ class Rx2Rz
         return "Rx2Rz"sv;
     }
 
-    void apply_impl(circuit_t& circuit, const decompositions::operator_t& op, const decompositions::qubits_t& qubits,
-                    const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& op, const qubits_t& qubits, const cbits_t& /* unused */) {
         atom<ops::H>()->apply(circuit, ops::H{}, qubits);
         std::visit(
             [this, &circuit, &qubits](const auto& param) {

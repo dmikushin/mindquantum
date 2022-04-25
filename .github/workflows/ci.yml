@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Get history and tags for SCM versioning to work
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         run: |
           git fetch --prune --unshallow
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*¨
@@ -43,8 +43,13 @@ jobs:
           sudo apt-get update && sudo apt-get install -y libboost-filesystem-dev
           --no-install-recommends
 
+      - name: Setup CCache
+        uses: hendrikmuhs/ccache-action@v1.2.1
+        with:
+          key: ${{ matrix.runs-on }}-python-${{ matrix.python }}-ccache
+
       - name: Cache CMake installer
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
@@ -59,7 +64,7 @@ jobs:
           sudo bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
 
       - name: Cache Python virtualenv
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: venv
@@ -67,18 +72,22 @@ jobs:
           key: ${{ matrix.runs-on }}-python-${{ matrix.python }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: build/.mqlibs
           # yamllint disable-line rule:line-length
           key: ${{ matrix.runs-on }}-python-${{ matrix.python }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+          restore-keys: ${{ matrix.runs-on }}-python-${{ matrix.python }}-third-party-libs-
 
       - name: Configure
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure-only -c
+        run: >-
+          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+          --configure-only -c --clean-3rdparty
+
 
       - name: Build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
 
   # ============================================================================
 
@@ -111,8 +120,13 @@ jobs:
           python3-setuptools python3-wheel python3-venv libboost-filesystem-dev
           --no-install-recommends
 
+      - name: Setup CCache
+        uses: hendrikmuhs/ccache-action@v1.2.1
+        with:
+          key: gcc-${{ matrix.gcc }}-ccache
+
       - name: Cache CMake installer
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
@@ -127,24 +141,27 @@ jobs:
           bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
 
       - name: Cache Python virtualenv
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: venv
           key: gcc-${{ matrix.gcc }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: build/.mqlibs
           key: gcc-${{ matrix.gcc }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+          restore-keys: gcc-${{ matrix.gcc }}-third-party-libs-
 
       - name: Configure
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure-only -c
+        run: >-
+          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+          --configure-only -c --clean-3rdparty
 
       - name: Build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
 
   # ============================================================================
 
@@ -160,6 +177,7 @@ jobs:
           - 10   # first version for full C++17 support (with patches)
           - 11
           - 12
+          - 13
           - latest
     env:
       CC: clang
@@ -182,8 +200,13 @@ jobs:
           python3-setuptools python3-wheel python3-venv
           --no-install-recommends
 
+      - name: Setup CCache
+        uses: hendrikmuhs/ccache-action@v1.2.1
+        with:
+          key: clang-${{ matrix.clang }}-ccache
+
       - name: Cache CMake installer
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
@@ -198,24 +221,27 @@ jobs:
           bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
 
       - name: Cache Python virtualenv
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: venv
           key: clang-${{ matrix.clang }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v2
         with:
           path: build/.mqlibs
           key: clang-${{ matrix.clang }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+          restore-keys: clang-${{ matrix.clang }}-third-party-libs-
 
       - name: Configure
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure-only -c
+        run: >-
+          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+          --configure-only -c --clean-3rdparty
 
       - name: Build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
 
   # ============================================================================
 
@@ -232,29 +258,79 @@ jobs:
           git fetch --prune --unshallow
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v3
+
+      - name: Enable Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1.10.0
+
+      - name: Install Scoop && Scoop packages
+        run: |
+          iwr -useb get.scoop.sh -outfile 'install.ps1'
+          .\install.ps1 -RunAsAdmin
+          Join-Path (Resolve-Path ~).Path "scoop\shims" >> $Env:GITHUB_PATH
+          scoop install ccache
+
+      - name: Get Date
+        id: get-date
+        shell: bash
+        run: |
+          echo "::set-output name=date::$(date -Iseconds)"
+
+      - name: Restore cache for CCache
+        if: env.ACT != 'true'
+        id: ccache-cache
+        uses: martijnhols/actions-cache/restore@v3
+        with:
+          path: ccache
+          key: msvc-ccache-${{ steps.get-date.outputs.date }}
+          restore-keys: msvc-ccache-
+
+      - name: Configure CCache
+        run: |
+          ccache --set-config=cache_dir="$PWD/ccache"
+          ccache --set-config=max_size=500M
+          ccache --set-config=compression=true
+          ccache -pz
+          ccache -sv
+
       - name: Cache Python virtualenv
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: venv
           key: msvc-python-venv-${{ hashFiles('build_locally.ps1') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: build/.mqlibs
           key: msvc-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+          restore-keys: msvc-third-party-libs-
 
       - name: Configure
+        env:
+          CC: cl
+          CXX: cl
         run: >-
-           ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -ConfigureOnly -C
+           ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Ninja -Test -CCache
+           -ConfigureOnly -C -Clean3rdParty
            -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
 
       - name: Build
-        run: >-
-           ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake
-           -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
+        run: ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Ninja -Test -CCache
+
+      - name: Print CCache statistics
+        run: |
+          ccache -sv
+
+      - name: Save cache for CCache
+        if: env.ACT != 'true'
+        uses: martijnhols/actions-cache/save@v3
+        with:
+          path: ccache
+          key: msvc-ccache-${{ steps.get-date.outputs.date }}
 
   # ============================================================================
 
@@ -277,14 +353,14 @@ jobs:
   #         git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
   #     - name: Cache Python virtualenv
-  #       if: ${{ !env.ACT }}
+  #       if: env.ACT != 'true'
   #       uses: actions/cache@v3
   #       with:
   #         path: venv
   #         key: mingw64-python-venv-${{ hashFiles('build_locally.ps1') }}-${{ secrets.cache_ver }}
 
   #     - name: Cache compiled third-party libraries
-  #       if: ${{ !env.ACT }}
+  #       if: env.ACT != 'true'
   #       uses: actions/cache@v3
   #       with:
   #         path: build/.mqlibs
@@ -313,15 +389,15 @@ jobs:
   #       env:
   #         BOOST_ROOT: ${{ env.BOOST_PATH }}
   #       run: >-
-  #          ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -ConfigureOnly -C
-  #          -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON -G "MinGW Makefiles"
+  #          ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Test
+  #           -G "MinGW Makefiles" -ConfigureOnly -C -Clean3rdParty
+  #          -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
 
   #     - name: Build
   #       env:
   #         BOOST_ROOT: ${{ env.BOOST_PATH }}
   #       run: >-
-  #          ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake
-  #          -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON -G "MinGW Makefiles"
+  #          ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Test
 
   # ============================================================================
 
@@ -338,9 +414,41 @@ jobs:
               make
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-cmake
+              mingw-w64-x86_64-ccache
               mingw-w64-x86_64-python
               mingw-w64-x86_64-python-pip
             cmake_generator: -- -G "MSYS Makefiles"
+            CC: gcc
+            CXX: g++
+
+          - msystem: CLANG64
+            installdeps: >-
+              git
+              patch
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-libssp
+              mingw-w64-clang-x86_64-cmake
+              mingw-w64-clang-x86_64-ccache
+              mingw-w64-clang-x86_64-python
+              mingw-w64-clang-x86_64-python-pip
+            cmake_generator: -- -G "MSYS Makefiles"
+            CC: clang
+            CXX: clang++
+
+          - msystem: UCRT64
+            installdeps: >-
+              git
+              patch
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-cmake
+              mingw-w64-ucrt-x86_64-ccache
+              mingw-w64-ucrt-x86_64-python
+              mingw-w64-ucrt-x86_64-python-pip
+            cmake_generator: -- -G "MSYS Makefiles"
+            CC: gcc
+            CXX: g++
 
           - msystem: MSYS
             installdeps: >-
@@ -352,6 +460,8 @@ jobs:
               python-pip
               gmp-devel
             cmake_generator:
+            CC: gcc
+            CXX: g++
 
     name: "MSYS2 ${{ matrix.msystem }} • x64"
     steps:
@@ -365,33 +475,83 @@ jobs:
       - name: Setup MSYS
         uses: msys2/setup-msys2@v2
         with:
-          msystem: ${{ matrix.msystem }}
-          update: false
           install: ${{ matrix.installdeps }}
+          msystem: ${{ matrix.msystem }}
+          path-type: strict
+          update: false
+
+      - name: Get Date
+        id: get-date
+        shell: msys2 {0}
+        run: |
+          echo "::set-output name=date::$(date -Iseconds)"
+
+      - name: Restore cache for CCache
+        if: env.ACT != 'true' && matrix.msystem != 'MSYS'
+        id: ccache-cache
+        uses: martijnhols/actions-cache/restore@v3
+        with:
+          path: ccache
+          key: msys2-${{ matrix.msystem }}-ccache-${{ steps.get-date.outputs.date }}
+          restore-keys: msys2-${{ matrix.msystem }}-ccache-
+
+      - name: Configure CCache
+        if: matrix.msystem != 'MSYS'
+        shell: msys2 {0}
+        run: |
+          which ccache
+          ccache --help
+          ccache --set-config=cache_dir="$PWD/ccache"
+          ccache --set-config=max_size=500M
+          ccache --set-config=compression=true
+          ccache -pz
+          ccache -sv
 
       - name: Cache Python virtualenv
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: venv
           key: msys2-${{ matrix.msystem }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: build/.mqlibs
           key: msys2-${{ matrix.msystem }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+          restore-keys: msys2-${{ matrix.msystem }}-third-party-libs-
 
       - name: Configure
         shell: msys2 {0}
+        env:
+          CC: ${{ matrix.CC }}
+          CXX: ${{ matrix.CXX }}
         run: >-
-          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --configure-only -c
+          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+          --configure-only -c --clean-3rdparty
           ${{ matrix.cmake_generator }}
+
 
       - name: Build
         shell: msys2 {0}
-        run: ./build_locally.sh --cxx --with-projectq --debug-cmake
+        env:
+          CC: ${{ matrix.CC }}
+          CXX: ${{ matrix.CXX }}
+        run: ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
+
+      - name: Print CCache statistics
+        if: matrix.msystem != 'MSYS'
+        shell: msys2 {0}
+        run: |
+          ccache -sv
+
+      - name: Save cache for CCache
+        if: env.ACT != 'true' && matrix.msystem != 'MSYS'
+        uses: martijnhols/actions-cache/save@v3
+        with:
+          path: ccache
+          key: msys2-${{ matrix.msystem }}-ccache-${{ steps.get-date.outputs.date }}
 
   # ============================================================================
 
@@ -400,6 +560,9 @@ jobs:
     strategy:
       fail-fast: false
     name: "Cygwin • x64"
+    env:
+      CYGWIN_NOWINPATH: 1  # only have cygwin's executables on PATH
+      CHERE_INVOKING: 1  # prevent profile script to change directory
     steps:
       - run: git config --global core.autocrlf input
 
@@ -414,39 +577,96 @@ jobs:
         uses: cygwin/cygwin-install-action@v2
         with:
           packages: >-
-            autoconf automake binutils m4 make cmake patch
+            cygwin cygwin-devel
+            autoconf automake coreutils m4 make cmake patch git
+            gawk sed libtool gettext wget curl grep dos2unix
             gzip bzip2 tar xz
-            flex file findutils groff gawk sed libtool gettext wget curl grep dos2unix
-            git
-            gcc-core gcc-g++
-            libgmp-devel
+            binutils gcc-core gcc-g++
+            libgmp-devel libzstd-devel
             python3 python3-devel python3-pip python3-virtualenv
 
+      - name: Get Date
+        id: get-date
+        shell: bash --login -eo pipefail -o igncr {0}
+        run: |
+          echo "::set-output name=date::$(date -Iseconds)"
+
+      - name: Restore cache for CCache
+        if: env.ACT != 'true'
+        id: ccache-cache
+        uses: martijnhols/actions-cache/restore@v3
+        with:
+          path: ccache
+          key: cygwin-ccache-${{ steps.get-date.outputs.date }}
+          restore-keys: cygwin-ccache-
+
+      - name: Install CCache
+        shell: bash --login -eo pipefail -o igncr {0}
+        run: |
+          export PATH="$PATH:$PWD/ccache/bin"
+          if ! command -v ccache >/dev/null 2>&1; then
+              wget https://github.com/ccache/ccache/releases/download/v4.6/ccache-4.6.tar.gz
+              tar xf ccache-4.6.tar.gz
+              cmake -S ccache-4.6 -B ccache-4.6/build -DENABLE_TESTING=OFF -DENABLE_DOCUMENTATION=OFF \
+                    -DCCACHE_DEV_MODE=OFF -DHIREDIS_FROM_INTERNET=ON \
+                    -DHAVE_ASM_SSE41=OFF -DHAVE_ASM_AVX2=OFF -DHAVE_ASM_AVX512=OFF \
+                    -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/ccache"
+              make -C ccache-4.6/build -j$(nproc) install VERBOSE=1
+          fi
+
+      - name: Configure CCache
+        shell: bash --login -eo pipefail -o igncr {0}
+        run: |
+          export PATH="$PATH:$PWD/ccache/bin"
+          ccache --set-config=cache_dir="$PWD/ccache"
+          ccache --set-config=max_size=500M
+          ccache --set-config=compression=true
+          ccache -pz
+          ccache -sv
+
       - name: Cache Python virtualenv
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: venv
           key: cygwin-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: build/.mqlibs
           key: cygwin-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+          restore-keys: cygwin-third-party-libs-
 
       - name: Configure
         env:
           PATH: C:\cygwin\bin
-        shell: bash --noprofile --norc -e -o pipefail -o igncr {0}
-        run: ./build_locally.sh --cxx --with-projectq --without-quest --debug-cmake --configure-only -c
+        shell: bash --login -eo pipefail -o igncr {0}
+        run: |
+          export PATH="$PATH:$PWD/ccache/bin"
+          ./build_locally.sh --cxx --with-projectq --without-quest --debug-cmake --test --ccache \
+          --configure-only -c --clean-3rdparty \
+          ${{ matrix.cmake_generator }}
 
       - name: Build
-        env:
-          PATH: C:\cygwin\bin
-        shell: bash --noprofile --norc -e -o pipefail -o igncr {0}
-        run: ./build_locally.sh --cxx --with-projectq --without-quest --debug-cmake
+        shell: bash --login -eo pipefail -o igncr {0}
+        run: |
+          export PATH="$PATH:$PWD/ccache/bin"
+          ./build_locally.sh --cxx --with-projectq --without-quest --debug-cmake --test --ccache
+
+      - name: Print CCache statistics
+        shell: bash --login -eo pipefail -o igncr {0}
+        run: |
+          export PATH="$PATH:$PWD/ccache/bin"
+          ccache -sv
+
+      - name: Save cache for CCache
+        if: env.ACT != 'true'
+        uses: martijnhols/actions-cache/save@v3
+        with:
+          path: ccache
+          key: cygwin-ccache-${{ steps.get-date.outputs.date }}
 
   # ============================================================================
 
@@ -478,8 +698,13 @@ jobs:
           python3-setuptools python3-wheel python3-venv libboost-filesystem-dev
           --no-install-recommends
 
+      - name: Setup CCache
+        uses: hendrikmuhs/ccache-action@v1.2.1
+        with:
+          key: nvhpc-${{ matrix.nvhpc }}-ccache
+
       - name: Cache CMake installer
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh
@@ -494,24 +719,27 @@ jobs:
           bash cmake-${{ env.CMAKE_VERSION }}-linux-x86_64.sh --skip-license --prefix=/usr/local
 
       - name: Cache Python virtualenv
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: venv
           key: nvhpc-${{ matrix.nvhpc }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
-        if: ${{ !env.ACT }}
+        if: env.ACT != 'true'
         uses: actions/cache@v3
         with:
           path: build/.mqlibs
           key: nvhpc-${{ matrix.nvhpc }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
+          restore-keys: nvhpc-${{ matrix.nvhpc }}-third-party-libs-
 
       - name: Configure
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu --configure-only -c
+        run: >-
+          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu --test --ccache
+          --configure-only -c --clean-3rdparty
 
       - name: Build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu
+        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu --test --ccache
 
   # ============================================================================
 
@@ -556,21 +784,27 @@ jobs:
   #         ${{ matrix.apt_pkg }}
   #         --no-install-recommends
 
+  #     - name: Setup CCache
+  #       uses: hendrikmuhs/ccache-action@v1.2.1
+  #       with:
+  #         key: nvhpc-${{ matrix.nvhpc }}-ccache
+
   #     - name: Cache Python virtualenv
-  #       if: ${{ !env.ACT }}
+  #       if: env.ACT != 'true'
   #       uses: actions/cache@v3
   #       with:
   #         path: venv
   #         key: intel-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
 
   #     - name: Cache compiled third-party libraries
-  #       if: ${{ !env.ACT }}
+  #       if: env.ACT != 'true'
   #       uses: actions/cache@v3
   #       with:
   #         path: build/.mqlibs
   #         key: >-
   #           intel-${{ matrix.cc }}-${{ matrix.cxx }}-clang-third-party-libs-${{ hashFiles('third_party/**') }}
   #           -${{ secrets.cache_ver }}
+  #         restore-keys: intel-${{ matrix.cc }}-${{ matrix.cxx }}-clang-third-party-libs-
 
   #     - name: Configure
   #       run: |
@@ -578,7 +812,8 @@ jobs:
   #         if [ -f /opt/intel/oneapi/tbb/latest/env/vars.sh ]; then
   #           source /opt/intel/oneapi/tbb/latest/env/vars.sh
   #         fi
-  #         ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu --configure-only -c
+  #         ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --gpu \
+  #         --configure-only -c --clean-3rdparty
 
   #     - name: Build
   #       run: |
@@ -586,4 +821,4 @@ jobs:
   #         if [ -f /opt/intel/oneapi/tbb/latest/env/vars.sh ]; then
   #           source /opt/intel/oneapi/tbb/latest/env/vars.sh
   #         fi
-  #         ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu
+  #         ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --gpu

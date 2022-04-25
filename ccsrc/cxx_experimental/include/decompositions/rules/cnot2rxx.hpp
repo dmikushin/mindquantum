@@ -37,7 +37,7 @@ class CNOT2Rxx
         return "CNOT2Rxx"sv;
     }
 
-    void apply_positive_decomp(circuit_t& circuit, const decompositions::qubits_t& qubits) {
+    void apply_positive_decomp(circuit_t& circuit, const qubits_t& qubits) {
         using ops::parametric::Ph;
         using ops::parametric::Rx;
         using ops::parametric::Rxx;
@@ -52,7 +52,7 @@ class CNOT2Rxx
         atom<Ry>()->apply(circuit, ops::Ry{PI_VAL_2}, {qubits[0]});
     }
 
-    void apply_negative_decomp(circuit_t& circuit, const decompositions::qubits_t& qubits) {
+    void apply_negative_decomp(circuit_t& circuit, const qubits_t& qubits) {
         using ops::parametric::Ph;
         using ops::parametric::Rx;
         using ops::parametric::Rxx;
@@ -67,8 +67,8 @@ class CNOT2Rxx
         atom<Ry>()->apply(circuit, ops::Ry{-PI_VAL_2}, {qubits[0]});
     }
 
-    void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& /* op */, const qubits_t& qubits,
+                    const cbits_t& /* unused */) {
         if (use_positive_decomp_) {
             apply_positive_decomp(circuit, qubits);
         } else {

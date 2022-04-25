@@ -16,14 +16,29 @@
 #
 # ==============================================================================
 
-add_library(mindquantum_cxx STATIC)
-set_target_properties(mindquantum_cxx PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-target_link_libraries(mindquantum_cxx PUBLIC cxx20_compat cmake_config mindquantum_setup)
+# cmake-lint: disable=C0103
 
-target_compile_features(mindquantum_cxx PUBLIC $<IF:$<COMPILE_FEATURES:cxx_std_20>,cxx_std_20,cxx_std_17>)
-force_at_least_cxx17_workaround(mindquantum_cxx)
+set(REQ_URL "https://github.com/catchorg/Catch2/archive/refs/tags/v2.13.9.tar.gz")
+set(MD5 "feda9b6fd01621d404537d38df56ff83")
 
-add_subdirectory(include)
-add_subdirectory(lib)
+set(CMAKE_OPTION
+    -DCATCH_BUILD_TESTING=OFF
+    -DCATCH_INSTALL_DOCS=OFF
+    -DCATCH_INSTALL_HELPERS=ON
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -G${CMAKE_GENERATOR})
 
-add_subdirectory(python)
+if(CMAKE_C_COMPILER)
+  list(APPEND CMAKE_OPTION -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
+endif()
+
+mindquantum_add_pkg(
+  Catch2
+  VER 2.13.0
+  URL ${REQ_URL}
+  MD5 ${MD5}
+  CMAKE_PKG_NO_COMPONENTS
+  CMAKE_OPTION ${CMAKE_OPTION}
+  TARGET_ALIAS mindquantum::catch2 Catch2::Catch2)

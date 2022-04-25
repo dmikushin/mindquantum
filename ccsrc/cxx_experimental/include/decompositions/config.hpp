@@ -35,14 +35,6 @@ static constexpr auto any_target = num_target_t(0);
 
 //! Constant representing no constraints on the number of control qubits
 static constexpr auto any_control = num_control_t(-1);
-
-using circuit_t = tweedledum::Circuit;
-using instruction_t = tweedledum::Instruction;
-using operator_t = tweedledum::Operator;
-using qubit_t = tweedledum::Qubit;
-using qubits_t = std::vector<qubit_t>;
-using cbit_t = tweedledum::Cbit;
-using cbits_t = std::vector<cbit_t>;
 }  // namespace mindquantum::decompositions
 
 namespace mindquantum::traits {

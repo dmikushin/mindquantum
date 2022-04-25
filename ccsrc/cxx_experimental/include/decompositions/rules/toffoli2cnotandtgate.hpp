@@ -35,8 +35,8 @@ class Toffoli2CNOTAndT
         return "Toffoli2CNOTAndT"sv;
     }
 
-    void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& /* op */, const qubits_t& qubits,
+                    const cbits_t& /* unused */) {
         assert(std::size(qubits) == 3);
         const auto& control0 = qubits[0];
         const auto& control1 = qubits[1];

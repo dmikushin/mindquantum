@@ -44,12 +44,11 @@ concept atom_compatible_t = requires(atom_t) {
     // clang-format on
 };
 #else
-template <typename operator_t, typename = void>
+template <typename op_t, typename = void>
 struct atom_compatible_t : std::false_type {};
 
-template <typename operator_t>
-struct atom_compatible_t<operator_t,
-                         std::void_t<std::tuple<decltype(operator_t::kind()), decltype(operator_t::num_controls())>>>
+template <typename op_t>
+struct atom_compatible_t<op_t, std::void_t<std::tuple<decltype(op_t::kind()), decltype(op_t::num_controls())>>>
     : std::true_type {};
 #endif  // MQ_HAS_CONCEPTS
 }  // namespace mindquantum::concepts
@@ -125,7 +124,7 @@ class AtomStorage {
      * \param name Name of atom to look for
      * \return True/false depending on whether the atom can be found or not
      */
-    template <typename o_atom_t, typename... operator_t>
+    template <typename o_atom_t, typename... op_t>
     MQ_NODISCARD bool has_atom(num_control_t num_controls, std::string_view name) const noexcept;
 
     //! Look for a suitable decomposition atom within the storage

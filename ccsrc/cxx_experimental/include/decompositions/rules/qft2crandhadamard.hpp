@@ -33,8 +33,8 @@ class QFT2CrAndHadamard
         return "QFT2CrAndHadamard"sv;
     }
 
-    void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& /* op */, const qubits_t& qubits,
+                    const cbits_t& /* unused */) {
         auto last = std::size(qubits) - 1;
 
         for (std::size_t i(0); i < std::size(qubits); i++) {

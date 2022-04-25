@@ -99,8 +99,7 @@ class DecompositionRule {
      *
      * \note Currently the \c cbits parameter is not used at all! It is here to make the API futureproof.
      */
-    void apply(circuit_t& circuit, const decompositions::operator_t& op, const qubits_t& qubits,
-               const cbits_t& cbits) noexcept;
+    void apply(circuit_t& circuit, const operator_t& op, const qubits_t& qubits, const cbits_t& cbits) noexcept;
 
  protected:
     //! Apply an invalid operatoir to a circuit (to indicate an error in processing)

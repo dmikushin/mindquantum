@@ -51,8 +51,8 @@ class X2Z : public decompositions::GateDecompositionRule<X2Z, std::tuple<ops::X>
         return "X2Z"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& /* op*/,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::operator_t& /* op*/,
+                    const mindquantum::qubits_t& qubits, const mindquantum::cbits_t& /* unused */) {
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
         atom<ops::Z>()->apply(circuit, ops::Z{}, {qubits[0]});
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[0]});
@@ -67,11 +67,11 @@ class AllToX : public decompositions::NonGateDecompositionRule<AllToX, ops::X> {
         return "AllToX"sv;
     }
 
-    bool is_applicable(const decompositions::instruction_t& inst) const {
+    bool is_applicable(const mindquantum::instruction_t& inst) const {
         return true;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::instruction_t& inst) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::instruction_t& inst) {
         atom<ops::X>()->apply(circuit, ops::X{}, inst.qubits());
     }
 };
@@ -84,11 +84,11 @@ class PseudoIdentityRule : public decompositions::NonGateDecompositionRule<Pseud
         return "PseudoIdentityRule"sv;
     }
 
-    bool is_applicable(const decompositions::instruction_t& inst) const {
+    bool is_applicable(const mindquantum::instruction_t& inst) const {
         return true;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::instruction_t& inst) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::instruction_t& inst) {
         if (auto* atom{storage().get_atom_for(inst)}; atom != nullptr) {
             atom->apply(circuit, inst);
         } else {
@@ -105,8 +105,8 @@ TEST_CASE("GateDecomposer/All2X", "[decompositions][atom]") {
     REQUIRE(decomposer.num_atoms() == 0UL);
     REQUIRE(decomposer.num_rules() == 0UL);
 
-    using circuit_t = decompositions::circuit_t;
-    using instruction_t = decompositions::instruction_t;
+    using circuit_t = mindquantum::circuit_t;
+    using instruction_t = mindquantum::instruction_t;
     using h_t = decompositions::TrivialSimpleAtom<ops::H>;
     using ch_t = decompositions::TrivialSimpleAtom<ops::H, 1>;
     using x_t = decompositions::TrivialSimpleAtom<ops::X>;
@@ -168,8 +168,8 @@ TEST_CASE("GateDecomposer/Identity", "[decompositions][atom]") {
     REQUIRE(decomposer.num_atoms() == 0UL);
     REQUIRE(decomposer.num_rules() == 0UL);
 
-    using circuit_t = decompositions::circuit_t;
-    using instruction_t = decompositions::instruction_t;
+    using circuit_t = mindquantum::circuit_t;
+    using instruction_t = mindquantum::instruction_t;
 
     using x_t = decompositions::TrivialSimpleAtom<ops::X>;
     using h_t = decompositions::TrivialSimpleAtom<ops::H>;

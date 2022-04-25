@@ -18,14 +18,12 @@
 
 # lint_cmake: -whitespace/indent
 
-# NB: no -Wl, here, CMake automatically adds the correct prefix for the linker
-if(LINKER_STRIP_ALL)
-  test_linker_option(
-    linker_flags
-    LANGS C CXX DPCXX CUDA NVCXX
-    FLAGS "--strip-all -s"
-    GENEX "$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>")
-endif()
+test_linker_option(
+  linker_flags
+  LANGS C CXX DPCXX CUDA NVCXX
+  FLAGS "--strip-all -s"
+  GENEX "$<OR:$<CONFIG:RELEASE>,$<CONFIG:RELWITHDEBINFO>>"
+  CMAKE_OPTION LINKER_STRIP_ALL)
 
 test_linker_option(
   linker_flags
@@ -34,21 +32,19 @@ test_linker_option(
 
 # ------------------------------------------------------------------------------
 
-if(LINKER_NOEXECSTACK)
-  test_linker_option(
-    link_no_execstack
-    LANGS C CXX DPCXX CUDA NVCXX
-    FLAGS "-z,noexecstack")
-endif()
+test_linker_option(
+  link_no_execstack
+  LANGS C CXX DPCXX CUDA NVCXX
+  FLAGS "-z,noexecstack"
+  CMAKE_OPTION LINKER_NOEXECSTACK)
 
 # ------------------------------------------------------------------------------
 
-if(LINKER_RELRO)
-  test_linker_option(
-    link_relro
-    LANGS C CXX DPCXX CUDA NVCXX
-    FLAGS "-z,relro")
-endif()
+test_linker_option(
+  link_relro
+  LANGS C CXX DPCXX CUDA NVCXX
+  FLAGS "-z,relro"
+  CMAKE_OPTION LINKER_RELRO)
 
 # ------------------------------------------------------------------------------
 
@@ -75,13 +71,12 @@ endif()
 
 # ------------------------------------------------------------------------------
 
-if(ENABLE_STACK_PROTECTION)
-  test_linker_option(
-    stack_protection
-    LANGS C CXX DPCXX
-    FLAGS "-fstack-protector-all"
-    VERBATIM)
-endif()
+test_linker_option(
+  stack_protection
+  LANGS C CXX DPCXX
+  FLAGS "-fstack-protector-all"
+  VERBATIM
+  CMAKE_OPTION ENABLE_STACK_PROTECTION)
 
 # ------------------------------------------------------------------------------
 
@@ -263,3 +258,19 @@ set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
 endif()
 
 # ==============================================================================
+# Platform specific flags
+
+if("${OS_NAME}" STREQUAL "MSYS-CLANG64")
+  message(STATUS "Looking for libssp (stack protection & secure functions) as required on MSYS-CLANG64")
+  find_library(
+    _ssp_library
+    NAMES ssp
+    PATHS /clang64
+    PATH_SUFFIXES lib REQUIRED)
+
+  foreach(_lang C CXX DPCXX)
+    if(TARGET ${_lang}_mindquantum)
+      target_link_libraries(${_lang}_mindquantum INTERFACE "$<$<LINK_LANGUAGE:${_lang}>:${_ssp_library}>")
+    endif()
+  endforeach()
+endif()

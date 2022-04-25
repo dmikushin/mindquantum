@@ -32,11 +32,11 @@ namespace mindquantum::decompositions {
  *  \tparam num_controls_ Number of control qubits the gate this atom is representing has. Possible values:
  *                        -1 for any number of control qubits, >= 0 for a specified number of control qubits.
  */
-template <typename operator_t, num_target_t num_targets_ = any_target, num_control_t num_controls_ = any_control>
+template <typename op_t, num_target_t num_targets_ = any_target, num_control_t num_controls_ = any_control>
 class TrivialAtom : public traits::controls<num_controls_> {
  public:
-    using self_t = TrivialAtom<operator_t, num_targets_, num_controls_>;
-    using kinds_t = std::tuple<operator_t>;
+    using self_t = TrivialAtom<op_t, num_targets_, num_controls_>;
+    using kinds_t = std::tuple<op_t>;
 
     explicit TrivialAtom(AtomStorage& /* storage */) {
         // NB: TrivialAtom has no dependent atoms to insert into the storage
@@ -44,7 +44,7 @@ class TrivialAtom : public traits::controls<num_controls_> {
 
     //! Return the name of this decomposition atom
     MQ_NODISCARD static constexpr std::string_view name() noexcept {
-        return operator_t::kind();
+        return op_t::kind();
     }
 
     //! Return the number of target qubits this decomposition atom is constrained on
@@ -88,12 +88,11 @@ class TrivialAtom : public traits::controls<num_controls_> {
      *
      * \note Currently the \c cbits parameter is not used at all! It is here to make the API futureproof.
      */
-    void apply(circuit_t& circuit, const decompositions::operator_t& op, const qubits_t& qubits,
-               const cbits_t& cbits) noexcept;
+    void apply(circuit_t& circuit, const operator_t& op, const qubits_t& qubits, const cbits_t& cbits) noexcept;
 };
 
-template <typename operator_t, num_control_t num_controls_ = any_control>
-using TrivialSimpleAtom = TrivialAtom<operator_t, traits::num_targets<operator_t>, num_controls_>;
+template <typename op_t, num_control_t num_controls_ = any_control>
+using TrivialSimpleAtom = TrivialAtom<op_t, traits::num_targets<op_t>, num_controls_>;
 }  // namespace mindquantum::decompositions
 
 #include "decompositions/trivial_atom.tpp"

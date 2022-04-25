@@ -45,7 +45,7 @@ class AllToXAndY : public decompositions::NonGateDecompositionRule<AllToXAndY, o
         return "CNOT2CZ"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::instruction_t& inst) {
+    void apply_impl(mindquantum::circuit_t& circuit, const mindquantum::instruction_t& inst) {
         atom<ops::X>()->apply(circuit, ops::X{}, inst.qubits());
         atom<ops::Y>()->apply(circuit, ops::Y{}, inst.qubits());
     }
@@ -55,8 +55,8 @@ class AllToXAndY : public decompositions::NonGateDecompositionRule<AllToXAndY, o
 // -----------------------------------------------------------------------------
 
 TEST_CASE("NonGateDecompositionRule/atom", "[decompositions][atom]") {
-    using instruction_t = decompositions::instruction_t;
-    using circuit_t = decompositions::circuit_t;
+    using instruction_t = mindquantum::instruction_t;
+    using circuit_t = mindquantum::circuit_t;
 
     using x_t = decompositions::TrivialSimpleAtom<ops::X>;
     using y_t = decompositions::TrivialSimpleAtom<ops::Y>;

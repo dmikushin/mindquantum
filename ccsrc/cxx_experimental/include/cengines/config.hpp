@@ -15,17 +15,6 @@
 #ifndef CENGINES_CONFIG_HPP
 #define CENGINES_CONFIG_HPP
 
-#include <tweedledum/IR/Circuit.h>
-#include <tweedledum/IR/Instruction.h>
-#include <tweedledum/IR/Qubit.h>
-
 #include "core/config.hpp"
-
-namespace mindquantum::cengines {
-using circuit_t = tweedledum::Circuit;
-using instruction_t = tweedledum::Instruction;
-using qubit_t = tweedledum::Qubit;
-using qubits_t = std::vector<qubit_t>;
-}  // namespace mindquantum::cengines
 
 #endif /* CENGINES_CONFIG_HPP */

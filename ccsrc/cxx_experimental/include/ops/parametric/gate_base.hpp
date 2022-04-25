@@ -32,8 +32,8 @@
 #    include <type_traits>
 #endif  // MQ_HAS_CONCEPTS
 
+#include <symengine/basic.h>
 #include <symengine/complex_double.h>
-#include <symengine/dict.h>
 #include <symengine/eval_double.h>
 #include <symengine/visitor.h>
 #include <tweedledum/IR/Operator.h>
@@ -294,12 +294,12 @@ class ParametricBase {
                           [](const auto& a, const auto& b) { return eq(*a, *b); });
     }
 
-#if __cplusplus <= 201703L
+#if !MQ_HAS_OPERATOR_NOT_EQUAL_SYNTHESIS
     //! Test whether another operation is the same as this instance
     MQ_NODISCARD bool operator!=(const ParametricBase& other) const noexcept {
         return !(*this == other);
     }
-#endif  // __cplusplus <= 201703L
+#endif  // !MQ_HAS_OPERATOR_NOT_EQUAL_SYNTHESIS
 
     //! True if this operation has no particular ordering of qubits
     MQ_NODISCARD bool is_symmetric() const noexcept {

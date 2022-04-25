@@ -31,19 +31,12 @@
 
 namespace py = pybind11;
 namespace td = tweedledum;
-
-using qubit_t = td::Qubit;
-using qubits_t = std::vector<qubit_t>;
-using cbit_t = td::Cbit;
-using cbits_t = std::vector<cbit_t>;
-using instruction_t = td::Instruction;
-using inst_ref_t = td::InstRef;
-using circuit_t = td::Circuit;
+namespace mq = mindquantum;
 
 template <typename operator_t>
 auto apply_operator_t() {
-    return static_cast<inst_ref_t (circuit_t::*)(const operator_t&, const qubits_t&, const cbits_t&)>(
-        &circuit_t::apply_operator);
+    return static_cast<mq::inst_ref_t (mq::circuit_t::*)(const operator_t&, const mq::qubits_t&, const mq::cbits_t&)>(
+        &mq::circuit_t::apply_operator);
 }
 
 #define DEF_APPLY_OPERATOR_OVERLOAD(operator_t)                                                                        \

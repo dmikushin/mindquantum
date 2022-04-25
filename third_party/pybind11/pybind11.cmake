@@ -26,6 +26,13 @@ else()
   set(MD5 "7609dcb4e6e18eee9dc1a5f26572ded1")
 endif()
 
+set(CMAKE_OPTION -DPYBIND11_TEST=OFF -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                 -G${CMAKE_GENERATOR})
+
+if(CMAKE_C_COMPILER)
+  list(APPEND CMAKE_OPTION -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
+endif()
+
 if(WIN32)
   set(TARGET_ALIAS_EXTRA TARGET_ALIAS mindquantum::windows_extra pybind11::windows_extras)
 endif()
@@ -36,7 +43,7 @@ mindquantum_add_pkg(
   VER ${VER}
   URL ${REQ_URL}
   MD5 ${MD5}
-  CMAKE_OPTION -DPYBIND11_TEST=OFF
+  CMAKE_OPTION ${CMAKE_OPTION}
   TARGET_ALIAS mindquantum::pybind11_headers pybind11::headers
   TARGET_ALIAS mindquantum::pybind11_module pybind11::module
   TARGET_ALIAS mindquantum::pybind11_lto pybind11::lto ${TARGET_ALIAS_EXTRA}) # cmake-lint: disable=E1122

@@ -76,11 +76,11 @@ using get = UnitTestAccessor;
 using mindquantum::CircuitBlock;
 
 static auto not_equal_initial_final_mappings(get::block_t& block) {
-#if __cplusplus > 201703L
+#if MQ_HAS_OPERATOR_NOT_EQUAL_SYNTHESIS
     return get::initial_mapping(block) != get::final_mapping(block);
 #else
     return !(get::initial_mapping(block) == get::final_mapping(block));
-#endif  // __cplusplus > 201703L
+#endif  // MQ_HAS_OPERATOR_NOT_EQUAL_SYNTHESIS
 }
 
 // =============================================================================
@@ -91,7 +91,7 @@ using qubit_t = CircuitBlock::qubit_t;
 template <typename T>
 struct conv_helper {
     static constexpr auto value(T t) {
-        return qubit_t{t};
+        return qubit_t{static_cast<uint32_t>(t)};
     }
 };
 

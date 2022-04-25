@@ -33,7 +33,7 @@ class RemovePhNoCtrl : public decompositions::NonGateDecompositionRule<RemovePhN
         return "CNOT2CZ"sv;
     }
 
-    MQ_NODISCARD static bool is_applicable(const decompositions::instruction_t& inst) {
+    MQ_NODISCARD static bool is_applicable(const instruction_t& inst) {
         return inst.is_one<ops::Ph, ops::parametric::Ph>() && inst.num_controls() == 0;
     }
 

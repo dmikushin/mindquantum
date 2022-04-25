@@ -13,7 +13,11 @@
 //   limitations under the License.
 
 #include <catch2/catch.hpp>
-#include <tweedledum/../../tests/check_unitary.h>
+#if __has_include("tweedledum/../../tests/check_unitary.h")
+#    include "tweedledum/../../tests/check_unitary.h"
+#else
+#    include <tweedledum/test/check_unitary.h>
+#endif
 #include <tweedledum/IR/Instruction.h>
 #include <tweedledum/Passes/Utility/shallow_duplicate.h>
 
@@ -53,8 +57,8 @@ namespace rules = mindquantum::decompositions::rules;
 // ==============================================================================
 
 namespace {
-using mindquantum::decompositions::operator_t;
-using mindquantum::decompositions::qubit_t;
+using mindquantum::operator_t;
+using mindquantum::qubit_t;
 
 template <typename... args_t>
 auto make_ops_array(args_t&&... args) {
@@ -106,7 +110,7 @@ TEST_CASE("Decompositions/rules/CNOT2CZ", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     // const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
 
     SECTION("No control qubits ") {
@@ -163,7 +167,7 @@ TEST_CASE("Decompositions/rules/CNOT2Rxx", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     // const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
 
     SECTION("No control qubits ") {
@@ -218,7 +222,7 @@ TEST_CASE("Decompositions/rules/CRz2CXAndRz", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
     auto numeric = tweedledum::shallow_duplicate(original);
 
@@ -318,7 +322,7 @@ TEST_CASE("Decompositions/rules/H2Rx", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
 
     SECTION("No control qubits ") {
@@ -373,7 +377,7 @@ TEST_CASE("Decompositions/rules/ControlPh", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
     auto numeric = tweedledum::shallow_duplicate(original);
 
@@ -460,7 +464,7 @@ TEST_CASE("Decompositions/rules/Ph2R", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
     auto numeric = tweedledum::shallow_duplicate(original);
 
@@ -550,7 +554,7 @@ TEST_CASE("Decompositions/rules/R2RzAndPh", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
     auto numeric = tweedledum::shallow_duplicate(original);
 
@@ -635,7 +639,7 @@ TEST_CASE("Decompositions/rules/Rx2Rz", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
     auto numeric = tweedledum::shallow_duplicate(original);
 
@@ -720,7 +724,7 @@ TEST_CASE("Decompositions/rules/Ry2Rz", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
     auto numeric = tweedledum::shallow_duplicate(original);
 
@@ -805,7 +809,7 @@ TEST_CASE("Decompositions/rules/Rz2RxAndRy", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
     auto numeric = tweedledum::shallow_duplicate(original);
 
@@ -892,7 +896,7 @@ TEST_CASE("Decompositions/rules/SqrtSwap2CNOT", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
 
     SECTION("No control qubits ") {
@@ -945,7 +949,7 @@ TEST_CASE("Decompositions/rules/Swap2CNOT", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
 
     SECTION("No control qubits ") {
@@ -998,7 +1002,7 @@ TEST_CASE("Decompositions/rules/Toffoli2CNOTAndT", "[decompositions][rules]") {
     const auto q2 = original.create_qubit();
     const auto q3 = original.create_qubit();
 
-    mindquantum::decompositions::qubits_t qubits;
+    mindquantum::qubits_t qubits;
     auto decomposed = tweedledum::shallow_duplicate(original);
 
     SECTION("No control qubits ") {

@@ -32,8 +32,8 @@ class CNOT2CZ
         return "CNOT2CZ"sv;
     }
 
-    void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& /* op */, const qubits_t& qubits,
+                    const cbits_t& /* unused */) {
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});
         atom<atoms::C<ops::Z>>()->apply(circuit, ops::Z{}, {qubits[0], qubits[1]});
         atom<ops::H>()->apply(circuit, ops::H{}, {qubits[1]});

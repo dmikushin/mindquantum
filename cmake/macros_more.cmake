@@ -33,6 +33,7 @@ macro(python_add_library target)
   endif()
 
   _python_add_library(${target} ${_args})
+  force_at_least_cxx17_workaround(${target})
   append_to_property(_doc_targets GLOBAL ${target})
   append_to_property(_python_targets GLOBAL ${target})
 
@@ -61,6 +62,7 @@ function(add_test_executable target)
   cmake_parse_arguments(${target} "" "" "LIBS;DEFINES" ${ARGN})
 
   add_executable(${target} ${target}.cpp ${${target}_UNPARSED_ARGUMENTS})
+  force_at_least_cxx17_workaround(${target})
   target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tests)
   target_link_libraries(${target} PRIVATE Catch2::Catch2 ${${target}_LIBS})
   catch_discover_tests(${target})

@@ -28,6 +28,7 @@ set cmake_make_silent=0
 set configure_only=0
 set cuda_arch=
 set do_clean=0
+set do_clean_3rdparty=0
 set do_clean_build_dir=0
 set do_clean_cache=0
 set do_clean_venv=0
@@ -39,6 +40,7 @@ set enable_cxx=0
 set enable_gpu=0
 set enable_projectq=1
 set enable_quest=0
+set enable_tests=0
 set force_local_pkgs=0
 set n_jobs=-1
 set n_jobs_default=0
@@ -50,7 +52,7 @@ set source_dir=%BASEPATH%
 set build_dir=%BASEPATH%\build
 set python_venv_path=%BASEPATH%\venv
 
-set third_party_libraries=boost eigen3 fmt gmp nlohmann_json projectq pybind11 quest symengine tweedledum
+set third_party_libraries=boost catch2 eigen3 fmt gmp nlohmann_json projectq pybind11 quest symengine tweedledum
 set third_party_libraries_N=10
 
 set cmake_book[0]=OFF
@@ -91,6 +93,10 @@ rem ============================================================================
 
   if /I "%1" == "/Clean" (
     set do_clean=1
+    shift & goto :initial
+  )
+  if /I "%1" == "/Clean3rdParty" (
+    set do_clean_3rdparty=1
     shift & goto :initial
   )
   if /I "%1" == "/CleanAll" (
@@ -190,6 +196,11 @@ rem ============================================================================
   if /I "%1" == "/ShowLibraries" (
     call :print_show_libraries
     goto :EOF
+  )
+
+  if /I "%1" == "/Test" (
+    set enable_tests=1
+    shift & goto :initial
   )
 
   if /I "%1" == "/UpdateVenv" (
@@ -392,6 +403,8 @@ if !cmake_debug_mode! == 1 set cmake_args=!cmake_args! -DENABLE_CMAKE_DEBUG:BOOL
 
 if !cmake_make_silent! == 1 set cmake_args=!cmake_args! -DUSE_VERBOSE_MAKEFILE:BOOL=OFF
 
+if !do_clean_3rdparty! == 1 set cmake_args=!cmake_args! -DCLEAN_3RDPARTY_INSTALL_DIR:BOOL=ON
+
 if !enable_cxx! == 1 set cmake_args=!cmake_args! -DENABLE_CXX_EXPERIMENTAL:BOOL=ON
 
 if !enable_gpu! == 1 (
@@ -411,6 +424,8 @@ if !enable_quest! == 1 (
   set cmake_args=!cmake_args! -DENABLE_QUEST:BOOL=OFF
 )
 
+if !enable_tests! == 1 set cmake_args=!cmake_args! -DBUILD_TESTING:BOOL=ON
+
 if !force_local_pkgs! == 1 (
   set cmake_args=!cmake_args! -DMQ_FORCE_LOCAL_PKGS=all
 ) else (
@@ -423,7 +438,13 @@ if !ninja! == 1 (
   if !n_jobs! == -1 set n_jobs=!n_jobs_default!
 )
 
-if NOT !n_jobs! == -1 set cmake_args=!cmake_args! -DJOBS:STRING=!n_jobs!
+set make_args=
+if NOT !n_jobs! == -1 (
+  set cmake_args=!cmake_args! -DJOBS:STRING=!n_jobs!
+  set make_args=!make_args! -j !n_jobs!
+)
+
+if !cmake_make_silent! == 0 set make_args=!make_args! -v
 
 rem ----------------------------------------------------------------------------
 rem Build
@@ -452,7 +473,7 @@ if !configure_only! == 1 goto :EOF
 
 if !do_clean! == 1 call :call_cmake --build "!build_dir!" --target clean
 
-call :call_cmake --build "!build_dir!" -j !n_jobs! --config !build_type!
+call :call_cmake --build "!build_dir!" --config !build_type! !make_args!
 
 goto :EOF
 
@@ -541,6 +562,7 @@ exit /B 0
   echo   /B,/Build [dir]     Specify build directory
   echo                       Defaults to: %build_dir%
   echo   /c,/Clean           Run make clean before building
+  echo   /Clean3rdParty      Clean 3rd party installation directory
   echo   /CleanAll           Clean everything before building.
   echo                       Equivalent to --clean-venv --clean-builddir
   echo   /CleanBuildDir      Delete build directory before building
@@ -559,6 +581,7 @@ exit /B 0
   echo   /Ninja              Use the Ninja CMake generator
   echo   /Quiet              Disable verbose build rules
   echo   /ShowLibraries      Show all known third-party libraries
+  echo   /Test               Build C++ tests
   echo   /Venv *path*        Path to Python virtual environment
   echo                       Defaults to: %python_venv_path%
   echo   /With*library*      Build the third-party *library* from source (*library* is case-insensitive)

@@ -12,9 +12,9 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 #    include <concepts>
-#endif  // HIQ_USE_CONCEPTS
+#endif  // MQ_HAS_CONCEPTS
 #include <type_traits>
 
 #include <catch2/catch.hpp>
@@ -63,7 +63,7 @@ using mindquantum::uncommitted;
 // =============================================================================
 
 namespace std {
-#if HIQ_USE_CONCEPTS
+#if MQ_HAS_CONCEPTS
 template <typename T>
 requires(!std::same_as<std::remove_cvref_t<T>, CircuitManager::qubit_t>) bool operator==(
     const std::vector<CircuitManager::qubit_t>& lhs, const std::vector<T>& rhs) {
@@ -74,7 +74,7 @@ template <typename T, typename = std::enable_if_t<!std::is_same_v<std::remove_cv
 bool operator==(const std::vector<CircuitManager::qubit_t>& lhs, const std::vector<T>& rhs) {
     return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
 }
-#endif  // _cpp_concepts
+#endif  // MQ_HAS_CONCEPTS
 }  // namespace std
 
 // =============================================================================

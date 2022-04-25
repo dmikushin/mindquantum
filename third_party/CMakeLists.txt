@@ -53,4 +53,8 @@ if(ENABLE_CXX_EXPERIMENTAL)
   include(${CMAKE_CURRENT_LIST_DIR}/eigen3/eigen3.cmake)
   include(${CMAKE_CURRENT_LIST_DIR}/symengine/symengine.cmake)
   include(${CMAKE_CURRENT_LIST_DIR}/tweedledum/tweedledum.cmake)
+
+  if(BUILD_TESTING)
+    include(${CMAKE_CURRENT_LIST_DIR}/catch2/catch2.cmake)
+  endif()
 endif()

@@ -39,8 +39,7 @@ class Ry2Rz
         return "Ry2Rz"sv;
     }
 
-    void apply_impl(circuit_t& circuit, const decompositions::operator_t& op, const decompositions::qubits_t& qubits,
-                    const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& op, const qubits_t& qubits, const cbits_t& /* unused */) {
         atom<ops::parametric::Rx>()->apply(circuit, ops::Rx{PI_VAL_2}, qubits);
         std::visit(
             [this, &circuit, &qubits](const auto& param) {

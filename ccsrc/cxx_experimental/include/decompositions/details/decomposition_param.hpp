@@ -74,7 +74,7 @@ static constexpr auto default_t = any_tgt::any_ctrl;
 
 }  // namespace mindquantum::decompositions
 
-#if __cplusplus > 201703L
+#if MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
 #    define ANY_TGT_ANY_CTRL    mindquantum::decompositions::tparam::any_tgt::any_ctrl
 #    define ANY_TGT_NO_CTRL     mindquantum::decompositions::tparam::any_tgt::no_ctrl
 #    define ANY_TGT_SINGLE_CTRL mindquantum::decompositions::tparam::any_tgt::single_ctrl
@@ -96,7 +96,7 @@ static constexpr auto default_t = any_tgt::any_ctrl;
 #    define SINGLE_TGT_PARAM_DOUBLE_CTRL mindquantum::decompositions::tparam::single_tgt_param::double_ctrl
 #else
 #    define MQ_INTERNAL_DR_EXPAND_TPARAM_IMPL(value) value.num_targets, value.num_controls, value.num_params
-#    define MQ_INTERNAL_DR_EXPAND_TPARAM(value)      HIQ_INTERNAL_DR_EXPAND_TPARAM_IMPL(mindquantum::decompositions::value)
+#    define MQ_INTERNAL_DR_EXPAND_TPARAM(value)      MQ_INTERNAL_DR_EXPAND_TPARAM_IMPL(mindquantum::decompositions::value)
 
 #    define ANY_TGT_ANY_CTRL    MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::any_ctrl)
 #    define ANY_TGT_NO_CTRL     MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::any_tgt::no_ctrl)
@@ -117,6 +117,6 @@ static constexpr auto default_t = any_tgt::any_ctrl;
 #    define SINGLE_TGT_PARAM_NO_CTRL     MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::no_ctrl)
 #    define SINGLE_TGT_PARAM_SINGLE_CTRL MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::single_ctrl)
 #    define SINGLE_TGT_PARAM_DOUBLE_CTRL MQ_INTERNAL_DR_EXPAND_TPARAM(tparam::single_tgt_param::double_ctrl)
-#endif  // __cplusplus > 201703L
+#endif  // MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
 
 #endif /* DECOMPOSITION_PARAM_HPP */

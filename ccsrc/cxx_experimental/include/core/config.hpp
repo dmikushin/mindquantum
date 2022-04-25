@@ -17,9 +17,11 @@
 
 #include <vector>
 
+#include "core/cmake_config.hpp"
 #include "core/cxx20_config.hpp"
 #include "core/details/clang_version.hpp"
 #include "core/details/cxx20_compatibility.hpp"
+#include "core/types.hpp"
 
 #ifdef __has_cpp_attribute
 #    if __has_cpp_attribute(nodiscard)
@@ -33,14 +35,14 @@
 
 #ifndef MQ_IS_CLANG_VERSION_LESS
 #    define MQ_IS_CLANG_VERSION_LESS(major, minor)                                                                     \
-        (defined __clang__) && (MQ_CLANG_MAJOR < major) && (HIQ_CLANG_MINOR < minor)
+        (defined __clang__) && (MQ_CLANG_MAJOR < major) && (MQ_CLANG_MINOR < minor)
 #    define MQ_IS_CLANG_VERSION_LESS_EQUAL(major, minor)                                                               \
-        (defined __clang__) && (MQ_CLANG_MAJOR <= major) && (HIQ_CLANG_MINOR <= minor)
+        (defined __clang__) && (MQ_CLANG_MAJOR <= major) && (MQ_CLANG_MINOR <= minor)
 #endif  // MQ_IS_CLANG_VERSION_LESS
 
-#if !defined(MQ_CONFIG_NO_COUNTER) && !defined(HIQ_CONFIG_COUNTER)
+#if !defined(MQ_CONFIG_NO_COUNTER) && !defined(MQ_CONFIG_COUNTER)
 #    define MQ_CONFIG_COUNTER
-#endif  // !MQ_CONFIG_NO_COUNTER && !HIQ_CONFIG_COUNTER
+#endif  // !MQ_CONFIG_NO_COUNTER && !MQ_CONFIG_COUNTER
 
 #define MQ_UNIQUE_NAME_LINE2(name, line) name##line
 #define MQ_UNIQUE_NAME_LINE(name, line)  MQ_UNIQUE_NAME_LINE2(name, line)
@@ -49,10 +51,5 @@
 #else
 #    define MQ_UNIQUE_NAME(name) MQ_UNIQUE_NAME_LINE(name, __LINE__)
 #endif
-
-namespace mindquantum {
-using qubit_id_t = unsigned int;
-using qureg_t = std::vector<qubit_id_t>;
-}  // namespace mindquantum
 
 #endif /* CORE_CONFIG_HPP */

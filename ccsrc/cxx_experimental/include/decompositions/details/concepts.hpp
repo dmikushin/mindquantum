@@ -48,8 +48,7 @@ class AtomStorage;
 }  // namespace mindquantum::decompositions
 namespace mindquantum::concepts {
 template <typename atom_t>
-concept BaseDecomposition = requires(atom_t atom, decompositions::AtomStorage& storage,
-                                     const decompositions::instruction_t& inst) {
+concept BaseDecomposition = requires(atom_t atom, decompositions::AtomStorage& storage, const instruction_t& inst) {
     { std::remove_cvref_t<atom_t>::name() } -> std::same_as<std::string_view>;
     { std::remove_cvref_t<atom_t>::num_targets() } -> std::same_as<decompositions::num_target_t>;
     { std::remove_cvref_t<atom_t>::num_controls() } -> std::same_as<decompositions::num_control_t>;

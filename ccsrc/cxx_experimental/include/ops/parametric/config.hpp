@@ -19,7 +19,6 @@
 #include <vector>
 
 #include <symengine/basic.h>
-#include <symengine/dict.h>
 #include <symengine/eval_double.h>
 #include <symengine/expression.h>
 

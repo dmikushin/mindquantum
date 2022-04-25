@@ -28,25 +28,21 @@
 #include "decompositions/parametric_atom.hpp"
 
 namespace mindquantum::decompositions {
-    template <typename operator_t, num_target_t num_targets_, num_control_t num_controls_>
-    bool ParametricAtom<operator_t, num_targets_, num_controls_>::is_applicable(
-        const instruction_t& inst) const noexcept {
-        return ((operator_t::kind() == inst.kind()
-                 || operator_t::non_param_type::kind() == inst.kind())  // Technically not required?
-                && operator_t::num_params == inst.num_parameters()
-                && ((num_targets_ == any_target) || num_targets_ == inst.num_targets())
-                && (num_controls_ == any_control || num_controls_ == inst.num_controls()));
-    }
+template <typename op_t, num_target_t num_targets_, num_control_t num_controls_>
+bool ParametricAtom<op_t, num_targets_, num_controls_>::is_applicable(const instruction_t& inst) const noexcept {
+    return ((op_t::kind() == inst.kind() || op_t::non_param_type::kind() == inst.kind())  // Technically not required?
+            && op_t::num_params == inst.num_parameters()
+            && ((num_targets_ == any_target) || num_targets_ == inst.num_targets())
+            && (num_controls_ == any_control || num_controls_ == inst.num_controls()));
+}
 
-    // =========================================================================
+// =========================================================================
 
-    template <typename operator_t, num_target_t num_targets_, num_control_t num_controls_>
-    void ParametricAtom<operator_t, num_targets_, num_controls_>::apply(circuit_t& circuit,
-                                                                        const decompositions::operator_t& op,
-                                                                        const qubits_t& qubits,
-                                                                        const cbits_t& cbits) noexcept {
-        circuit.apply_operator(op, qubits, cbits);
-    }
+template <typename op_t, num_target_t num_targets_, num_control_t num_controls_>
+void ParametricAtom<op_t, num_targets_, num_controls_>::apply(circuit_t& circuit, const operator_t& op,
+                                                              const qubits_t& qubits, const cbits_t& cbits) noexcept {
+    circuit.apply_operator(op, qubits, cbits);
+}
 }  // namespace mindquantum::decompositions
 
 #endif /* PARAMETRIC_ATOM_TPP */

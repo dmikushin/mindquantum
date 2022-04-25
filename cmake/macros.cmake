@@ -508,7 +508,8 @@ endfunction()
 #                     LANGS <lang1> [<lang2>...]
 #                     FLAGS <flags1> [<flags2>...]
 #                     [FLAGCHECK, NO_MQ_TARGET, NO_TRYCOMPILE_TARGET, NO_TRYCOMPILE_FLAGCHECK_TARGET]
-#                     [GENEX <genex>])
+#                     [GENEX <genex>]
+#                     [CMAKE_OPTION <option>])
 #
 # Check that a compiler option can be applied to each of the specified languages <langN>. For each set of compiler
 # options provided in the lists <flagsN>, it will test whether one of the element can be used by the corresponding
@@ -519,6 +520,9 @@ endfunction()
 #  - <LANG>_try_compile
 #  - <LANG>_try_compile_flagcheck (only if FLACHECK is passed as argument
 #
+# If CMAKE_OPTION is specified, the check will only be performed if <option> is set to a truthful value. Also, the
+# compiler option will only be enabled if <option> is true.
+#
 # In addition, regardless of whether a language is enabled or not, this function will set a variable in the caller's
 # scope named <name>_<LANG> to TRUE/FALSE depending on whether one or more flags were found.
 #
@@ -527,7 +531,7 @@ endfunction()
 function(test_compile_option name)
   # cmake-lint: disable=R0912,R0915,C0103
   cmake_parse_arguments(PARSE_ARGV 1 TCO "FLAGCHECK;NO_MQ_TARGET;NO_TRYCOMPILE_TARGET;NO_TRYCOMPILE_FLAGCHECK_TARGET"
-                        "GENEX" "LANGS;FLAGS")
+                        "CMAKE_OPTION;GENEX" "LANGS;FLAGS")
 
   if(NOT TCO_LANGS)
     message(FATAL_ERROR "Missing LANGS argument")
@@ -540,6 +544,10 @@ function(test_compile_option name)
     set(TCO_GENEX "$<COMPILE_LANGUAGE:@lang@>")
   else()
     set(TCO_GENEX "$<AND:$<COMPILE_LANGUAGE:@lang@>,${TCO_GENEX}>")
+  endif()
+
+  if(${TCO_CMAKE_OPTION})
+    set(TCO_GENEX "$<AND:$<BOOL:${TCO_CMAKE_OPTION}>,${TCO_GENEX}>")
   endif()
 
   # ------------------------------------
@@ -559,7 +567,13 @@ function(test_compile_option name)
         add_library(${name}_${lang} INTERFACE)
       endif()
 
-      check_compiler_flags(${lang} _${lang}_flags ${_ccf_args} ${TCO_FLAGS})
+      set(_do_check ON)
+      if(NOT "${TCO_CMAKE_OPTION}" STREQUAL "" AND NOT ${${TCO_CMAKE_OPTION}})
+        set(_do_check OFF)
+      endif()
+      if(_do_check)
+        check_compiler_flags(${lang} _${lang}_flags ${_ccf_args} ${TCO_FLAGS})
+      endif()
       string(CONFIGURE "${TCO_GENEX}" _genex @ONLY)
 
       if(NOT "${_${lang}_flags}" STREQUAL "")
@@ -651,7 +665,8 @@ endfunction()
 #                    LANGS <lang1> [<lang2>...]
 #                    FLAGS <flags1> [<flags2>...]
 #                    [VERBATIM, NO_MQ_TARGET]
-#                    [GENEX <genex>])
+#                    [GENEX <genex>]
+#                    [CMAKE_OPTION <option>])
 #
 # Check that a linker option can be applied to each of the specified languages <langN>. For each set of linker
 # options provided in the lists <flagsN>, it will test whether one of the element can be used by the corresponding
@@ -664,13 +679,16 @@ endfunction()
 #
 # If VERBATIM is passed as argument, the flag is passed onto the linker without prepending the 'LINKER:' prefix.
 #
-# In addition, regardless of whether a language is enabled or not, this function will set a variable in the caller's
+# If CMAKE_OPTION is specified, the check will only be performed if <option> is set to a truthful value. Also, the
+# linker option will only be enabled if <option> is true.
+#
+# In addition, regardless of whether a language is enabled or not, this function will set a 3variable in the caller's
 # scope named <name>_<LANG> to TRUE/FALSE depending on whether one or more flags were found.
 #
 # NB: This function calls check_link_flags() internally.
 # ~~~
 function(test_linker_option name)
-  cmake_parse_arguments(PARSE_ARGV 1 TLO "VERBATIM;NO_MQ_TARGET" "GENEX" "LANGS;FLAGS")
+  cmake_parse_arguments(PARSE_ARGV 1 TLO "VERBATIM;NO_MQ_TARGET" "CMAKE_OPTION;GENEX" "LANGS;FLAGS")
 
   if(NOT TLO_LANGS)
     message(FATAL_ERROR "Missing LANGS argument")
@@ -683,6 +701,10 @@ function(test_linker_option name)
     set(TLO_GENEX "$<LINK_LANGUAGE:@lang@>")
   else()
     set(TLO_GENEX "$<AND:$<LINK_LANGUAGE:@lang@>,${TLO_GENEX}>")
+  endif()
+
+  if(TLO_CMAKE_OPTION)
+    set(TLO_GENEX "$<AND:$<BOOL:${TLO_CMAKE_OPTION}>,${TLO_GENEX}>")
   endif()
 
   # ------------------------------------
@@ -700,7 +722,13 @@ function(test_linker_option name)
       if(TLO_VERBATIM)
         set(_args "VERBATIM;${_args}")
       endif()
-      check_link_flags(${lang} _${lang}_flags ${_args} ${TLO_FLAGS})
+      set(_do_check ON)
+      if(NOT "${TLO_CMAKE_OPTION}" STREQUAL "" AND NOT ${${TLO_CMAKE_OPTION}})
+        set(_do_check OFF)
+      endif()
+      if(_do_check)
+        check_link_flags(${lang} _${lang}_flags ${_args} ${TLO_FLAGS})
+      endif()
 
       string(CONFIGURE "${TLO_GENEX}" _genex @ONLY)
 

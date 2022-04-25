@@ -28,7 +28,12 @@ else()
   set(MD5 "72d11e59315b84ff9abdf51c590e986c")
 endif()
 
-set(CMAKE_OPTION -DBUILD_TESTING=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
+set(CMAKE_OPTION -DBUILD_TESTING=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -G${CMAKE_GENERATOR})
+
+if(CMAKE_C_COMPILER)
+  list(APPEND CMAKE_OPTION -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
+endif()
 
 if(MSVC)
   set(SymEngine_CFLAGS "/D_ITERATOR_DEBUG_LEVEL=0")
@@ -55,7 +60,7 @@ if(gmp_DIR)
   # If gmp_DIR is defined then we can find gmp using the CONFIG method -> patch SymEngine accordingly.
   #
   # Also, this will only happen if we compiled gmp locally since gmp by default does not provide CMake configuration
-  # files during its normal installation. In all other case, the FindGMP code from SymEngine should be able to locatge
+  # files during its normal installation. In all other case, the FindGMP code from SymEngine should be able to locate
   # gmp successfully.
   list(APPEND CMAKE_OPTION -Dgmp_DIR=${gmp_DIR})
   list(APPEND PATCHES ${CMAKE_CURRENT_LIST_DIR}/patch/find-gmp-using-config-method.patch003)
@@ -69,3 +74,10 @@ mindquantum_add_pkg(
   CMAKE_OPTION ${CMAKE_OPTION}
   PATCHES ${PATCHES}
   TARGET_ALIAS mindquantum::symengine symengine)
+
+if(TARGET mindquantum::gmp)
+  get_target_property(_link_libraries symengine INTERFACE_LINK_LIBRARIES)
+  if(NOT gmp IN_LIST _link_libraries AND NOT mindquantum::gmp IN_LIST _link_libraries)
+    target_link_libraries(symengine INTERFACE mindquantum::gmp)
+  endif()
+endif()

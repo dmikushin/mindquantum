@@ -16,7 +16,7 @@
 #include <variant>
 
 #include <catch2/catch.hpp>
-#include <symengine/dict.h>
+#include <symengine/basic.h>
 #include <symengine/expression.h>
 #include <symengine/real_double.h>
 #include <symengine/symengine_exception.h>

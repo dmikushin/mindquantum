@@ -5,8 +5,8 @@ index a22e858..44d15a9 100644
 @@ -8,6 +8,10 @@
  #include "../Utils/Matrix.h"
  #include "OperatorTraits.h"
- 
-+#include <symengine/dict.h>
+
++#include <symengine/basic.h>
 +
 +#include <cstddef>
 +#include <new>

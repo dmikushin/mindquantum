@@ -34,8 +34,7 @@ class Ph2R
         return "Ph2R"sv;
     }
 
-    void apply_impl(decompositions::circuit_t& circuit, const decompositions::operator_t& op,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& op, const qubits_t& qubits, const cbits_t& /* unused */) {
         std::visit(
             [this, &circuit, &qubits](const auto& param) {
                 using param_t = std::remove_cvref_t<decltype(param)>;

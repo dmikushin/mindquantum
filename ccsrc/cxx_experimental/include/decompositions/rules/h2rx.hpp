@@ -34,8 +34,8 @@ class H2Rx
         return "H2Rx"sv;
     }
 
-    void apply_impl(circuit_t& circuit, const decompositions::operator_t& /* op */,
-                    const decompositions::qubits_t& qubits, const decompositions::cbits_t& /* unused */) {
+    void apply_impl(circuit_t& circuit, const operator_t& /* op */, const qubits_t& qubits,
+                    const cbits_t& /* unused */) {
         assert(std::size(qubits) == 1);
         atom<ops::parametric::Rx>()->apply(circuit, ops::Rx{PI_VAL}, qubits);
         atom<ops::parametric::Ph>()->apply(circuit, ops::Ph{PI_VAL_2}, qubits);

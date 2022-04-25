@@ -17,10 +17,10 @@
 
 #include "decompositions/decomposition_rule.hpp"
 
-#if __cplusplus > 201703L
+#if MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
 #    include "decompositions/details/gate_decomposition_rule_cxx20.hpp"
 #else
 #    include "decompositions/details/gate_decomposition_rule_cxx17.hpp"
-#endif  // __cplusplus > 201703L
+#endif  // MQ_HAS_CLASS_NON_TYPE_TEMPLATE_ARGS
 
 #endif /* GATE_DECOMPOSITION_RULE_HPP */
