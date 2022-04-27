@@ -533,4 +533,8 @@ fi
 
 call_cmake --build "$build_dir" --target all -j "$n_jobs" --config "$build_type"
 
+if [ $do_docs -eq 1 ]; then
+    call_cmake --build "$build_dir" --target docs -j "$n_jobs" --config "$build_type"
+fi
+
 # ==============================================================================

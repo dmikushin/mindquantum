@@ -633,4 +633,8 @@ if ($do_clean -eq 1) {
 
 Call-CMake --build "$build_dir" --config "$build_type" @make_args
 
+if($do_docs) {
+    Call-CMake --build "$build_dir" --config "$build_type" --target docs @make_args
+}
+
 # ==============================================================================

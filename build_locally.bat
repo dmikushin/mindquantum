@@ -475,6 +475,8 @@ if !do_clean! == 1 call :call_cmake --build "!build_dir!" --target clean
 
 call :call_cmake --build "!build_dir!" --config !build_type! !make_args!
 
+if !do_docs! == 1 call :call_cmake --build "!build_dir!" --config !build_type! --target docs !make_args!
+
 goto :EOF
 
 rem ============================================================================
