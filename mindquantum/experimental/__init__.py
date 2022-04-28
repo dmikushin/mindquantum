@@ -13,4 +13,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from _mindquantum_cxx import circuit
+from ._mindquantum_cxx import circuit, ops, symengine
+
+# isort: split
+
+from . import _symengine_utilities
+
+symengine.symbols = _symengine_utilities.symbols

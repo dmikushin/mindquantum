@@ -20,6 +20,7 @@
 namespace mindquantum::python {
 void init_ops(pybind11::module& module);
 void init_circuit(pybind11::module& module);
+void init_symengine(pybind11::module& module);
 }  // namespace mindquantum::python
 
 #endif /* PYTHON_BINDINGS_HPP */

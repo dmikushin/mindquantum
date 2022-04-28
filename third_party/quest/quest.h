@@ -239,7 +239,7 @@ struct Quest {
         Quest<T> sim_right = Quest<T>(n_qubits_, right_vec);
         Quest<T> sim_right_tmp = Quest<T>(n_qubits_);
         for (size_t j = 0; j < circ.size(); j++) {
-            if ((!herm_circ[j].parameterized_) || (herm_circ[j].params_.requires_grad_parameters_.size() == 0)) {
+            if ((!herm_circ[j].parameterized_) || (herm_circ[j].params_.GetRequiresGradParameters().size() == 0)) {
                 if (herm_circ[j].parameterized_) {
                     sim_left.ApplyGate(herm_circ[j], pr, false);
                     sim_right.ApplyGate(herm_circ[j], pr, false);
@@ -259,7 +259,7 @@ struct Quest {
                 //   sim_right_tmp.vec_, static_cast<Index>(len_),
                 //                                                     GetControlMask(herm_circ[j].ctrl_qubits_));
                 // }
-                for (auto &it : herm_circ[j].params_.requires_grad_parameters_) {
+                for (auto &it : herm_circ[j].params_.GetRequiresGradParameters()) {
                     f_g[1 + p_map.at(it)] -= herm_circ[j].params_.data_.at(it) * gi;
                 }
                 sim_left.ApplyGate(herm_circ[j], pr, false);

@@ -13,7 +13,10 @@
 # limitations under the License.
 
 Param(
-    # Flags
+    [ValidateNotNullOrEmpty()][string]$A,
+    [ValidateNotNullOrEmpty()][string]$B,
+    [ValidateNotNullOrEmpty()][string]$Build,
+    [switch]$C,
     [switch]$CCache,
     [switch]$Clean,
     [switch]$Clean3rdParty,
@@ -23,36 +26,26 @@ Param(
     [switch]$CleanVenv,
     [switch]$Configure,
     [switch]$ConfigureOnly,
+    [ValidateNotNullOrEmpty()][string]$CudaArch,
     [switch]$Cxx,
     [switch]$Debug,
     [switch]$DebugCMake,
     [switch]$DryRun,
     [switch]$Doc,
     [switch]$Docs,
+    [ValidateNotNullOrEmpty()][string]$G,
     [switch]$Gpu,
+    [switch]$H,
     [switch]$Help,
+    [ValidateRange("Positive")][int]$J,
+    [ValidateRange("Positive")][int]$Jobs,
+    [switch]$N,
     [switch]$Ninja,
     [switch]$Quiet,
     [switch]$ShowLibraries,
     [switch]$Test,
     [switch]$UpdateVenv,
-    [switch]$c,
-    [switch]$h,
-    [switch]$n,
-
-    # Integer options
-    [ValidateRange("Positive")][int]$J,
-    [ValidateRange("Positive")][int]$Jobs,
-
-    # String options
-    [ValidateNotNullOrEmpty()][string]$B,
-    [ValidateNotNullOrEmpty()][string]$Build,
-    [ValidateNotNullOrEmpty()][string]$CudaArch,
-    [ValidateNotNullOrEmpty()][string]$Venv,
-
-    # CMake arguments
-    [ValidateNotNullOrEmpty()][string]$G,
-    [ValidateNotNullOrEmpty()][string]$A
+    [ValidateNotNullOrEmpty()][string]$Venv
 )
 
 $BASENAME = Split-Path $MyInvocation.MyCommand.Path -Leaf
@@ -199,7 +192,7 @@ function help_message() {
     Write-Output '  -Clean              Run make clean before building'
     Write-Output '  -Clean3rdParty      Clean 3rd party installation directory'
     Write-Output '  -CleanAll           Clean everything before building.'
-    Write-Output '                      Equivalent to --clean-venv --clean-builddir'
+    Write-Output '                      Equivalent to -CleanVenv -CleanBuildDir'
     Write-Output '  -CleanBuildDir      Delete build directory before building'
     Write-Output '  -CleanCache         Re-run CMake with a clean CMake cache'
     Write-Output '  -CleanVenv          Delete Python virtualenv before building'
@@ -210,6 +203,7 @@ function help_message() {
     Write-Output '  -DebugCMake         Enable debugging mode for CMake configuration step'
     Write-Output '  -Doc, -Docs         Setup the Python virtualenv for building the documentation and ask CMake to build the'
     Write-Output '                      documentation'
+    Write-Output '  -n,-DryRun          Dry run; only print commands but do not execute them'
     Write-Output '  -Gpu                Enable GPU support'
     Write-Output '  -J,-Jobs [N]        Number of parallel jobs for building'
     Write-Output ("                      Defaults to: {0}" -f $n_jobs_default)
@@ -225,7 +219,7 @@ function help_message() {
     Write-Output '                      (ignored if --local-pkgs is passed, except for projectq and quest)'
     Write-Output 'CUDA related options:'
     Write-Output '  -CudaArch <arch>    Comma-separated list of architectures to generate device code for.'
-    Write-Output '                      Only useful if --gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.'
+    Write-Output '                      Only useful if -Gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.'
     Write-Output ''
     Write-Output 'Python related options:'
     Write-Output '  -UpdateVenv         Update the python virtual environment'
@@ -551,6 +545,7 @@ if ($dry_run -ne 1) {
 
 $cmake_args = @('-DIN_PLACE_BUILD:BOOL=ON'
                 '-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON'
+                "-DCMAKE_BUILD_TYPE:STRING={0}" -f $build_type
                 "-DENABLE_PROJECTQ:BOOL={0}" -f $CMAKE_BOOL[$enable_projectq]
                 "-DENABLE_QUEST:BOOL={0}" -f $CMAKE_BOOL[$enable_quest]
                 "-DENABLE_CMAKE_DEBUG:BOOL={0}" -f $CMAKE_BOOL[$cmake_debug_mode]
@@ -638,3 +633,150 @@ if($do_docs) {
 }
 
 # ==============================================================================
+
+<#
+.SYNOPSIS
+
+Performs monthly data updates.
+
+.DESCRIPTION
+
+Build MindQunantum locally (in-source build)
+
+This is mainly relevant for developers that do not want to always have to reinstall the Python package
+
+This script will create a Python virtualenv in the MindQuantum root directory and then build all the C++ Python
+modules and place the generated libraries in their right locations within the MindQuantum folder hierarchy so Python
+knows how to find them.
+
+A pth-file will be created in the virtualenv site-packages directory so that the MindQuantum root folder will be added
+to the Python PATH without the need to modify PYTHONPATH.
+
+.PARAMETER B
+Specify build directory. Defaults to: Path\To\Script\build
+
+.PARAMETER Build
+Specify build directory. Defaults to: Path\To\Script\build
+
+.PARAMETER CCache
+If ccache or sccache are found within the PATH, use them with CMake
+
+.PARAMETER Clean
+Run make clean before building
+
+.PARAMETER Clean3rdParty
+Clean 3rd party installation directory
+
+.PARAMETER CleanAll
+Clean everything before building.
+Equivalent to -CleanVenv -CleanBuildDir
+
+.PARAMETER CleanBuildDir
+Delete build directory before building
+
+.PARAMETER CleanCache
+Re-run CMake with a clean CMake cache
+
+.PARAMETER CleanVenv
+Delete Python virtualenv before building
+
+.PARAMETER Configure
+Force running the CMake configure step
+
+.PARAMETER C
+Force running the CMake configure step
+
+.PARAMETER ConfigureOnly
+Stop after the CMake configure and generation steps (ie. before building MindQuantum)
+
+.PARAMETER Cxx
+(experimental) Enable MindQuantum C++ support
+
+.PARAMETER Debug
+Build in debug mode
+
+.PARAMETER DebugCMake
+Enable debugging mode for CMake configuration step
+
+.PARAMETER n
+Dry run; only print commands but do not execute them
+
+.PARAMETER DryRun
+Dry run; only print commands but do not execute them
+
+.PARAMETER Doc
+Setup the Python virtualenv for building the documentation and ask CMake to build the documentation
+
+.PARAMETER Docs
+Setup the Python virtualenv for building the documentation and ask CMake to build the documentation
+
+.PARAMETER Gpu
+Enable GPU support
+
+.PARAMETER H
+Show help message.
+
+.PARAMETER Help
+Show help message.
+
+.PARAMETER J
+Number of parallel jobs for building
+
+.PARAMETER Jobs
+Number of parallel jobs for building
+
+.PARAMETER LocalPkgs
+Compile third-party dependencies locally
+
+.PARAMETER Quiet
+Disable verbose build rules
+
+.PARAMETER ShowLibraries
+Show all known third-party libraries.
+
+.PARAMETER Test
+Build C++ tests
+
+.PARAMETER Venv
+Path to Python virtual environment. Defaults to: Path\To\Script\venv
+
+.PARAMETER UpdateVenv
+Update the python virtual environment
+
+.PARAMETER CudaArch
+Comma-separated list of architectures to generate device code for.
+Only useful if -Gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.
+
+.PARAMETER G
+CMake argument: Specify a build system generator.
+
+.PARAMETER A
+CMake argument: Specify platform name if supported by generator.
+
+.PARAMETER D
+CMake argument: Create or update a cmake cache entry.
+
+.INPUTS
+
+None.
+
+.OUTPUTS
+
+None.
+
+.EXAMPLE
+
+PS> .\build_locally.ps1
+
+.EXAMPLE
+
+PS> .\build_locally.ps1 -gpu
+
+.EXAMPLE
+
+PS> .\build_locally.ps1 -Cxx -WithBoost -WithoutQuest
+
+.EXAMPLE
+
+PS> .\build_locally.ps1 -Gpu -DCMAKE_CUDA_COMPILER=D:\cuda\bin\nvcc
+#>

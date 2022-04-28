@@ -286,7 +286,7 @@ class NoneParameterGate(BasicGate):
 class ParameterGate(BasicGate):
     """Gate that is parameterized."""
 
-    def __init__(self, pr, name, n_qubits, *args, obj_qubits=None, ctrl_qubits=None, **kwargs):
+    def __init__(self, pr: PR, name, n_qubits, *args, obj_qubits=None, ctrl_qubits=None, **kwargs):
         super().__init__(name, n_qubits, *args, obj_qubits=obj_qubits, ctrl_qubits=ctrl_qubits, **kwargs)
         self.coeff = pr
 
@@ -432,15 +432,15 @@ class RotSelfHermMat(ParameterOppsGate):
             val = new.const
         return scipy.linalg.expm(-1j * val * frac * self.core.matrix())
 
-    def diff_matrix(self, pr=None, which=None, frac=0.5):
+    def diff_matrix(self, pr=None, about_what=None, frac=0.5):
         if not self.parameterized:
             return np.zeros_like(self.core.matrix())
-        if which is None:
+        if about_what is None:
             if len(self.coeff) != 1:
                 raise ValueError(f"Should specific which parameter are going to do derivation.")
             for i in self.coeff:
-                which = i
-        return -1j * frac * self.core.matrix() @ self.matrix(pr=pr, frac=frac) * self.coeff[which]
+                about_what = i
+        return -1j * frac * self.core.matrix() @ self.matrix(pr=pr, frac=frac) * self.coeff[about_what]
 
 
 class ParamNonHerm(ParameterGate, NonHermitianGate):

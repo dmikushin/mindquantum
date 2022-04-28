@@ -35,6 +35,10 @@ namespace mindquantum {
 #define PRECISION     1e-8
 #define COS1_2(theta) static_cast<T>(cos(theta / 2))
 #define SIN1_2(theta) static_cast<T>(sin(theta / 2))
+#define ITER(p, obj)                                                                                                   \
+    auto p = obj.begin();                                                                                              \
+    p != obj.end();                                                                                                    \
+    p++
 
 using Index = int64_t;
 #ifdef FLOAT

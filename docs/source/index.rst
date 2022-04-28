@@ -29,6 +29,7 @@ Architecture
    :maxdepth: 1
 
    installation
+   cmake_reference
 
 .. toctree::
    :caption: TUTORIAL

@@ -24,4 +24,10 @@ PYBIND11_MODULE(_mindquantum_cxx, module) {
 
     py::module circuit = module.def_submodule("circuit", "MindQuantum-C++ circuit interface");
     python::init_circuit(circuit);
+
+    py::module ops = module.def_submodule("ops", "MindQuantum-C++ operators interface");
+    python::init_ops(ops);
+
+    py::module symengine = module.def_submodule("symengine", "MindQuantum light wrapper for SymEngine");
+    python::init_symengine(symengine);
 }

@@ -91,11 +91,14 @@ Here is an exhaustive list of all CMake options available for customization
 |---------------------------------|-----------------------------------------------------------------------|---------------------|
 | BUILD_SHARED_LIBS               | Build shared libs                                                     | OFF                 |
 | BUILD_TESTING                   | Enable building the test suite                                        | OFF                 |
+| CLEAN_3RDPARTY_INSTALL_DIR      | Clean third-party installation directory                              | OFF                 |
 | CUDA_ALLOW_UNSUPPORTED_COMPILER | Allow the use of an unsupported comipler version for CUDA             | OFF                 |
 | CUDA_STATIC                     | Use static versions of the Nvidia CUDA libraries                      | OFF                 |
+| DISABLE_FORTRAN_COMPILER        | Forcefully disable the Fortran compiler for some 3rd party libraries  | ON                  |
+| ENABLE_CMAKE_DEBUG              | Enable verbose output to debug CMake issues                           | OFF                 |
 | ENABLE_CUDA                     | Enable the use of CUDA code                                           | OFF                 |
 | ENABLE_CXX_EXPERIMENTAL         | Enable the building of the (new) experimental C++ backend             | OFF                 |
-| ENABLE_GITEE                    | Use Gitee instead of GitHub for third-party dependencies              | OFF                 |
+| ENABLE_GITEE                    | Use Gitee instead of GitHub for (some) third-party dependencies       | OFF                 |
 | ENABLE_MD                       | Use /MD, /MDd flags when compiling (MSVC only)                        | OFF                 |
 | ENABLE_MT                       | Use /MT, /MTd flags when compiling (MSVC only)                        | OFF                 |
 | ENABLE_PROFILING                | Enable compilation with profiling flags                               | OFF                 |
@@ -112,11 +115,21 @@ Here is an exhaustive list of all CMake options available for customization
 | LINKER_STRIP_ALL                | Use `--strip-all` during linking (if supported)                       | ON                  |
 | USE_OPENMP                      | Use the OpenMP library for parallelisation                            | ON                  |
 | USE_PARALLEL_STL                | Use the parallel STL for parallelisation (using TBB or else)          | OFF                 |
-| USE_VERBOSE_MAKEFILE            | Generate verbose Makefiles                                            | ON                  |
+| USE_VERBOSE_MAKEFILE            | Generate verbose Makefiles (if supported)                             | ON                  |
+
+Here are some more precisions on some of the above options:
+
+#### `CLEAN_3RDPARTY_INSTALL_DIR`
+
+This will delete any pre-existing installations within the local installation directory (by default `/path/to/build/.mqlibs`) _except_ the ones that are currently needed based on the hashes of the third-party libraries.
+
+#### `DISABLE_FORTRAN_COMPILER`
+
+This currently only has an effect when installing Eigen3.
 
 ### CMake variables
 
-In addition to the above CMake options, you may pass certain special CMake variables in order to customize your build:
+In addition to the above CMake options, you may pass certain special CMake variables in order to customize your build. These are described below in more details.
 
 
 #### `MQ_FORCE_LOCAL_PKGS`

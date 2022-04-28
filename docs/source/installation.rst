@@ -93,7 +93,9 @@ message):
 
     -B,--build [dir]     Specify build directory
                          Defaults to: /home/damien/code/hiq/mindquantum/build
+    --ccache             If ccache or sccache are found within the PATH, use them with CMake
     --clean              Run make clean before building
+    --clean-3rdparty     Clean 3rd party installation directory
     --clean-all          Clean everything before building.
                          Equivalent to --clean-venv --clean-builddir
     --clean-builddir     Delete build directory before building
@@ -114,6 +116,7 @@ message):
     --ninja              Build using Ninja instead of make
     --quiet              Disable verbose build rules
     --show-libraries     Show all known third-party libraries
+    --test               Build C++ tests
     --venv=[dir]         Path to Python virtual environment
                          Defaults to: /home/damien/code/hiq/mindquantum/venv
     --with-<library>     Build the third-party <library> from source
@@ -136,7 +139,6 @@ message):
   build_locally.sh -B build --gpu
   build_locally.sh -B build --cxx --with-boost --without-quest --venv=/tmp/venv
   build_locally.sh -B build -- -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc
-
 
 .. [1] PowerShell and Bash scripts typically have identical functionality sets whereas the MS-DOS BATCH script might
        not. For example, the latter is not able to automatically detect the minimum CMake version required by

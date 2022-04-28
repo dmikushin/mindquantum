@@ -19,14 +19,7 @@ import numpy as np
 
 from mindquantum.algorithm.nisq._ansatz import Ansatz
 from mindquantum.core.circuit import UN, Circuit
-from mindquantum.core.gates import (
-    BARRIER,
-    RZ,
-    H,
-    IntrinsicOneParaGate,
-    ParameterGate,
-    X,
-)
+from mindquantum.core.gates import BARRIER, RZ, H, ParameterGate, X
 from mindquantum.utils.type_value_check import (
     _check_input_type,
     _check_int_type,

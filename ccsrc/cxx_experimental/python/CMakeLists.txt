@@ -25,8 +25,10 @@ target_include_directories(mindquantum_python_interface INTERFACE ${CMAKE_CURREN
 
 # ==============================================================================
 
-pybind11_add_module(_mindquantum_cxx MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/_mindquantum_cxx.cpp
-                    ${CMAKE_CURRENT_LIST_DIR}/lib/core/circuit.cpp)
+pybind11_add_module(
+  _mindquantum_cxx MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/_mindquantum_cxx.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/lib/core/circuit.cpp ${CMAKE_CURRENT_LIST_DIR}/lib/ops/ops.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/lib/core/symengine.cpp)
 target_link_libraries(_mindquantum_cxx PRIVATE mindquantum_cxx mindquantum_python_interface)
 set_output_directory_auto(_mindquantum_cxx mindquantum/experimental)
 
@@ -64,13 +66,5 @@ pybind11_add_module(
 
 target_link_libraries(_mindquantum_cxx_cengines PRIVATE mindquantum_cxx mindquantum_python_interface)
 set_output_directory_auto(_mindquantum_cxx_cengines mindquantum/experimental)
-
-# ==============================================================================
-
-pybind11_add_module(_mindquantum_cxx_ops MODULE ${CMAKE_CURRENT_LIST_DIR}/lib/ops/_mindquantum_cxx_ops.cpp
-                    ${CMAKE_CURRENT_LIST_DIR}/lib/ops/command.cpp)
-
-target_link_libraries(_mindquantum_cxx_ops PRIVATE mindquantum_cxx mindquantum_python_interface)
-set_output_directory_auto(_mindquantum_cxx_ops mindquantum/experimental)
 
 # ==============================================================================

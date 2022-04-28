@@ -22,16 +22,10 @@ include(CMakeDependentOption)
 # MindQuantum feature selection
 
 option(ENABLE_PROJECTQ "Enable ProjectQ support" ON)
-set(_enable_quest_init ON)
-if(WIN32 OR MSYS)
-  set(_enable_quest_init OFF)
-endif()
-option(ENABLE_QUEST "Enable QuEST support" ${_enable_quest_init})
+option(ENABLE_QUEST "Enable QuEST support" OFF)
 option(ENABLE_GITEE "Use Gitee instead of GitHub for checking out third-party dependencies" OFF)
 option(ENABLE_CXX_EXPERIMENTAL "Enable the new (experimental) C++ backend" OFF)
 option(PATCH_USE_NATIVE_ENCODING "Patch files use the native OS encofing (otherwise force LF)" OFF)
-option(ENABLE_CMAKE_DEBUG "Enable verbose output to debug CMake issues" OFF)
-option(CLEAN_3RDPARTY_INSTALL_DIR "Clean third-party installation directory" OFF)
 
 # ==============================================================================
 # Python related options
@@ -115,11 +109,10 @@ option(LINKER_STRIP_ALL "Use --strip-all during linking" ON)
 # ==============================================================================
 # Other CMake related options
 
-option(BUILD_TESTING "Build the test suite?" OFF)
-
-# NB: most if not all of our libraries have the type explicitly specified.
 option(BUILD_SHARED_LIBS "Build shared libs" OFF)
-
+option(BUILD_TESTING "Build the test suite?" OFF)
+option(CLEAN_3RDPARTY_INSTALL_DIR "Clean third-party installation directory" OFF)
+option(ENABLE_CMAKE_DEBUG "Enable verbose output to debug CMake issues" OFF)
 option(USE_VERBOSE_MAKEFILE "Use verbose Makefiles" ON)
 
 # ==============================================================================
@@ -133,8 +126,14 @@ if(ENABLE_QUEST)
         OFF
         CACHE BOOL "Enable QuEST support" FORCE)
   else()
-    enable_language(C)
-    setup_language(C)
+    # ~~~
+    # enable_language(C)
+    # setup_language(C)
+    # ~~~
+    message(WARNING "Disabling QuEST as compilation is currently broken")
+    set(ENABLE_QUEST
+        OFF
+        CACHE BOOL "Enable QuEST support" FORCE)
   endif()
 endif()
 

@@ -399,6 +399,8 @@ rem Setup arguments for build
 
 set cmake_args="-DIN_PLACE_BUILD:BOOL=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON"
 
+set cmake_args=!cmake_args! -DENABLE_BUILD_TYPE:STRING=!build_type!
+
 if !cmake_debug_mode! == 1 set cmake_args=!cmake_args! -DENABLE_CMAKE_DEBUG:BOOL=ON
 
 if !cmake_make_silent! == 1 set cmake_args=!cmake_args! -DUSE_VERBOSE_MAKEFILE:BOOL=OFF
