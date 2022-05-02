@@ -15,13 +15,7 @@
 ---
 
 ci:
-  skip: [check-manifest]
-
-exclude: >-
-  (?x)^(
-    .*/kernel[0-9]+\.hpp|
-    third_party/patch/.*
-  )$
+  skip: [check-manifest, pylint]
 
 repos:
   - repo: meta
@@ -58,10 +52,11 @@ repos:
     hooks:
       - id: doc8
 
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 2.1.6
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.8.0.4
     hooks:
       - id: shellcheck
+        args: [-e, SC1091]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.1.0
