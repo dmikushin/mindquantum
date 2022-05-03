@@ -160,7 +160,7 @@ set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
       try_compile(
         _create_shared_lib_${lang} ${_binary_dir}
         ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest cmake-ldtest
-        CMAKE_FLAGS -DCMAKE_VERBOSE_MAKEFILE=ON -DLINKER_FLAGS=${_linker_dtags}
+        CMAKE_FLAGS -DCMAKE_VERBOSE_MAKEFILE=ON -DLINKER_FLAGS=${_linker_dtags} -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
         OUTPUT_VARIABLE _compile_output)
       if(_create_shared_lib_${lang})
         message(CHECK_PASS "succeeded")

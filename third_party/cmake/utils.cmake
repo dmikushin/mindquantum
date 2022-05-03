@@ -903,6 +903,20 @@ function(mindquantum_add_pkg pkg_name)
   message(CHECK_START "Adding external dependency: ${pkg_name}")
   list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
+  # NB: this branch will only be taken if not the first CMake configure call (or if manually set)
+  if(${pkg_name}_DIR)
+    __find_package("${pkg_name}" "${PKG_VER}" "${_components}" "${PKG_CMAKE_PKG_NO_COMPONENTS}" "config" CONFIG)
+
+    if(${pkg_name}_FOUND)
+      __make_target_global(${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
+      __create_target_aliases(${PKG_TARGET_ALIAS})
+
+      list(POP_BACK CMAKE_MESSAGE_INDENT)
+      message(CHECK_PASS "Done")
+      return()
+    endif()
+  endif()
+
   if(NOT MQ_FORCE_LOCAL_PKGS
      AND NOT MQ_${PKG_NAME}_FORCE_LOCAL
      AND NOT PKG_FORCE_LOCAL_PKG)
@@ -1061,8 +1075,14 @@ function(mindquantum_add_pkg pkg_name)
       file(COPY ${${pkg_name}_INSTALL_LIBS} DESTINATION ${${pkg_name}_BASE_DIR}/lib)
 
     elseif(NOT "${PKG_CMAKE_OPTION}" STREQUAL "")
-      # in cmake
-      file(MAKE_DIRECTORY ${${pkg_name}_SOURCE_DIR}/_build)
+      if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+        set(_cmake_build_dir "${${pkg_name}_SOURCE_DIR}/_build")
+      else()
+        string(TOLOWER "${CMAKE_BUILD_TYPE}" _build_type)
+        set(_cmake_build_dir "${${pkg_name}_SOURCE_DIR}/_build_${_build_type}")
+      endif()
+
+      file(MAKE_DIRECTORY ${_cmake_build_dir})
       if(${pkg_name}_CFLAGS)
         set(${pkg_name}_CMAKE_CFLAGS "-DCMAKE_C_FLAGS=${${pkg_name}_CFLAGS}")
       endif()
@@ -1093,17 +1113,16 @@ function(mindquantum_add_pkg pkg_name)
           ${CMAKE_COMMAND} ${PKG_CMAKE_OPTION} ${${pkg_name}_CMAKE_CFLAGS} ${${pkg_name}_CMAKE_CXXFLAGS}
           ${${pkg_name}_CL_RT_FLAG} ${${pkg_name}_CMAKE_LDFLAGS} -DCMAKE_INSTALL_PREFIX=${${pkg_name}_BASE_DIR}
           ${${pkg_name}_SOURCE_DIR}/${PKG_CMAKE_PATH}
-        WORKING_DIRECTORY ${${pkg_name}_SOURCE_DIR}/_build)
+        WORKING_DIRECTORY ${_cmake_build_dir})
 
       message(STATUS "Building CMake targets for ${pkg_name}")
       if(MSVC)
         __exec_cmd(COMMAND ${CMAKE_COMMAND} --build . --target install -j${JOBS} --config Debug
-                   WORKING_DIRECTORY ${${pkg_name}_SOURCE_DIR}/_build)
+                   WORKING_DIRECTORY ${_cmake_build_dir})
         __exec_cmd(COMMAND ${CMAKE_COMMAND} --build . --target install -j${JOBS} --config Release
-                   WORKING_DIRECTORY ${${pkg_name}_SOURCE_DIR}/_build)
+                   WORKING_DIRECTORY ${_cmake_build_dir})
       else()
-        __exec_cmd(COMMAND ${CMAKE_COMMAND} --build . --target install -j${JOBS}
-                   WORKING_DIRECTORY ${${pkg_name}_SOURCE_DIR}/_build)
+        __exec_cmd(COMMAND ${CMAKE_COMMAND} --build . --target install -j${JOBS} WORKING_DIRECTORY ${_cmake_build_dir})
       endif()
     else()
       set(PREFIX ${${pkg_name}_BASE_DIR})

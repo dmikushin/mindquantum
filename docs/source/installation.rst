@@ -29,6 +29,9 @@ of the scripts provided to build MindQuantum locally: :ref:`install_locally`. In
 some of the required programs and libraries. See one of the sub-sections under :ref:`requirements` for your particular
 system for more information in order to find out how to achieve that.
 
+If you plan on distributing the version of MindQuantum you have compiled on your system, we would suggest that you
+have a look at :ref:`build_wheels`.
+
 .. _install_from_pypi:
 
 Install from Pypi
@@ -59,7 +62,7 @@ BATCH). Please invoke the script of your choice in order to view the latest set 
 The build scripts mentioned above will perform the following operations in order:
 
 1. Setup a Python virtual environment
-2. Update the virtual environment's packages and install some required dependencies
+2. Update the virtual environment's packages and install some required dependencies (which may include CMake)
 3. Add a PTH-file to the Python virtual environment to make sure that MindQuantum will be detected
 4. Create a build directory and run CMake within it
 5. Compile MindQuantum in-place
@@ -74,8 +77,8 @@ message):
 
   Build MindQunantum locally (in-source build)
 
-  This is mainly relevant for developers that do not want to always have to reinstall the
-  Python package
+  This is mainly relevant for developers that do not want to always have to reinstall the Python
+  package
 
   This script will create a Python virtualenv in the MindQuantum root directory and then build
   all the C++ Python modules and place the generated libraries in their right locations within
@@ -91,32 +94,21 @@ message):
     -h,--help            Show this help message and exit
     -n                   Dry run; only print commands but do not execute them
 
-    -B,--build [dir]     Specify build directory
-                         Defaults to: /home/damien/code/hiq/mindquantum/build
     --ccache             If ccache or sccache are found within the PATH, use them with CMake
-    --clean              Run make clean before building
     --clean-3rdparty     Clean 3rd party installation directory
-    --clean-all          Clean everything before building.
-                         Equivalent to --clean-venv --clean-builddir
-    --clean-builddir     Delete build directory before building
-    --clean-cache        Re-run CMake with a clean CMake cache
     --clean-venv         Delete Python virtualenv before building
-    -c,--configure       Force running the CMake configure step
-    --configure-only     Stop after the CMake configure and generation steps
-                         (ie. before building MindQuantum)
     --cxx                (experimental) Enable MindQuantum C++ support
     --debug              Build in debug mode
     --debug-cmake        Enable debugging mode for CMake configuration step
-    --doc                Setup the Python virtualenv for building the documentation and
-                         ask CMake to build the documentation
     --gpu                Enable GPU support
     -j,--jobs [N]        Number of parallel jobs for building
-                         Defaults to: 16
+                         Defaults to: 88
     --local-pkgs         Compile third-party dependencies locally
     --ninja              Build using Ninja instead of make
     --quiet              Disable verbose build rules
     --show-libraries     Show all known third-party libraries
     --test               Build C++ tests
+    -v, --verbose        Enable verbose output from the Bash scripts
     --venv=[dir]         Path to Python virtual environment
                          Defaults to: /home/damien/code/hiq/mindquantum/venv
     --with-<library>     Build the third-party <library> from source
@@ -126,11 +118,25 @@ message):
 
   CUDA related options:
     --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.
-                         Only useful if --gpu is passed.
-                         See CMAKE_CUDA_ARCHITECTURES for more information.
+                         Only useful if --gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more
+                         information.
 
   Python related options:
     --update-venv        Update the python virtual environment
+
+  Extra options:
+    -B,--build [dir]     Specify build directory
+                         Defaults to: /home/damien/code/hiq/mindquantum/build
+    --clean              Run make clean before building
+    --clean-all          Clean everything before building.
+                         Equivalent to --clean-venv --clean-builddir
+    --clean-builddir     Delete build directory before building
+    --clean-cache        Re-run CMake with a clean CMake cache
+    -c,--configure       Force running the CMake configure step
+    --configure-only     Stop after the CMake configure and generation steps (ie. before
+                         building MindQuantum)
+    --doc                Setup the Python virtualenv for building the documentation and ask
+                         CMake to build the documentation
 
   Any options after "--" will be passed onto CMake during the configuration step
 
@@ -145,6 +151,80 @@ message):
        MindQuantum by parsing the content of the top-most ``CMakeLists.txt`` file or does not support ``/WithOutXXX``
        arguments.
 
+.. _build_wheels:
+
+Build binary Python wheels (for distribution)
+---------------------------------------------
+
+If you plan on compiling MindQuantum on your local machine (or some CI) and would like to distribute the code in binary
+form to other users, we woul dsuggest you take a look at the ``build.sh`` script.
+
+The build script mentioned above will perform the following operations in order:
+
+1. Setup a Python virtual environment
+2. Update the virtual environment's packages and install some required dependencies (which may include CMake)
+3. Call ``python3 -m build``
+
+
+It has similar options as the scripts decribed in :ref:`install_locally`:
+
+.. code-block::
+
+  Build binary Python wheel for MindQunantum
+
+  This is mainly relevant for developers that want to deploy MindQuantum on machines other
+  than their own.
+
+  This script will create a Python virtualenv in the MindQuantum root directory and then build a
+  binary Python wheel of MindQuantum.
+
+  Usage:
+    build.sh [options] [-- cmake_options]
+
+  Options:
+    -h,--help            Show this help message and exit
+    -n                   Dry run; only print commands but do not execute them
+
+    --ccache             If ccache or sccache are found within the PATH, use them with CMake
+    --clean-3rdparty     Clean 3rd party installation directory
+    --clean-venv         Delete Python virtualenv before building
+    --cxx                (experimental) Enable MindQuantum C++ support
+    --debug              Build in debug mode
+    --debug-cmake        Enable debugging mode for CMake configuration step
+    --gpu                Enable GPU support
+    -j,--jobs [N]        Number of parallel jobs for building
+                         Defaults to: 88
+    --local-pkgs         Compile third-party dependencies locally
+    --ninja              Build using Ninja instead of make
+    --quiet              Disable verbose build rules
+    --show-libraries     Show all known third-party libraries
+    --test               Build C++ tests
+    -v, --verbose        Enable verbose output from the Bash scripts
+    --venv=[dir]         Path to Python virtual environment
+                         Defaults to: /home/damien/code/hiq/mindquantum/venv
+    --with-<library>     Build the third-party <library> from source
+                         (ignored if --local-pkgs is passed, except for projectq and quest)
+    --without-<library>  Do not build the third-party library from source
+                         (ignored if --local-pkgs is passed, except for projectq and quest)
+
+  CUDA related options:
+    --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.
+                         Only useful if --gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more
+                         information.
+
+  Python related options:
+    --update-venv        Update the python virtual environment
+
+  Extra options:
+    --delocate           Delocate the binary wheels after build is finished
+    -o,--output=[dir]    Output directory for built wheels
+    -p,--plat-name=[dir] Platform name to use for wheel delocation
+                         (only effective if --delocate is used)
+
+  Example calls:
+  build.sh -B build
+  build.sh -B build --gpu
+  build.sh -B build --cxx --with-boost --without-quest --venv=/tmp/venv
 
 .. _requirements:
 

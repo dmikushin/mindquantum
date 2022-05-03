@@ -47,150 +47,152 @@ macro(_pybind11_message)
   endif()
 endmacro()
 
-_pybind11_message(CHECK_START "Looking for pybind11")
-list(APPEND CMAKE_MESSAGE_INDENT "  ")
+if(NOT _pybind11_already_found)
+  _pybind11_message(CHECK_START "Looking for pybind11")
+  list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
-# ==============================================================================
-# First detect whether we are in a virtualenv or not
+  # ==============================================================================
+  # First detect whether we are in a virtualenv or not
 
-execute_process(
-  COMMAND ${Python_EXECUTABLE} -c "import sys; print(int(sys.prefix != sys.base_prefix))"
-  OUTPUT_VARIABLE _is_virtualenv
-  ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-if(_is_virtualenv)
-  # ~~~
-  # Try to find in order within the virtualenv:
-  # - pybind11-global
-  # - pybind11 >= 2.6.0
-  # - pybind11 < 2.6.0 with pybind11-cmake
-  # - if all of that fails, revert to user and global sites (as far as is possible)
-  # ~~~
-
-  _pybind11_message(CHECK_START "Looking for pybind11-global in virtualenv")
-
-  # Look for pybind11-global
   execute_process(
-    COMMAND ${Python_EXECUTABLE} -c "import sys, os; print(os.path.join(sys.prefix, 'share', 'cmake', 'pybind11'))"
-    OUTPUT_VARIABLE pybind11_DIR
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-  to_cmake_path(pybind11_DIR)
+    COMMAND ${Python_EXECUTABLE} -c "import sys; print(int(sys.prefix != sys.base_prefix))"
+    OUTPUT_VARIABLE _is_virtualenv
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-  if(NOT EXISTS pybind11_DIR)
-    _pybind11_message(CHECK_FAIL "Not-found")
+  if(_is_virtualenv)
+    # ~~~
+    # Try to find in order within the virtualenv:
+    # - pybind11-global
+    # - pybind11 >= 2.6.0
+    # - pybind11 < 2.6.0 with pybind11-cmake
+    # - if all of that fails, revert to user and global sites (as far as is possible)
+    # ~~~
 
-    # Could not find pybind11-global, try pybind11 >= 2.6.0
-    _pybind11_message(CHECK_START "Looking for pybind11 >= 2.6.0 in virtualenv")
+    _pybind11_message(CHECK_START "Looking for pybind11-global in virtualenv")
 
-    find_python_module(pybind11 VERSION 2.6.0)
-    if(PYMOD_PYBIND11_FOUND)
-      _pybind11_message(CHECK_PASS "Found")
-      execute_process(
-        COMMAND ${Python_EXECUTABLE} -m pybind11 --cmakedir
-        OUTPUT_VARIABLE pybind11_DIR
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-      to_cmake_path(pybind11_DIR)
-    else()
-      _pybind11_message(CHECK_FAIL "Not-found")
-      # Now try pybind11 < 2.6.0 && pybind11-cmake
-      find_python_module(pybind11-cmake)
-      if(PYMOD_PYBIND11_CMAKE_FOUND)
-        execute_process(
-          COMMAND ${Python_EXECUTABLE} -c "import pybind11_cmake; print(pybind11_cmake.__path__[0])"
-          OUTPUT_VARIABLE pybind11_DIR
-          OUTPUT_STRIP_TRAILING_WHITESPACE)
-        to_cmake_path(pybind11_DIR)
-      endif()
-    endif()
-  else()
-    _pybind11_message(CHECK_PASS "Found")
-  endif()
-
-  # Try to find some valid pybind11 config within the virtualenv
-  find_package(pybind11 2.6.0 CONFIG QUIET NO_DEFAULT_PATH)
-endif()
-
-# ------------------------------------------------------------------------------
-
-if(NOT pybind11_FOUND)
-  _pybind11_message(CHECK_START "Looking for pybind11-global in global and user sites")
-
-  if(NOT _is_virtualenv)
-    # Try pybind11-global in user site
+    # Look for pybind11-global
     execute_process(
-      COMMAND ${Python_EXECUTABLE} -m site --user-base
-      RESULT_VARIABLE _status
-      OUTPUT_VARIABLE _user_base
+      COMMAND ${Python_EXECUTABLE} -c "import sys, os; print(os.path.join(sys.prefix, 'share', 'cmake', 'pybind11'))"
+      OUTPUT_VARIABLE pybind11_DIR
       OUTPUT_STRIP_TRAILING_WHITESPACE)
-    to_cmake_path(_user_base)
+    to_cmake_path(pybind11_DIR)
 
-    # NB: _status == 0 means user site enabled. Anything else and we really should not consider it
-    if(_status EQUAL 0 AND EXISTS "${_user_base}/share/cmake/pybind11/")
-      # cmake-lint: disable=C0103
-      set(pybind11_DIR "${_user_base}/share/cmake/pybind11/")
-    endif()
-  endif()
+    if(NOT EXISTS pybind11_DIR)
+      _pybind11_message(CHECK_FAIL "Not-found")
 
-  # Try to find pybind11-global either in user-site or global-site (even in the case of a virtualenv since we did not
-  # find anything useful in it previously)
-  find_package(pybind11 2.6.0 CONFIG QUIET)
+      # Could not find pybind11-global, try pybind11 >= 2.6.0
+      _pybind11_message(CHECK_START "Looking for pybind11 >= 2.6.0 in virtualenv")
 
-  if(pybind11_FOUND)
-    _pybind11_message(CHECK_PASS "Found")
-  else()
-    _pybind11_message(CHECK_PASS "Not-found")
-  endif()
-
-  if(NOT _is_virtualenv)
-    _pybind11_message(CHECK_START "Looking for pybind11 Python module")
-
-    # Try to find pybind11 either in user-site or global-site
-    if(pybind11_FIND_QUIETLY)
-      set(_args QUIET)
-    endif()
-    find_python_module(pybind11 VERSION 2.6.0 ${_args})
-    unset(_args)
-
-    if(PYMOD_PYBIND11_FOUND)
-      _pybind11_message(CHECK_PASS "Found")
-    else()
-      _pybind11_message(CHECK_PASS "Not-found")
-    endif()
-
-    if(PYMOD_PYBIND11_FOUND AND PYMOD_PYBIND11_VERSION VERSION_GREATER pybind11_VERSION)
-      # We prefer pybind11 over pybind11 global if its version is more recent. This could typically be the case if a
-      # user installs a more recent version of pybind11 in its user site.
-      execute_process(
-        COMMAND ${Python_EXECUTABLE} -m pybind11 --cmakedir
-        OUTPUT_VARIABLE pybind11_DIR
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-      to_cmake_path(pybind11_DIR)
-    endif()
-
-    _pybind11_message(CHECK_START "Looking for pybind11 (final)")
-
-    # Look for pybind11 again in case we have pybind11 more recent than pybind11-global
-    find_package(pybind11 2.6.0 CONFIG QUIET NO_DEFAULT_PATH)
-
-    # If we are not in a virtualenv, we should still try to look for pybind11 < 2.6.0 && pybind11-cmake
-    if(NOT pybind11_FOUND)
-      _pybind11_message(CHECK_PASS "Not-found")
-
-      _pybind11_message(CHECK_START "Looking for pybind11-cmake")
-      # If everything else fails, rely on the pybind11_cmake package
-      find_python_module(pybind11-cmake)
-      if(PYMOD_PYBIND11_CMAKE_FOUND)
-        _pybind11_message(CHECK_PASS "Done")
+      find_python_module(pybind11 VERSION 2.6.0)
+      if(PYMOD_PYBIND11_FOUND)
+        _pybind11_message(CHECK_PASS "Found")
         execute_process(
-          COMMAND ${Python_EXECUTABLE} -c "import pybind11_cmake; print(pybind11_cmake.__path__[0])"
+          COMMAND ${Python_EXECUTABLE} -m pybind11 --cmakedir
           OUTPUT_VARIABLE pybind11_DIR
           OUTPUT_STRIP_TRAILING_WHITESPACE)
         to_cmake_path(pybind11_DIR)
       else()
-        _pybind11_message(CHECK_FAIL "Failed")
+        _pybind11_message(CHECK_FAIL "Not-found")
+        # Now try pybind11 < 2.6.0 && pybind11-cmake
+        find_python_module(pybind11-cmake)
+        if(PYMOD_PYBIND11_CMAKE_FOUND)
+          execute_process(
+            COMMAND ${Python_EXECUTABLE} -c "import pybind11_cmake; print(pybind11_cmake.__path__[0])"
+            OUTPUT_VARIABLE pybind11_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+          to_cmake_path(pybind11_DIR)
+        endif()
       endif()
     else()
       _pybind11_message(CHECK_PASS "Found")
+    endif()
+
+    # Try to find some valid pybind11 config within the virtualenv
+    find_package(pybind11 2.6.0 CONFIG QUIET NO_DEFAULT_PATH)
+  endif()
+
+  # ------------------------------------------------------------------------------
+
+  if(NOT pybind11_FOUND)
+    _pybind11_message(CHECK_START "Looking for pybind11-global in global and user sites")
+
+    if(NOT _is_virtualenv)
+      # Try pybind11-global in user site
+      execute_process(
+        COMMAND ${Python_EXECUTABLE} -m site --user-base
+        RESULT_VARIABLE _status
+        OUTPUT_VARIABLE _user_base
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+      to_cmake_path(_user_base)
+
+      # NB: _status == 0 means user site enabled. Anything else and we really should not consider it
+      if(_status EQUAL 0 AND EXISTS "${_user_base}/share/cmake/pybind11/")
+        # cmake-lint: disable=C0103
+        set(pybind11_DIR "${_user_base}/share/cmake/pybind11/")
+      endif()
+    endif()
+
+    # Try to find pybind11-global either in user-site or global-site (even in the case of a virtualenv since we did not
+    # find anything useful in it previously)
+    find_package(pybind11 2.6.0 CONFIG QUIET)
+
+    if(pybind11_FOUND)
+      _pybind11_message(CHECK_PASS "Found")
+    else()
+      _pybind11_message(CHECK_PASS "Not-found")
+    endif()
+
+    if(NOT _is_virtualenv)
+      _pybind11_message(CHECK_START "Looking for pybind11 Python module")
+
+      # Try to find pybind11 either in user-site or global-site
+      if(pybind11_FIND_QUIETLY)
+        set(_args QUIET)
+      endif()
+      find_python_module(pybind11 VERSION 2.6.0 ${_args})
+      unset(_args)
+
+      if(PYMOD_PYBIND11_FOUND)
+        _pybind11_message(CHECK_PASS "Found")
+      else()
+        _pybind11_message(CHECK_PASS "Not-found")
+      endif()
+
+      if(PYMOD_PYBIND11_FOUND AND PYMOD_PYBIND11_VERSION VERSION_GREATER pybind11_VERSION)
+        # We prefer pybind11 over pybind11 global if its version is more recent. This could typically be the case if a
+        # user installs a more recent version of pybind11 in its user site.
+        execute_process(
+          COMMAND ${Python_EXECUTABLE} -m pybind11 --cmakedir
+          OUTPUT_VARIABLE pybind11_DIR
+          OUTPUT_STRIP_TRAILING_WHITESPACE)
+        to_cmake_path(pybind11_DIR)
+      endif()
+
+      _pybind11_message(CHECK_START "Looking for pybind11 (final)")
+
+      # Look for pybind11 again in case we have pybind11 more recent than pybind11-global
+      find_package(pybind11 2.6.0 CONFIG QUIET NO_DEFAULT_PATH)
+
+      # If we are not in a virtualenv, we should still try to look for pybind11 < 2.6.0 && pybind11-cmake
+      if(NOT pybind11_FOUND)
+        _pybind11_message(CHECK_PASS "Not-found")
+
+        _pybind11_message(CHECK_START "Looking for pybind11-cmake")
+        # If everything else fails, rely on the pybind11_cmake package
+        find_python_module(pybind11-cmake)
+        if(PYMOD_PYBIND11_CMAKE_FOUND)
+          _pybind11_message(CHECK_PASS "Done")
+          execute_process(
+            COMMAND ${Python_EXECUTABLE} -c "import pybind11_cmake; print(pybind11_cmake.__path__[0])"
+            OUTPUT_VARIABLE pybind11_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+          to_cmake_path(pybind11_DIR)
+        else()
+          _pybind11_message(CHECK_FAIL "Failed")
+        endif()
+      else()
+        _pybind11_message(CHECK_PASS "Found")
+      endif()
     endif()
   endif()
 endif()
@@ -272,7 +274,7 @@ find_package_handle_standard_args(
 # ------------------------------------------------------------------------------
 
 # For debugging
-if(pybind11_FOUND)
+if(pybind11_FOUND AND NOT _pybind11_already_found)
   _pybind11_message(STATUS "Found pybind11 using the CONFIG method in ${pybind11_DIR}")
   _pybind11_message(STATUS "Found pybind11 and defined the pybind11::pybind11 imported target:")
   _pybind11_message(STATUS "  - include:      ${pybind11_INCLUDE_DIR}")
@@ -281,9 +283,12 @@ endif()
 
 # ==============================================================================
 
+set(_pybind11_already_found
+    ON
+    CACHE INTERNAL "Findpybind11 was already run once")
 set(pybind11_DIR
     "${pybind11_DIR}"
     CACHE INTERNAL "")
-mark_as_advanced(pybind11_DIR)
+mark_as_advanced(pybind11_DIR _pybind11_already_found)
 
 # ==============================================================================

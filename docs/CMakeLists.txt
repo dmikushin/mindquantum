@@ -26,6 +26,11 @@ foreach(tgt ${_doc_targets})
   list(APPEND _mindquantum_public_headers ${_header_list})
 endforeach()
 
+# ------------------------------------------------------------------------------
+
+set(_mindquantum_rest_doc_files)
+file(GLOB_RECURSE _mindquantum_rest_doc_files "${CMAKE_CURRENT_LIST_DIR}/*.rst" "${CMAKE_CURRENT_LIST_DIR}/*.md")
+
 # ==============================================================================
 # Doxygen
 
@@ -81,7 +86,7 @@ add_custom_command(
     -Dbreathe_projects.mindquantum=${DOXYGEN_OUTPUT_DIR}/xml ${SPHINX_SOURCE} ${SPHINX_BUILD}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   DEPENDS # Other docs files you want to track should go here (or in some variable)
-          ${CMAKE_CURRENT_SOURCE_DIR}/source/index.rst ${DOXYGEN_INDEX_FILE}
+          ${_mindquantum_rest_doc_files} ${DOXYGEN_INDEX_FILE}
   MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
   COMMENT "Generating documentation with Sphinx")
 

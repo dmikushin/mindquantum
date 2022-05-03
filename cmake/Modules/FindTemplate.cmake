@@ -484,7 +484,8 @@ if(NOT ${_pkg}_NO_CMAKE)
   # Do the same find_package call but look specifically for the CMake version. Note that args are passed in the
   # ${_pkg}_FIND_xxxxx variables, so there is no need to delegate them to this find_package call.
   if(NOT ${_pkg}_FOUND)
-    message(STATUS "find_package(${_pkg} QUIET CONFIG ${_${_pkg}_FIND_PACKAGE_ARGS})")
+    _debug_print("${CMAKE_CURRENT_LIST_FILE}" "${CMAKE_CURRENT_LIST_LINE}"
+                 "find_package(${_pkg} QUIET CONFIG ${_${_pkg}_FIND_PACKAGE_ARGS})")
     find_package(${_pkg} QUIET CONFIG ${_${_pkg}_FIND_PACKAGE_ARGS})
   endif()
 
@@ -585,6 +586,9 @@ if(NOT ${_pkg}_NO_PKGCONFIG)
         endif()
 
         list(APPEND CMAKE_MESSAGE_INDENT "${_${_pkg}_indent}")
+        _debug_print("${CMAKE_CURRENT_LIST_FILE}" "${CMAKE_CURRENT_LIST_LINE}"
+                     "pkg_search_module(${_prefix} ${_${_pkg}_pkgconfig_args} ${${_pkg}_${_comp}_PKGCONFIG_NAMES})")
+
         pkg_search_module(${_prefix} ${_${_pkg}_pkgconfig_args} ${${_pkg}_${_comp}_PKGCONFIG_NAMES})
         list(POP_BACK CMAKE_MESSAGE_INDENT)
         if(${_prefix}_FOUND)
@@ -1424,6 +1428,11 @@ if(${_pkg}_FOUND)
         list(APPEND _${_pkg}_find_dep_args COMPONENTS ${${_pkg}_EXTERNAL_DEPENDENCY_${_${_pkg}_dep}_COMPONENTS})
       endif()
 
+      _debug_print(
+        "${CMAKE_CURRENT_LIST_FILE}"
+        "${CMAKE_CURRENT_LIST_LINE}"
+        "find_package(${_${_pkg}_dep} ${${_pkg}_EXTERNAL_DEPENDENCY_${_${_pkg}_dep}_FIND_ARGS} ${_${_pkg}_find_dep_args})"
+      )
       find_package(${_${_pkg}_dep} ${${_pkg}_EXTERNAL_DEPENDENCY_${_${_pkg}_dep}_FIND_ARGS} ${_${_pkg}_find_dep_args})
     else()
       _debug_print("${CMAKE_CURRENT_LIST_FILE}" "${CMAKE_CURRENT_LIST_LINE}"

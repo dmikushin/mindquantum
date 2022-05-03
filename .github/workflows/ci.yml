@@ -69,7 +69,9 @@ jobs:
         with:
           path: venv
           # yamllint disable-line rule:line-length
-          key: ${{ matrix.runs-on }}-python-${{ matrix.python }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: >-
+            ${{ matrix.runs-on }}-python-${{ matrix.python }}-python-venv
+            -${{ hashFiles('build_locally.sh', 'scripts/**') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: env.ACT != 'true'
@@ -144,7 +146,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: gcc-${{ matrix.gcc }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: >-
+            gcc-${{ matrix.gcc }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}
+            -${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: env.ACT != 'true'
@@ -223,7 +227,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: clang-${{ matrix.clang }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: >-
+            clang-${{ matrix.clang }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}
+            -${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: env.ACT != 'true'
@@ -411,6 +417,7 @@ jobs:
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-cmake
               mingw-w64-x86_64-ccache
+              mingw-w64-x86_64-gmp
               mingw-w64-x86_64-python
               mingw-w64-x86_64-python-pip
             cmake_generator: -- -G "MSYS Makefiles"
@@ -426,6 +433,7 @@ jobs:
               mingw-w64-clang-x86_64-libssp
               mingw-w64-clang-x86_64-cmake
               mingw-w64-clang-x86_64-ccache
+              mingw-w64-clang-x86_64-gmp
               mingw-w64-clang-x86_64-python
               mingw-w64-clang-x86_64-python-pip
             cmake_generator: -- -G "MSYS Makefiles"
@@ -440,6 +448,7 @@ jobs:
               mingw-w64-ucrt-x86_64-toolchain
               mingw-w64-ucrt-x86_64-cmake
               mingw-w64-ucrt-x86_64-ccache
+              mingw-w64-ucrt-x86_64-gmp
               mingw-w64-ucrt-x86_64-python
               mingw-w64-ucrt-x86_64-python-pip
             cmake_generator: -- -G "MSYS Makefiles"
@@ -508,7 +517,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: msys2-${{ matrix.msystem }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: >-
+            msys2-${{ matrix.msystem }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}
+            -${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: env.ACT != 'true'
@@ -624,7 +635,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: cygwin-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: cygwin-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: env.ACT != 'true'
@@ -717,7 +728,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: nvhpc-${{ matrix.nvhpc }}-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+          key: >-
+            nvhpc-${{ matrix.nvhpc }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}
+            -${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: env.ACT != 'true'
@@ -787,7 +800,7 @@ jobs:
   #       uses: actions/cache@v3
   #       with:
   #         path: venv
-  #         key: intel-python-venv-${{ hashFiles('build_locally.sh') }}-${{ secrets.cache_ver }}
+  #         key: intel-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}-${{ secrets.cache_ver }}
 
   #     - name: Cache compiled third-party libraries
   #       if: env.ACT != 'true'
