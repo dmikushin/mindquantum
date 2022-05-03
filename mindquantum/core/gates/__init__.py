@@ -19,7 +19,13 @@ Gate.
 Gate provides different quantum gate.
 """
 
-from .basic import HERMITIAN_PROPERTIES, BasicGate, NoneParameterGate, ParameterGate
+from .basic import (
+    HERMITIAN_PROPERTIES,
+    BasicGate,
+    NoiseGate,
+    NoneParameterGate,
+    ParameterGate,
+)
 from .basicgate import (
     BARRIER,
     CNOT,
@@ -56,10 +62,12 @@ from .basicgate import (
     gene_univ_parameterized_gate,
 )
 from .channel import (
+    AmplitudeDampingChannel,
     BitFlipChannel,
     BitPhaseFlipChannel,
     DepolarizingChannel,
     PauliChannel,
+    PhaseDampingChannel,
     PhaseFlipChannel,
 )
 from .measurement import Measure, MeasureResult
@@ -109,6 +117,8 @@ __all__ = [
     "BitPhaseFlipChannel",
     "DepolarizingChannel",
     "GlobalPhase",
+    "AmplitudeDampingChannel",
+    "PhaseDampingChannel",
 ]
 
 __all__.sort()
