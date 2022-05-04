@@ -28,13 +28,14 @@ import subprocess
 import sys
 import sysconfig
 from distutils.command.clean import clean
+from pathlib import Path
 
 import setuptools
 from setuptools.command.build_ext import build_ext
 
-sys.path.append(os.path.realpath(os.path.dirname(__file__)))
+sys.path.append(Path(__file__).parent.resolve())
 
-from _build.utils import (  # pylint: disable=wrong-import-position
+from _build.utils import (  # pylint: disable=wrong-import-position  # noqa: E402
     fdopen,
     get_cmake_command,
     get_executable,
@@ -45,7 +46,7 @@ from _build.utils import (  # pylint: disable=wrong-import-position
 # Helper variables
 
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-cur_dir = os.path.dirname(os.path.realpath(__file__))
+cur_dir = Path(__file__).resolve().parent
 ext_errors = (subprocess.CalledProcessError, FileNotFoundError)
 cmake_extra_options = []
 
@@ -105,8 +106,8 @@ def get_extra_cmake_options():
             continue
 
     # If no explicit CMake Generator specification, prefer MinGW Makefiles on Windows
-    if (not has_generator) and (platform.system() == "Windows"):
-        _cmake_extra_options += ['-G', "MinGW Makefiles"]
+    if (not has_generator) and (platform.system() == 'Windows'):
+        _cmake_extra_options += ['-G', 'MinGW Makefiles']
 
     return _cmake_extra_options
 
@@ -148,11 +149,11 @@ class CMakeExtension(setuptools.Extension):  # pylint: disable=too-few-public-me
             optional (bool): (optional) If true, not building this extension is not considered an error
         """
         # NB: the main source directory is the one containing the setup.py file
-        self.src_dir = os.path.realpath('')
+        self.src_dir = Path().resolve()
         self.pymod = pymod
         self.target = target if target is not None else pymod.split('.')[-1]
 
-        self.lib_filepath = os.path.join(*pymod.split('.'))
+        self.lib_filepath = str(Path(*pymod.split('.')))
         super().__init__(pymod, sources=[], optional=optional)
 
 
@@ -209,7 +210,7 @@ class CMakeBuildExt(build_ext):
             '-DIN_PLACE_BUILD:BOOL=OFF',
             '-DIS_PYTHON_BUILD:BOOL=ON',
             '-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON',
-            '-DVERSION_INFO="{self.distribution.get_version()}"',
+            f'-DVERSION_INFO="{self.distribution.get_version()}"',
         ]  # yapf: disable
 
         if self.no_arch_native:
@@ -218,12 +219,12 @@ class CMakeBuildExt(build_ext):
         cfg = 'Debug' if self.debug else 'Release'
         self.build_args = ['--config', cfg]
 
-        if platform.system() == "Windows":
+        if platform.system() == 'Windows':
             # self.build_args += ['--', '/m']
             pass
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            if platform.system() == "Darwin" and 'TRAVIS' in os.environ:
+            if platform.system() == 'Darwin' and 'TRAVIS' in os.environ:
                 self.build_args += ['--']
             else:
                 self.build_args += [
@@ -244,17 +245,17 @@ class CMakeBuildExt(build_ext):
         """Run a CMake build command for a list of extensions."""
         args = cmake_args.copy()
         for ext in extensions:
-            dest_path = os.path.realpath(os.path.dirname(self.get_ext_fullpath(ext.lib_filepath)))
+            dest_path = Path(self.get_ext_fullpath(ext.lib_filepath)).resolve().parent
             args.append(f'-D{ext.target.upper()}_OUTPUT_DIR={dest_path}')
 
         build_temp = self._get_temp_dir(src_dir)
         if self.clean_build:
             remove_tree(build_temp)
-        if not os.path.exists(build_temp):
-            os.makedirs(build_temp)
+        if not Path(build_temp).exists():
+            Path(build_temp).mkdir(parents=True, exist_ok=True)
 
         logging.info(' Configuring from %s '.center(80, '-'), src_dir)
-        logging.info('CMake command: %s', " ".join(self.cmake_cmd + [src_dir] + args))
+        logging.info('CMake command: %s', ' '.join(self.cmake_cmd + [str(src_dir)] + args))
         logging.info('   cwd: %s', build_temp)
         try:
             subprocess.check_call(self.cmake_cmd + [src_dir] + args, cwd=build_temp, env=env)
@@ -265,20 +266,21 @@ class CMakeBuildExt(build_ext):
 
     def build_extension(self, ext):
         """Build a single C/C++ extension using CMake."""
+        cwd = self._get_temp_dir(Path(ext.src_dir).resolve().name)
         logging.info(f' Building {ext.pymod} '.center(80, '-'))
         logging.info(
-            'CMake command: %s', " ".join(self.cmake_cmd + ["--build", ".", "--target", ext.target] + self.build_args)
+            'CMake command: %s', ' '.join(self.cmake_cmd + ['--build', '.', '--target', ext.target] + self.build_args)
         )
-        logging.info('   cwd: %s', self._get_temp_dir(ext.src_dir))
+        logging.info('   cwd: %s', cwd)
         try:
             subprocess.check_call(
                 self.cmake_cmd + ['--build', '.', '--target', ext.target] + self.build_args,
-                cwd=self._get_temp_dir(ext.src_dir),
+                cwd=cwd,
             )
         except ext_errors as err:
             if not ext.optional:
                 raise BuildFailed() from err
-            logging.info('Failed to compile optional extension %s (not an error)', ext.target)
+            logging.info('Failed to compile optional extension %s (not an error)', ext.pymod)
         finally:
             logging.info(' End building %s '.center(80, '-'), ext.pymod)
 
@@ -289,23 +291,23 @@ class CMakeBuildExt(build_ext):
         build_py = self.get_finalized_command('build_py')
         for ext in self.extensions:
             fullname = self.get_ext_fullname(ext.name)
-            filename = self.get_ext_filename(fullname)
+            filename = Path(self.get_ext_filename(fullname))
             modpath = fullname.split('.')
             package = '.'.join(modpath[:-1])
             package_dir = build_py.get_package_dir(package)
-            dest_filename = os.path.join(package_dir, os.path.basename(filename))
-            src_filename = os.path.join(self.build_lib, filename)
+            dest_filename = Path(package_dir, filename.name)
+            src_filename = Path(self.build_lib, filename)
 
             # Always copy, even if source is older than destination, to ensure
             # that the right extensions for the current Python/platform are
             # used.
-            if os.path.exists(src_filename) or not ext.optional:
+            if src_filename.exists() or not ext.optional:
                 if self.dry_run or self.verbose:
                     logging.info('copy %s -> %s', src_filename, dest_filename)
                 if not self.dry_run:
                     shutil.copyfile(src_filename, dest_filename)
                     if ext._needs_stub:
-                        self.write_stub(package_dir or os.curdir, ext, True)
+                        self.write_stub(str(package_dir) or os.curdir, ext, True)
 
     def get_outputs(self):
         """
@@ -315,12 +317,12 @@ class CMakeBuildExt(build_ext):
         """
         outputs = []
         for ext in self.extensions:
-            if os.path.exists(self.get_ext_fullpath(ext.name)) or not ext.optional:
+            if Path(self.get_ext_fullpath(ext.name)).exists() or not ext.optional:
                 outputs.append(self.get_ext_fullpath(ext.name))
         return outputs
 
     def _get_temp_dir(self, src_dir):
-        return os.path.join(self.build_temp, os.path.basename(src_dir))
+        return Path(self.build_temp, Path(src_dir).name)
 
 
 # ==============================================================================
@@ -349,7 +351,7 @@ class GenerateRequirementFile(setuptools.Command):
 
     description = 'List the dependencies of the current package'
     user_options = [
-        ('include-all-extras', None, 'Include all "extras_require" into the list'),
+        ('include-all-extras', None, 'Include all extras_require into the list'),
         ('include-extras=', None, 'Include some of extras_requires into the list (comma separated)'),
     ]
 
@@ -394,7 +396,6 @@ class GenerateRequirementFile(setuptools.Command):
 
 # ==============================================================================
 
-
 ext_modules = [
     CMakeExtension(pymod='mindquantum.libQuEST', target='QuEST', optional=True),
     CMakeExtension(pymod='mindquantum.mqbackend'),
@@ -405,7 +406,7 @@ ext_modules = [
 
 
 if __name__ == '__main__':
-    remove_tree(os.path.join(cur_dir, 'output'))
+    remove_tree(Path(cur_dir, 'output'))
     cmake_extra_options.extend(get_extra_cmake_options())
     setuptools.setup(
         cmdclass={
