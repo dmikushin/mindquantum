@@ -193,15 +193,13 @@ if(ENABLE_CUDA)
     enable_language(CUDA)
     setup_language(CUDA)
 
-    if(CMAKE_NVCXX_COMPILER_VERSION VERSION_LESS 20.11)
-      # NB: essentially because of missing '-x c++' argument for CMake flag detection
+    if(CMAKE_NVCXX_COMPILER_VERSION VERSION_LESS 21.5)
+      # NVCXX < 20.11 : missing '-x c++' argument for CMake flag detection
+      # NVCXX < 21.3  : can only specify one CUDA_ARCHITECTURE
+      # NVCXX < 21.5  : extraction of GPU kernels from shared library is broken
       message(
         FATAL_ERROR "MindQuantum is not compatible with the current version of NVHPC (${CMAKE_NVCXX_COMPILER_VERSION})"
-                    "Required is at least 20.11.")
-    endif()
-    if(CMAKE_NVCXX_COMPILER_VERSION VERSION_LESS 21.3)
-      list(GET CMAKE_CUDA_ARCHITECTURES 0 CMAKE_CUDA_ARCHITECTURES)
-      message(STATUS "NVHPC < 21.3, can only specify one CUDA_ARCHITECTURE. Only keeping: ${CMAKE_CUDA_ARCHITECTURES}")
+                    "Required is at least 21.5.")
     endif()
   else()
     disable_cuda()
