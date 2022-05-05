@@ -162,9 +162,15 @@ endif()
 if(ENABLE_CUDA)
   list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/NVCXX)
 
-  if(NOT CMAKE_CUDA_ARCHITECTURES AND "$ENV{CUDAARCHS}" STREQUAL "")
-    # Default architectures list supported by NVHPC when using -stdpar -cuda -gpu=ccXX (taken from NVHPC 22.3)
-    set(CMAKE_CUDA_ARCHITECTURES
+  # NB: NVHPC < 20.11 will fail this test since they do not support -x c++
+  check_language(NVCXX)
+  
+  if(CMAKE_NVCXX_COMPILER)
+    enable_language(NVCXX)
+
+    if(NOT CMAKE_CUDA_ARCHITECTURES AND "$ENV{CUDAARCHS}" STREQUAL "")
+      # Default architectures list supported by NVHPC when using -stdpar -cuda -gpu=ccXX (taken from NVHPC 22.3)
+      set(CMAKE_CUDA_ARCHITECTURES
         60
         61
         62
@@ -172,23 +178,18 @@ if(ENABLE_CUDA)
         72
         75
         80)
-    if(CMAKE_NVCXX_COMPILER_VERSION VERSION_GREATER_EQUAL 21.5)
-      list(APPEND CMAKE_CUDA_ARCHITECTURES 86)
+      if(CMAKE_NVCXX_COMPILER_VERSION VERSION_GREATER_EQUAL 21.5)
+        list(APPEND CMAKE_CUDA_ARCHITECTURES 86)
+      endif()
+
+      # NB: CUDAARCHS requires CMake 3.20
+      message(STATUS "Neither of CMAKE_CUDA_ARCHITECTURES (CMake variable) or CUDAARCHS (env. variable; CMake 3.20+) "
+                     "have been defined. Defaulting to ${CMAKE_CUDA_ARCHITECTURES}")
+    elseif(NOT "$ENV{CUDAARCHS}" STREQUAL "")
+      message(STATUS "CUDAARCHS environment variable present: $ENV{CUDAARCHS}")
     endif()
+    list(SORT CMAKE_CUDA_ARCHITECTURES ORDER DESCENDING)
 
-    # NB: CUDAARCHS requires CMake 3.20
-    message(STATUS "Neither of CMAKE_CUDA_ARCHITECTURES (CMake variable) or CUDAARCHS (env. variable; CMake 3.20+) "
-                   "have been defined. Defaulting to ${CMAKE_CUDA_ARCHITECTURES}")
-  elseif(NOT "$ENV{CUDAARCHS}" STREQUAL "")
-    message(STATUS "CUDAARCHS environment variable present: $ENV{CUDAARCHS}")
-  endif()
-  list(SORT CMAKE_CUDA_ARCHITECTURES ORDER DESCENDING)
-
-  # NB: NVHPC < 20.11 will fail this test since they do not support -x c++
-  check_language(NVCXX)
-
-  if(CMAKE_NVCXX_COMPILER)
-    enable_language(NVCXX)
     setup_language(NVCXX)
     enable_language(CUDA)
     setup_language(CUDA)
