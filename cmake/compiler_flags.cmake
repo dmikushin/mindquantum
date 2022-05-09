@@ -208,7 +208,7 @@ endif()
 if(VERSION_INFO MATCHES [=["(.*)"]=])
   set(MQ_VERSION ${CMAKE_MATCH_1})
 else()
-  set(MQ_VERSION ${VERSION_INFO })
+  set(MQ_VERSION ${VERSION_INFO})
 endif()
 message(STATUS "MindQuantum version: ${MQ_VERSION}")
 
