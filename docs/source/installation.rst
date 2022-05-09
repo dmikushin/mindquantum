@@ -241,7 +241,7 @@ installation config file is located. You may use any of the following commands:
     > mindquantum-config --cmakedir
     /usr/local/lib/python3.10/site-packages/mindquantum/share/mindquantum/cmake
 
- .. note::
+.. note::
 
     Both of the above commands provide the exact same information. The advantage of the latter over the former is that
     it does not attempt to load the mindquantum package which may be slower to execute in practice.
