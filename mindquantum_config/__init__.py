@@ -13,9 +13,43 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+"""Console entry point to access MindQuantum installation variables."""
+
 import argparse
 import sys
 from pathlib import Path
+
+_ROOT = Path(__file__).parent.parent.resolve()
+
+# ==============================================================================
+
+
+def print_includes():
+    """Print a list of include directories using the -I<dir> syntax."""
+    dirs = [
+        _ROOT / 'include' / 'mindquantum',
+        _ROOT / 'ccsrc' / 'mq_base',
+        _ROOT / 'ccsrc' / 'cxx_experimental' / 'include',
+        _ROOT / 'ccsrc' / 'cxx_experimental' / 'python' / 'include',
+    ]
+
+    root = _ROOT / 'mindquantum' / 'lib' / 'mindquantum' / 'third_party'
+    if root.exists():
+        for folder in root.iterdir():
+            dirs.append(folder / 'include')
+
+    root = _ROOT / 'build' / '.mqlibs'
+    if root.exists():
+        for folder in root.iterdir():
+            dirs.append(folder / 'include')
+
+    unique_dirs = []
+    for folder in dirs:
+        if folder and folder.exists() and folder not in unique_dirs:
+            unique_dirs.append(folder)
+
+    print(' '.join(f'-I{d}' for d in unique_dirs))
+
 
 # ==============================================================================
 
@@ -27,25 +61,48 @@ def get_cmake_dir(as_string=True):
     Args:
         as_string (bool): (optional) If true, returned value is a string, else a pathlib.Path object.
     """
-    cmake_installed_path = Path(Path(__file__).parent.parent.resolve(), 'mindquantum', 'share', 'mindquantum', 'cmake')
-    if cmake_installed_path.exists():
+
+    def get_dir(folder):
+        """Convert a pathlib.Path to a string if requested."""
         if as_string:
-            return str(cmake_installed_path)
-        return cmake_installed_path
+            return str(folder)
+        return folder
+
+    cmake_installed_path = Path(_ROOT, 'mindquantum', 'share', 'mindquantum', 'cmake')
+    if cmake_installed_path.exists():
+        return get_dir(cmake_installed_path)
+
+    build_dir = Path(_ROOT, 'build')
+    if build_dir.exists():
+        return get_dir(build_dir)
 
     raise ImportError('MindQuantum not installed, installation required to access the CMake files')
 
 
+# ==============================================================================
+
+
 def main():
+    """Implement main functionality."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--cmakedir",
         action="store_true",
-        help="Print the CMake module directory, ideal for setting -Dmindquantum_ROOT in CMake.",
+        help=(
+            "Print the CMake module directory, ideal for setting either -Dmindquantum_ROOT or-Dmindquantum_DIR in "
+            "CMake."
+        ),
+    )
+    parser.add_argument(
+        "--includes",
+        action="store_true",
+        help="Include flags for MindQuantum",
     )
     args = parser.parse_args()
     if not sys.argv[1:]:
         parser.print_help()
+    if args.includes:
+        print_includes()
     if args.cmakedir:
         print(get_cmake_dir())
 
