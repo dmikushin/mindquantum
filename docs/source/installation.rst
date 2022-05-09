@@ -25,9 +25,11 @@ If you are only looking in using MindQuantum on your system, the easiest way of 
 directly from Pypi and use one of the pre-compiled binaries: :ref:`install_from_pypi`.
 
 If you are looking into doing some development with MindQuantum on your local machine, we highly recommend you using one
-of the scripts provided to build MindQuantum locally: :ref:`install_locally`. In that case, you might want to install
-some of the required programs and libraries. See one of the sub-sections under :ref:`requirements` for your particular
-system for more information in order to find out how to achieve that.
+of the scripts provided to build MindQuantum locally: :ref:`build_locally_for_devs`. In that case, you might want to
+install some of the required programs and libraries. See one of the sub-sections under :ref:`requirements` for your
+particular system for more information in order to find out how to achieve that. Additionally, if you plan to link some
+libraries you are developping to MindQuantum, have a look at the :ref:`install_locally`. This will guide you into adding
+MindQuantum as a third-party library into your other projects.
 
 If you plan on distributing the version of MindQuantum you have compiled on your system, we would suggest that you
 have a look at :ref:`build_wheels`.
@@ -43,13 +45,14 @@ You can install one of the pre-compiled binary Python packages directly from Pyp
 
    python3 -m pip install --user mindquantum
 
-.. _install_locally:
+.. _build_locally_for_devs:
 
-Install locally
----------------
+Build locally (for developers)
+------------------------------
 
-In order to build MindQuantum locally, there are a few scripts that you can use to properly setup a virtual environment
-and all the required build tools (such as CMake). Currently, there are three local build scripts:
+In order to build MindQuantum locally for developping new features or implementing bug fixes for MindQuantum, there are
+a few scripts that you can use to properly setup a virtual environment and all the required build tools (such as
+CMake). Currently, there are three local build scripts:
 
 - ``build_locally.bat`` (MS-DOS BATCH script)
 - ``build_locally.ps1`` (PowerShell script)
@@ -145,11 +148,100 @@ message):
   Example calls:
   build_locally.sh -B build
   build_locally.sh -B build --gpu
-  build_locally.sh -B build --cxx --with-boost --without-quest --venv=/tmp/venv
+  build_locally.sh -B build --cxx --with-boost --without-gmp --venv=/tmp/venv
   build_locally.sh -B build -- -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc
+  build_locally.sh -B build --cxx --gpu -- -DCMAKE_NVCXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++
 
 .. [1] PowerShell and Bash scripts typically have identical functionality sets whereas the MS-DOS BATCH script might
        not. For example, the latter does not support the ``/WithOutXXX``-type arguments.
+
+.. _install_locally:
+
+Install locally (as a library)
+------------------------------
+
+If you plan on integrating MindQuantum into your own project as a third-party library, you may want to install it
+locally on your computer. For that you may use the scripts mentioned in Section :ref:`build_locally_for_devs`.
+
+There are essentially three ways you can include MindQuantum as a third-party library:
+
+1. As a sub-directory if your project also uses CMake (``add_subdirectory("path/to/mindquantum")``)
+2. Installing MindQuantum as a library somewhere on your system
+3. Using the build directory as a pseudo-installation location (provided your project also uses CMake)
+
+As option 1. is pretty straightforward, we will not provide more explanation here. However, for the other two options,
+some more detailed help can be found below.
+
+Installation on your system
++++++++++++++++++++++++++++
+
+If you are using the local build scripts, simply add the ``--install`` (or ``-Install`` or ``/Install``) and if
+necessary the ``--prefix`` (or ``-Prefix`` or ``/Prefix``) arguments to your command line to install MindQuantum in your
+preferred location.
+
+Given an installation ``<prefix>``, building the ``install`` target will result in the relevant files being installed
+into:
+
+``<prefix>/include/mindquantum``
+    All MindQuantum header files
+
+``<prefix>/lib/mindquantum``
+    All MindQuantum libraries (excuding 3rd-party libraries)
+
+``<prefix>/lib/mindquantum/third_party``
+    All 3rd-party libraries (including their header files). This is actually the content of the ``build/.mqlibs`` folder
+    within the build directory.
+
+``<prefix>/share/cmake/mindquantum/``
+    All CMake installation configuration files. This includes the ``mindquawntumConfig.cmake`` file and other helper
+    files.
+
+Then, in order to use MindQuantum in some other CMake project, you simply need to add the following statement:
+``find_package(mindquantum CONFIG)``:
+
+.. code-block:: cmake
+
+    cmake_minimum_required(VERSION 3.20)
+    project(XXXX CXX)
+
+    # ...
+
+    find_package(mindquantum CONFIG)
+
+    # ...
+
+
+You may need to also define either of ``mindquantum_ROOT`` or ``mindquantum_DIR`` CMake variables in order to help CMake
+locate the MindQuantum installation. For the former, simply defining it to ``<prefix>`` should suffice:
+
+.. code-block:: bash
+
+    cmake ... -Dmindquantum_ROOT=/path/to/mindquantum/install
+
+Instead of defining ``mindquantum_ROOT`` you may alternatively define ``mindquantum_DIR``. In this case, the path must
+be to the directory that contains the ``mindquantumConfig.cmake`` file.
+
+.. code-block:: bash
+
+    cmake ... -Dmindquantum_DIR=/path/to/mindquantum/install/share/mindquantum/cmake
+
+.. note::
+
+    You may defined either of ``mindquantum_DEBUG`` or ``MINDQUANTUM_DEBUG`` to a truthful value to have CMake be more
+    verbose when reading the MindQuantum configuration files.
+
+In-build "pseudo"-install
++++++++++++++++++++++++++
+
+If you do not wish to install MindQuantum on your system, you may use the build directory as a *pseudo-installation*
+location. Simply follow the above instructions and simply set either of ``mindquantum_ROOT`` or ``mindquantum_DIR``
+CMake variables to point to your build directory:
+
+.. code-block:: bash
+
+    cmake ... -Dmindquantum_DIR=/path/to/mindquantum/build
+
+
 
 .. _build_wheels:
 
@@ -166,7 +258,7 @@ The build script mentioned above will perform the following operations in order:
 3. Call ``python3 -m build``
 
 
-It has similar options as the scripts decribed in :ref:`install_locally`:
+It has similar options as the scripts decribed in :ref:`build_locally_for_devs`:
 
 .. code-block::
 
@@ -224,7 +316,8 @@ It has similar options as the scripts decribed in :ref:`install_locally`:
   Example calls:
   build.sh -B build
   build.sh -B build --gpu
-  build.sh -B build --cxx --with-boost --without-quest --venv=/tmp/venv
+  build.sh -B build --cxx --with-boost --without-gmp --venv=/tmp/venv
+  build.sh -B build --cxx --gpu -- -DCMAKE_NVCXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++
 
 .. _requirements:
 

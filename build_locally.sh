@@ -68,9 +68,9 @@ function extra_help() {
     echo -e '\nExample calls:'
     echo "$PROGRAM -B build"
     echo "$PROGRAM -B build --gpu"
-    echo "$PROGRAM -B build --cxx --with-boost --without-quest --venv=/tmp/venv"
+    echo "$PROGRAM -B build --cxx --with-boost --without-gmp --venv=/tmp/venv"
     echo "$PROGRAM -B build -- -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc"
-    echo "$PROGRAM -B build --cxx --gpu --with-quest -- -DCMAKE_NVCXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++"
+    echo "$PROGRAM -B build --cxx --gpu -- -DCMAKE_NVCXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++"
 }
 
 # --------------------------------------

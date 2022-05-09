@@ -38,10 +38,7 @@ conf_path = pathlib.Path(__file__).parent.resolve()
 # -- General declarations ----------------------------------------------------
 
 # Mock
-autodoc_mock_imports = [
-    # Add more here
-    "pybind11"
-]
+autodoc_mock_imports = ['cirq', 'projectq', 'mindspore']
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
@@ -71,7 +68,6 @@ author = 'Huawei HiQ developers'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-import sphinx_rtd_theme
 
 extensions = [
     'sphinx.ext.autodoc',

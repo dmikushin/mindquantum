@@ -33,7 +33,7 @@ from pathlib import Path
 import setuptools
 from setuptools.command.build_ext import build_ext
 
-sys.path.append(Path(__file__).parent.resolve())
+sys.path.append(str(Path(__file__).parent.resolve()))
 
 from _build.utils import (  # pylint: disable=wrong-import-position  # noqa: E402
     fdopen,

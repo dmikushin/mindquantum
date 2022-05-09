@@ -230,7 +230,7 @@ function help_message() {
     Write-Output 'Example calls:'
     Write-Output ("{0} -B build" -f $BASENAME)
     Write-Output ("{0} -B build -gpu" -f $BASENAME)
-    Write-Output ("{0} -B build -cxx -WithBoost -Without-Quest" -f $BASENAME)
+    Write-Output ("{0} -B build -cxx -WithBoost -Without-Eigen3" -f $BASENAME)
     Write-Output ("{0} -B build -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc" -f $BASENAME)
 }
 
@@ -783,7 +783,7 @@ PS> .\build_locally.ps1 -gpu
 
 .EXAMPLE
 
-PS> .\build_locally.ps1 -Cxx -WithBoost -WithoutQuest
+PS> .\build_locally.ps1 -Cxx -WithBoost -WithoutEigen3
 
 .EXAMPLE
 
