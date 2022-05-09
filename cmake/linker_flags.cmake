@@ -67,6 +67,13 @@ if(ENABLE_CUDA)
   foreach(_dst_target NVCXX_try_compile NVCXX_try_compile_flagcheck)
     target_link_options(${_dst_target} INTERFACE ${_flag})
   endforeach()
+
+  test_linker_option(
+    nvhpc_static_flags
+    LANGS NVCXX
+    FLAGS "-static-nvidia" "-Mnorpath"
+    CMAKE_OPTION CUDA_STATIC
+    VERBATIM)
 endif()
 
 # ------------------------------------------------------------------------------
@@ -93,14 +100,6 @@ else()
       linker_dtags
       LANGS C CXX DPCXX CUDA NVCXX
       FLAGS "--disable-new-dtags")
-  endif()
-
-  if(CUDA_STATIC)
-    test_linker_option(
-      nvhpc_static_flags
-      LANGS NVCXX
-      FLAGS "-static-nvidia" "-Mnorpath"
-      VERBATIM)
   endif()
 endif()
 

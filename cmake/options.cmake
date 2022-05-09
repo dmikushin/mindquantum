@@ -160,25 +160,25 @@ if(ENABLE_CUDA)
 
   # NB: NVHPC < 20.11 will fail this test since they do not support -x c++
   check_language(NVCXX)
-  
+
   if(CMAKE_NVCXX_COMPILER)
     enable_language(NVCXX)
 
     if(NOT CMAKE_CUDA_ARCHITECTURES AND "$ENV{CUDAARCHS}" STREQUAL "")
       # Default architectures list supported by NVHPC when using -stdpar -cuda -gpu=ccXX (taken from NVHPC 22.3)
       set(CMAKE_CUDA_ARCHITECTURES
-        60
-        61
-        62
-        70
-        72
-        75
-        80)
+          60
+          61
+          62
+          70
+          72
+          75
+          80)
       if(CMAKE_NVCXX_COMPILER_VERSION VERSION_GREATER_EQUAL 21.5)
         list(APPEND CMAKE_CUDA_ARCHITECTURES 86)
       endif()
 
-      # NB: CUDAARCHS requires CMake 3.20
+      # NB: CUDAARCHS requires CMake 3.20+
       message(STATUS "Neither of CMAKE_CUDA_ARCHITECTURES (CMake variable) or CUDAARCHS (env. variable; CMake 3.20+) "
                      "have been defined. Defaulting to ${CMAKE_CUDA_ARCHITECTURES}")
     elseif(NOT "$ENV{CUDAARCHS}" STREQUAL "")
@@ -191,9 +191,9 @@ if(ENABLE_CUDA)
     setup_language(CUDA)
 
     if(CMAKE_NVCXX_COMPILER_VERSION VERSION_LESS 21.5)
-      # NVCXX < 20.11 : missing '-x c++' argument for CMake flag detection
-      # NVCXX < 21.3  : can only specify one CUDA_ARCHITECTURE
-      # NVCXX < 21.5  : extraction of GPU kernels from shared library is broken
+      # * NVCXX < 20.11 : missing '-x c++' argument for CMake flag detection
+      # * NVCXX < 21.3  : can only specify one CUDA_ARCHITECTURE
+      # * NVCXX < 21.5  : extraction of GPU kernels from shared library is broken
       message(
         FATAL_ERROR "MindQuantum is not compatible with the current version of NVHPC (${CMAKE_NVCXX_COMPILER_VERSION})"
                     "Required is at least 21.5.")

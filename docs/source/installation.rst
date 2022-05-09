@@ -230,6 +230,22 @@ be to the directory that contains the ``mindquantumConfig.cmake`` file.
     You may defined either of ``mindquantum_DEBUG`` or ``MINDQUANTUM_DEBUG`` to a truthful value to have CMake be more
     verbose when reading the MindQuantum configuration files.
 
+If you have MindQuantum installed as a Python package, you can also use the module itself to locate where the CMake
+installation config file is located. You may use any of the following commands:
+
+.. code-block:: bash
+
+    > python3 -m mindquantum --cmakedir
+    /usr/local/lib/python3.10/site-packages/mindquantum/share/mindquantum/cmake
+
+    > mindquantum-config --cmakedir
+    /usr/local/lib/python3.10/site-packages/mindquantum/share/mindquantum/cmake
+
+ .. note::
+
+    Both of the above commands provide the exact same information. The advantage of the latter over the former is that
+    it does not attempt to load the mindquantum package which may be slower to execute in practice.
+
 In-build "pseudo"-install
 +++++++++++++++++++++++++
 
@@ -240,7 +256,6 @@ CMake variables to point to your build directory:
 .. code-block:: bash
 
     cmake ... -Dmindquantum_DIR=/path/to/mindquantum/build
-
 
 
 .. _build_wheels:

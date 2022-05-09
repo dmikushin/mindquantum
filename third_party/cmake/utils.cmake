@@ -833,7 +833,10 @@ function(__setup_install_target pkg_name)
         endif()
       endforeach()
       set(_find_pkg_args ${_args_patched})
-      install(DIRECTORY ${${pkg_name}_BASE_DIR} DESTINATION ${MQ_INSTALL_3RDPARTYDIR})
+      install(
+        DIRECTORY ${${pkg_name}_BASE_DIR}
+        DESTINATION ${MQ_INSTALL_3RDPARTYDIR}
+        REGEX ".*(a|lib)$" EXCLUDE)
     endif()
 
     string(REPLACE ";" ";@" _find_pkg_args "${_find_pkg_args}")

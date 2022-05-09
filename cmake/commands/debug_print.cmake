@@ -28,7 +28,7 @@ function(debug_print mode)
      OR MINDQUANTUM_DEBUG
      OR mindquantum_DEBUG)
     foreach(_msg ${ARGN})
-      message(${mode} ${_msg})
+      message(${mode} "${_msg}")
     endforeach()
   endif()
 endfunction()
