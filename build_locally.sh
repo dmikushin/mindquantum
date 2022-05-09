@@ -25,6 +25,8 @@ do_clean=0
 do_clean_build_dir=0
 do_clean_cache=0
 do_docs=0
+do_install=0
+prefix=''
 
 . "$ROOTDIR/scripts/build/default_values.sh"
 
@@ -59,6 +61,8 @@ function extra_help() {
     echo '  --configure-only     Stop after the CMake configure and generation steps (ie. before building MindQuantum)'
     echo '  --doc                Setup the Python virtualenv for building the documentation and ask CMake to build the'
     echo '                       documentation'
+    echo '  --install            Build the ´install´ target'
+    echo '  --prefix             Specify installation prefix'
     echo ''
     echo 'Any options after "--" will be passed onto CMake during the configuration step'
     echo -e '\nExample calls:'
@@ -100,6 +104,12 @@ function parse_extra_args() {
         docs )           ;&
         doc )            no_arg;
                          do_docs=1
+                         ;;
+        install)         no_arg;
+                         do_install=1
+                         ;;
+        prefix)          needs_arg;
+                         prefix="$OPTARG"
                          ;;
         ??* )            die "Illegal option --OPT: $OPT"
                          ;;
@@ -159,7 +169,56 @@ fi
 # ------------------------------------------------------------------------------
 # Setup arguments for build
 
-. "$ROOTDIR/scripts/build/setup_cmake_args.sh"
+CMAKE_BOOL=(OFF ON)
+
+cmake_args=(-DIN_PLACE_BUILD:BOOL=ON
+            -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
+            -DCMAKE_BUILD_TYPE:STRING="$build_type"
+            -DENABLE_PROJECTQ:BOOL="${CMAKE_BOOL[$enable_projectq]}"
+            -DENABLE_QUEST:BOOL="${CMAKE_BOOL[$enable_quest]}"
+            -DENABLE_CMAKE_DEBUG:BOOL="${CMAKE_BOOL[$cmake_debug_mode]}"
+            -DENABLE_CUDA:BOOL="${CMAKE_BOOL[$enable_gpu]}"
+            -DENABLE_CXX_EXPERIMENTAL:BOOL="${CMAKE_BOOL[$enable_cxx]}"
+            -DBUILD_TESTING:BOOL="${CMAKE_BOOL[$enable_tests]}"
+            -DCLEAN_3RDPARTY_INSTALL_DIR:BOOL="${CMAKE_BOOL[$do_clean_3rdparty]}"
+            -DUSE_VERBOSE_MAKEFILE:BOOL="${CMAKE_BOOL[! $cmake_make_silent]}")
+
+if [[ -n "$cmake_generator" ]]; then
+    cmake_args+=(-G "${cmake_generator}")
+fi
+
+if [[ -n "$prefix" ]]; then
+    cmake_args+=(-DCMAKE_INSTALL_PREFIX:FILEPATH="${prefix}")
+fi
+
+if [ $enable_ccache -eq 1 ]; then
+    ccache_exec=
+    if command -v ccache > /dev/null 2>&1; then
+        ccache_exec=ccache
+    elif command -v sccache > /dev/null 2>&1; then
+        ccache_exec=sccache
+    fi
+    if [ -n "$ccache_exec" ]; then
+        ccache_exec=$(which "$ccache_exec")
+        cmake_args+=(-DCMAKE_C_COMPILER_LAUNCHER="$ccache_exec")
+        cmake_args+=(-DCMAKE_CXX_COMPILER_LAUNCHER="$ccache_exec")
+    fi
+fi
+
+if [[ $enable_gpu -eq 1 && -n "$cuda_arch" ]]; then
+    cmake_args+=(-DCMAKE_CUDA_ARCHITECTURES:STRING="$cuda_arch")
+fi
+
+local_pkgs_str=$(join_by , "${local_pkgs[@]}")
+if [[ $force_local_pkgs -eq 1 ]]; then
+    cmake_args+=(-DMQ_FORCE_LOCAL_PKGS=all)
+elif [ -n "$local_pkgs_str" ]; then
+    cmake_args+=(-DMQ_FORCE_LOCAL_PKGS="$local_pkgs_str")
+fi
+
+if [ $n_jobs -ne -1 ]; then
+    cmake_args+=(-DJOBS:STRING="$n_jobs")
+fi
 
 # ------------------------------------------------------------------------------
 # Build
@@ -187,14 +246,19 @@ if [ $n_jobs -ne -1 ]; then
     make_args+=(-j "$n_jobs")
 fi
 
+target=all
+if [ $do_install -eq 1 ]; then
+    target=install
+fi
+
 if [ $do_clean -eq 1 ]; then
     call_cmake --build "$build_dir" --target clean
 fi
 
-call_cmake --build "$build_dir" --target all --config "$build_type" "${make_args[@]}"
-
 if [ $do_docs -eq 1 ]; then
     call_cmake --build "$build_dir" --target docs --config "$build_type" "${make_args[@]}"
 fi
+
+call_cmake --build "$build_dir" --config "$build_type" --target "${target}" "${make_args[@]}"
 
 # ==============================================================================

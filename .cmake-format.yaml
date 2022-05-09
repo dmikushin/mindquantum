@@ -68,10 +68,22 @@ parse:
         FLAGS: +
         CMAKE_OPTION: 1
         GENEX: 1
+    __find_package:
+      pargs:
+        nargs: 1+
+      kwargs:
+        SEARCH_NAME: 1
     __exec_cmd:
       kwargs:
         COMMAND: +
         WORKING_DIRECTORY: 1
+    pybind11_add_module:
+      pargs:
+        nargs: 1+
+        flags:
+          - MODULE
+      kwargs:
+        OUTPUT_HINT: 1
     mq_add_compile_definitions:
       pargs:
         nargs: +
@@ -85,9 +97,9 @@ parse:
           - FORCE_LOCAL_PKG
           - GEN_CMAKE_CONFIG
           - ONLY_MAKE
-          - ONLY_UNPACK
           - SKIP_BUILD_STEP
           - SKIP_INSTALL_STEP
+          - SKIP_IN_INSTALL_CONFIG
       kwargs:
         CMAKE_PATH: 1
         CUSTOM_CMAKE: 1
@@ -104,11 +116,11 @@ parse:
         BUILD_OPTION: +
         CMAKE_OPTION: +
         CONFIGURE_COMMAND: +
-        COPY_TO_BINARY_DIR: +
         INSTALL_COMMAND: +
         INSTALL_INCS: +
         INSTALL_LIBS: +
         LIBS: +
+        ONLY_COPY_DIRS: +
         ONLY_MAKE_INCS: +
         ONLY_MAKE_LIBS: +
         PATCHES: +

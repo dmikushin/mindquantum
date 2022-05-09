@@ -33,7 +33,7 @@ variables:
   - which ccache
   - ccache --help
   - ccache --set-config=cache_dir="${CI_PROJECT_DIR}/cache/ccache"
-  - ccache --set-config=max_size=500M
+  - ccache --set-config=max_size=100M
   - ccache --set-config=compression=true
   - ccache -pz
   - ccache -sv
@@ -41,8 +41,9 @@ variables:
 .default_script_unix: &default_script_unix
   - >-
     ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
-    --configure-only -c --clean-3rdparty
+    --configure-only -c --clean-3rdparty --prefix=$PWD/install
   - ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+  - ./build_locally.sh --install  # NB: no need to pass the other parameters
 
 .cache_paths:
   paths: &cache_paths

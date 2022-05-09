@@ -146,27 +146,27 @@ if(_cmake_rpath_check)
 set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
       endif()
 
-      file(REMOVE ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt)
-      configure_file(${CMAKE_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt.in
-                     ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt @ONLY)
+      file(REMOVE ${PROJECT_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt)
+      configure_file(${PROJECT_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt.in
+                     ${PROJECT_SOURCE_DIR}/tests/cmake-ldtest/CMakeLists.txt @ONLY)
 
       # ------------------------------------
 
       get_target_property(_linker_flags linker_dtags_${_lang} INTERFACE_LINK_OPTIONS)
 
       message(CHECK_START "Compiling test library (${_lang})")
-      set(_binary_dir ${CMAKE_BINARY_DIR}/cmake-ldtest-${_lang})
+      set(_binary_dir ${PROJECT_BINARY_DIR}/cmake-ldtest-${_lang})
       get_target_property(_linker_dtags linker_dtags_${_lang} INTERFACE_LINK_OPTIONS)
       try_compile(
         _create_shared_lib_${lang} ${_binary_dir}
-        ${CMAKE_SOURCE_DIR}/tests/cmake-ldtest cmake-ldtest
+        ${PROJECT_SOURCE_DIR}/tests/cmake-ldtest cmake-ldtest
         CMAKE_FLAGS -DCMAKE_VERBOSE_MAKEFILE=ON -DLINKER_FLAGS=${_linker_dtags} -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
         OUTPUT_VARIABLE _compile_output)
       if(_create_shared_lib_${lang})
         message(CHECK_PASS "succeeded")
       else()
         message(CHECK_FAIL "failed")
-        file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+        file(APPEND ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
              "Failed to compile CMake RPATH extended ${_lang} test project.\nOutput of build:\n${_compile_output}\n")
       endif()
 
@@ -204,7 +204,7 @@ set(CMAKE_NVCXX_LDFLAGS_INIT \"${CMAKE_NVCXX_LDFLAGS_INIT} -v\")")
           endif()
           file(
             APPEND
-            ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_file}
+            ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_file}
             "\n\nLooking for absence of ${name} in ${_shared_lib_${_lang}} ${_state_msg}.\n"
             "Output of build for ${_shared_lib_${_lang}}:\n${_compile_output}\nOutput of readelf -Wd:"
             "\n${_dyn_symbols}\n\n${msg}\n\n")

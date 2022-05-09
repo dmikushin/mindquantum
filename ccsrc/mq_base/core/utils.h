@@ -18,9 +18,9 @@
 #define MINDQUANTUM_UTILS_H_
 
 #include <stdint.h>
-#ifdef ENABLE_OPENMP
+#ifdef USE_OPENMP
 #    include <omp.h>
-#endif  // ENABLE_OPENMP  // NOLINT
+#endif  // USE_OPENMP  // NOLINT
 
 #ifdef _MSC_VER
 #    include <intrin.h>

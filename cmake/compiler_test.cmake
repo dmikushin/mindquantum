@@ -299,7 +299,14 @@ int main() {
 
 # ==============================================================================
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/cxx20_config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/core/cxx20_config.hpp)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/cxx20_config.hpp.in ${PROJECT_BINARY_DIR}/core/cxx20_config.hpp)
 
 add_library(cxx20_compat INTERFACE)
-target_include_directories(cxx20_compat INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(cxx20_compat INTERFACE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
+
+# ------------------------------------------------------------------------------
+
+append_to_property(mq_install_targets GLOBAL cxx20_compat)
+install(FILES ${PROJECT_BINARY_DIR}/core/cxx20_config.hpp DESTINATION ${MQ_INSTALL_INCLUDEDIR}/experimental/core)
+
+# ==============================================================================

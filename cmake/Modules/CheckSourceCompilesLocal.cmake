@@ -92,14 +92,14 @@ function(CMAKE_CHECK_SOURCE_COMPILES_LOCAL _lang _source _var)
       message(CHECK_START "Performing Test ${_var}")
     endif()
 
-    set(_srcdir "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp")
-    set(_src "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.${_src_ext}")
+    set(_srcdir "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp")
+    set(_src "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.${_src_ext}")
     file(MAKE_DIRECTORY ${_srcdir})
     file(WRITE "${_src}" "${_source}\n")
     set(CMAKE_SOURCE_FILE ${_src})
 
     try_compile(
-      ${_var} ${CMAKE_BINARY_DIR}
+      ${_var} ${CMAKE_CURRENT_BINARY_DIR}
       ${_src}
       COMPILE_DEFINITIONS -D${_var} ${CMAKE_REQUIRED_DEFINITIONS} ${CHECK_${_lang}_SOURCE_COMPILES_ADD_LINK_OPTIONS}
                           ${CHECK_${_lang}_SOURCE_COMPILES_ADD_LIBRARIES}
@@ -125,7 +125,7 @@ function(CMAKE_CHECK_SOURCE_COMPILES_LOCAL _lang _source _var)
       if(NOT CMAKE_REQUIRED_QUIET)
         message(CHECK_PASS "Success")
       endif()
-      file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
+      file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
            "Performing ${_lang_textual} SOURCE FILE Test ${_var} succeeded with the following output:\n" "${OUTPUT}\n"
            "Source file was:\n${_source}\n")
     else()
@@ -135,13 +135,13 @@ function(CMAKE_CHECK_SOURCE_COMPILES_LOCAL _lang _source _var)
       set(${_var}
           ""
           CACHE INTERNAL "Test ${_var}")
-      file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+      file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
            "Performing ${_lang_textual} SOURCE FILE Test ${_var} failed with the following output:\n" "${OUTPUT}\n"
            "Source file was:\n${_source}\n")
     endif()
 
     if(_cleanup_required)
-      file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp)
+      file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp)
     endif()
   endif()
 endfunction()

@@ -21,9 +21,13 @@ find_package(Sphinx REQUIRED)
 # ==============================================================================
 
 set(_mindquantum_public_headers)
+get_property(_doc_targets GLOBAL PROPERTY _doc_targets)
+
 foreach(tgt ${_doc_targets})
   get_target_property(_header_list ${tgt} INTERFACE_SOURCES)
-  list(APPEND _mindquantum_public_headers ${_header_list})
+  if(_header_list)
+    list(APPEND _mindquantum_public_headers ${_header_list})
+  endif()
 endforeach()
 
 # ------------------------------------------------------------------------------
@@ -37,7 +41,7 @@ file(GLOB_RECURSE _mindquantum_rest_doc_files "${CMAKE_CURRENT_LIST_DIR}/*.rst" 
 set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/ccsrc)
 set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/doxygen)
 set(DOXYGEN_INDEX_FILE ${DOXYGEN_OUTPUT_DIR}/html/index.html)
-set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
+set(DOXYFILE_IN ${CMAKE_CURRENT_LIST_DIR}/Doxyfile)
 set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
 # ------------------------------------------------------------------------------
@@ -69,8 +73,8 @@ add_custom_target(
 # ==============================================================================
 # Sphinx (sphinx-build)
 
-set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source)
-set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/sphinx)
+set(SPHINX_SOURCE ${CMAKE_CURRENT_LIST_DIR}/source)
+set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/html)
 set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
 
 # ------------------------------------------------------------------------------
@@ -84,7 +88,7 @@ add_custom_command(
     $<TARGET_FILE:Python::Interpreter> ${Sphinx_EXECUTABLE} -b html
     # Tell Breathe where to find the Doxygen output
     -Dbreathe_projects.mindquantum=${DOXYGEN_OUTPUT_DIR}/xml ${SPHINX_SOURCE} ${SPHINX_BUILD}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS # Other docs files you want to track should go here (or in some variable)
           ${_mindquantum_rest_doc_files} ${DOXYGEN_INDEX_FILE}
   MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
@@ -94,7 +98,7 @@ add_custom_command(
 # Sphinx (sphinx-build)
 
 set(DOCS_INDEX_FILE ${CMAKE_CURRENT_BINARY_DIR}/index.html)
-set(DOCS_INDEX_FILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/index.html.in)
+set(DOCS_INDEX_FILE_IN ${CMAKE_CURRENT_LIST_DIR}/index.html.in)
 
 # ------------------------------------------------------------------------------
 
@@ -112,5 +116,6 @@ add_custom_target(
   DEPENDS doxygen ${SPHINX_INDEX_FILE} ${DOCS_INDEX_FILE}
   COMMENT "Generate documentation")
 
-include(GNUInstallDirs)
-install(DIRECTORY ${SPHINX_BUILD} DESTINATION ${CMAKE_INSTALL_DOCDIR})
+# ==============================================================================
+
+install(DIRECTORY ${SPHINX_BUILD} DESTINATION ${MQ_INSTALL_DOCDIR})

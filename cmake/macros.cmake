@@ -65,6 +65,8 @@ function(setup_language lang)
   add_library(${lang}_try_compile_flagcheck INTERFACE)
   add_library(${lang}_try_compile INTERFACE)
   add_library(${lang}_mindquantum INTERFACE)
+
+  append_to_property(mq_install_targets GLOBAL ${lang}_mindquantum)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -134,20 +136,7 @@ endfunction()
 
 # ==============================================================================
 
-# ~~~
-# (helper function) Convert a path to CMake format
-#
-# to_cmake_path(<path-var>)
-# ~~~
-macro(to_cmake_path path_var)
-  if(DEFINED ${path_var})
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
-      cmake_path(CONVERT "${${path_var}}" TO_CMAKE_PATH_LIST ${path_var} NORMALIZE)
-    else()
-      file(TO_CMAKE_PATH "${${path_var}}" ${path_var})
-    endif()
-  endif()
-endmacro()
+include(to_cmake_path)
 
 # ------------------------------------------------------------------------------
 
@@ -205,144 +194,6 @@ endfunction()
 # ==============================================================================
 
 # ~~~
-# (helper function) Copy a property from a source target to a destination target if set
-#
-# _copy_target_property(<source> <destination> <property>)
-# ~~~
-function(_copy_target_property source destination property)
-  get_property(
-    _is_set
-    TARGET ${source}
-    PROPERTY ${property}
-    SET)
-  if(_is_set)
-    get_target_property(_value ${source} ${property})
-    set_target_properties(${destination} PROPERTIES ${property} "${_value}")
-  endif()
-endfunction()
-
-# ------------------------------------------------------------------------------
-
-# ~~~
-# Create a copy of an existing target
-#
-# duplicate_target(<new_target> <original_target>)
-#
-# WARNING: not designed to work with aliased targets!
-# ~~~
-function(duplicate_target new_target original_target)
-  get_target_property(_type ${original_target} TYPE)
-
-  set(_lib_type)
-  if("${_type}" STREQUAL "STATIC_LIBRARY")
-    set(_lib_type STATIC)
-  elseif("${_type}" STREQUAL "MODULE_LIBRARY")
-    set(_lib_type MODULE)
-  elseif("${_type}" STREQUAL "SHARED_LIBRARY")
-    set(_lib_type SHARED)
-  elseif("${_type}" STREQUAL "OBJECT_LIBRARY")
-    set(_lib_type OBJECT)
-  elseif("${_type}" STREQUAL "INTERFACE_LIBRARY")
-    set(_lib_type INTERFACE)
-  endif()
-
-  get_target_property(_imported ${original_target} IMPORTED)
-  if(_imported)
-    get_target_property(_global ${original_target} IMPORTED_GLOBAL)
-    if(_global)
-      set(_args GLOBAL)
-    endif()
-
-    if("${_type}" STREQUAL "EXECUTABLE")
-      add_executable(${new_target} IMPORTED ${_args})
-    else()
-      add_library(${new_target} ${_lib_type} IMPORTED ${_args})
-    endif()
-  else()
-    if("${_type}" STREQUAL "EXECUTABLE")
-      add_executable(${new_target})
-    else()
-      add_library(${new_target} ${_lib_type})
-    endif()
-  endif()
-
-  foreach(
-    _prop
-    COMPILE_FLAGS
-    C_COMPILER_LAUNCHER
-    C_EXTENSIONS
-    C_LINKER_LAUNCHER
-    C_STANDARD
-    C_STANDARD_REQUIRED
-    C_VISIBILITY_PRESET
-    CXX_COMPILER_LAUNCHER
-    CXX_EXTENSIONS
-    CXX_LINKER_LAUNCHER
-    CXX_STANDARD
-    CXX_STANDARD_REQUIRED
-    CXX_VISIBILITY_PRESET
-    EXCLUDE_FROM_ALL
-    EXPORT_NAME
-    IMPORTED_CONFIGURATIONS)
-    _copy_target_property(${original_target} ${new_target} ${_prop})
-  endforeach()
-
-  foreach(
-    _prop
-    COMPILE_DEFINITIONS
-    COMPILE_FEATURES
-    COMPILE_OPTIONS
-    INCLUDE_DIRECTORIES
-    LINK_DEPENDS
-    LINK_LIBRARIES
-    LINK_OPTIONS
-    POSITION_INDEPENDENT_CODE
-    PRECOMPILE_HEADERS
-    SOURCES)
-    _copy_target_property(${original_target} ${new_target} ${_prop})
-    _copy_target_property(${original_target} ${new_target} INTERFACE_${_prop})
-  endforeach()
-  _copy_target_property(${original_target} ${new_target} INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
-
-  foreach(
-    _prop
-    COMPILE_PDB_NAME
-    EXCLUDE_FROM_DEFAULT_BUILD
-    IMPORTED_IMPLIB
-    IMPORTED_LIBNAME
-    IMPORTED_LINK_DEPENDENT_LIBRARIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES
-    IMPORTED_LINK_INTERFACE_MULTIPLICITY
-    IMPORTED_LOCATION
-    IMPORTED_NO_SONAME
-    IMPORTED_OBJECTS
-    IMPORTED_SONAME
-    INTERPROCEDURAL_OPTIMIZATION
-    LINK_FLAGS
-    LINK_INTERFACE_LIBRARIES
-    LINK_INTERFACE_MULTIPLICITY
-    PDB_NAME
-    PDB_OUTPUT_DIRECTORY
-    RUNTIME_OUTPUT_DIRECTORY
-    RUNTIME_OUTPUT_NAME
-    STATIC_LIBRARY_FLAGS)
-    _copy_target_property(${original_target} ${new_target} ${_prop})
-
-    foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-      _copy_target_property(${original_target} ${new_target} ${_prop}_${_config})
-    endforeach()
-
-  endforeach()
-  foreach(_prop OUTPUT_NAME POSTFIX)
-    foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-      _copy_target_property(${original_target} ${new_target} ${_config}_${prop})
-    endforeach()
-  endforeach()
-endfunction()
-
-# ==============================================================================
-
-# ~~~
 # Apply a list of patches by calling `patch -p1 <patch-file>`
 #
 # apply_patches(<working_directory> [<patch-file> [... <patch-file>]])
@@ -357,7 +208,7 @@ function(apply_patches working_directory)
     # NB: All these shenanigans with file(CONFIGURE ...) are just to make sure that we get a file with LF line
     # endings...
     get_filename_component(_patch_file_name ${_patch_file} NAME)
-    set(_lf_patch_file ${CMAKE_BINARY_DIR}/_mq_patch/${_patch_file_name})
+    set(_lf_patch_file ${PROJECT_BINARY_DIR}/_mq_patch/${_patch_file_name})
     file(READ "${_patch_file}" _content)
     # NB: escape patches that have @XXX@ since those would be replaced by the call to file(CONFIGURE)
     set(_at @)
@@ -401,7 +252,6 @@ function(apply_patches working_directory)
       message(STATUS "Skipping patch ${_patch_file} since already applied.")
     endif()
   endforeach()
-
 endfunction()
 
 # ==============================================================================
@@ -469,7 +319,7 @@ function(check_compiler_flags lang out_var)
                 1
                 CACHE INTERNAL "Test ${_var}")
             message(CHECK_PASS "Success")
-            file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
+            file(APPEND ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
                  "Performing ${_lang_textual} FLAG CHECK Test ${_var} with the following command line:\n${_cmd}\n"
                  "has succeeded\n\n")
           else()
@@ -479,7 +329,7 @@ function(check_compiler_flags lang out_var)
                 CACHE INTERNAL "Test ${_var}")
             file(
               APPEND
-              ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+              ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
               "Performing ${_lang_textual} FLAG CHECK Test ${_var} with the following command line:\n${_cmd}\n"
               "has failed with the following output:\n"
               "${_output}\n"
@@ -792,12 +642,12 @@ endmacro()
 # look at ${target}_OUTPUT_DIR CMake variable (if it exists) to set the output directory (it will create the directory
 # if it does not already exist on the filesystem).
 #
-macro(set_output_directory_auto target hint)
+function(set_output_directory_auto target hint)
   string(TOUPPER ${target} _TARGET)
 
   if(IN_PLACE_BUILD)
     # Automatically calculate the output directory
-    set(${_TARGET}_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/${hint})
+    set(${_TARGET}_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/${hint})
   endif()
 
   # Normalize variable name
@@ -835,7 +685,7 @@ macro(set_output_directory_auto target hint)
                  LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
                  LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
   endif()
-endmacro()
+endfunction()
 
 # ==============================================================================
 
@@ -852,81 +702,6 @@ endmacro()
 
 # ==============================================================================
 
-include(FindPackageHandleStandardArgs)
-# Find a Python module in the current (potential virtual) environment
-#
-# find_python_module(<module> [REQUIRED|EXACT|QUIET] [VERSION <version>])
-#
-# Usage is similar to the builtin find_package(...)
-function(find_python_module module)
-  # cmake-lint: disable=C0103
-  cmake_parse_arguments(PARSE_ARGV 1 PYMOD "REQUIRED;EXACT;QUIET" "VERSION" "")
-
-  string(REPLACE "-" "_" module_name ${module})
-  string(TOUPPER ${module_name} MODULE)
-  if(NOT PYMOD_${MODULE})
-    if(PYMOD_REQUIRED)
-      set(PYMOD_${module}_FIND_REQUIRED TRUE)
-      set(PYMOD_${MODULE}_FIND_REQUIRED TRUE)
-    endif()
-    if(PYMOD_QUIET)
-      set(PYMOD_${module}_FIND_QUIETLY TRUE)
-      set(PYMOD_${MODULE}_FIND_QUIETLY TRUE)
-    endif()
-    if(PYMOD_EXACT)
-      set(PYMOD_${module}_FIND_VERSION_EXACT TRUE)
-      set(PYMOD_${MODULE}_FIND_VERSION_EXACT TRUE)
-    endif()
-    if(PYMOD_VERSION)
-      set(PYMOD_${module}_FIND_VERSION ${PYMOD_VERSION})
-      set(PYMOD_${MODULE}_FIND_VERSION ${PYMOD_VERSION})
-    endif()
-
-    execute_process(
-      COMMAND "${Python_EXECUTABLE}" "-c" "import os, ${module_name}; print(os.path.dirname(${module_name}.__file__))"
-      RESULT_VARIABLE _${MODULE}_status
-      OUTPUT_VARIABLE _${MODULE}_location
-      ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    if(NOT _${MODULE}_status)
-      set(PYMOD_${MODULE}_PATH
-          ${_${MODULE}_location}
-          CACHE STRING "Location of Python module ${module}")
-
-      if(PYMOD_VERSION)
-        execute_process(
-          COMMAND "${Python_EXECUTABLE}" "-c" "import ${module_name}; print(${module_name}.__version__)"
-          RESULT_VARIABLE _${MODULE}_status
-          OUTPUT_VARIABLE _${MODULE}_version
-          ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-        if(NOT _${MODULE}_status)
-          set(PYMOD_${MODULE}_VERSION
-              ${_${MODULE}_version}
-              CACHE STRING "Version of Python module ${module}")
-          set(PYMOD_${module}_VERSION
-              ${PYMOD_${MODULE}_VERSION}
-              CACHE STRING "Version of Python module ${module}")
-        endif()
-      endif()
-    endif()
-  endif()
-
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19 AND CMAKE_VERSION VERSION_LESS 3.20)
-    set(CMAKE_FIND_PACKAGE_NAME PYMOD_${module})
-  endif()
-
-  # NB: NAME_MISMATCHED is a CMake 3.17 addition
-  find_package_handle_standard_args(
-    PYMOD_${module_name}
-    REQUIRED_VARS PYMOD_${MODULE}_PATH
-    VERSION_VAR PYMOD_${MODULE}_VERSION NAME_MISMATCHED)
-
-  set(PYMOD_${MODULE}_FOUND
-      ${PYMOD_${MODULE}_FOUND}
-      CACHE INTERNAL "")
-
-  mark_as_advanced(PYMOD_${MODULE}_FOUND PYMOD_${MODULE}_PATH PYMOD_${MODULE}_VERSION)
-endfunction()
+include(find_python_module)
 
 # ==============================================================================

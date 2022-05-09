@@ -34,6 +34,7 @@ set do_clean_cache=0
 set do_clean_venv=0
 set do_configure=0
 set do_docs=0
+set do_install=0
 set do_update_venv=0
 set dry_run=0
 set enable_cxx=0
@@ -45,6 +46,7 @@ set force_local_pkgs=0
 set n_jobs=-1
 set n_jobs_default=0
 set ninja=0
+set prefix=
 
 for /f  "tokens=2 delims==" %%d in ('wmic cpu get NumberOfLogicalProcessors /value ^| findstr "="') do @set /A n_jobs_default+=%%d >NUL
 
@@ -164,6 +166,11 @@ rem ============================================================================
     shift & goto :initial
   )
 
+  if /I "%1" == "/Install" (
+    set do_install=1
+    shift & goto :initial
+  )
+
   if /I "%1" == "/J" set result=true
   if /I "%1" == "/Jobs" set result=true
   if "%result%" == "true" (
@@ -186,6 +193,18 @@ rem ============================================================================
   if /I "%1" == "/Ninja" (
     set ninja=1
     shift & goto :initial
+  )
+
+  if /I "%1" == "/Prefix" (
+    set value=%2
+    if not defined value goto :arg_prefix
+    if "!value:~0,1!" == "/" (
+      :arg_prefix
+      echo %BASENAME%: option requires an argument -- '/Prefix'
+      goto :EOF
+    )
+    set prefix=!value!
+    shift & shift & goto :initial
   )
 
   if /I "%1" == "/Quiet" (
@@ -316,16 +335,23 @@ if exist !python_venv_path!\Scripts\cmake.exe (
 
 rem -------------------------------------
 
-set cmake_version_min=3.20
-set cmake_major_min=3
-set cmake_minor_min=20
+type nul > tmp
+fc tmp "CMakeLists.txt" /lb 30 | find "cmake_minimum_required" > tmp
+for /F "tokens=2 delims=()" %%i in ('type tmp') do echo %%i > tmp
+for /F "tokens=2 delims= " %%i in ('type tmp') do echo %%i > tmp
+for /F "tokens=1,2 delims=." %%i in ('type tmp') do (
+  set cmake_version_min=%%i.%%j
+  set cmake_major_min=%%i
+  set cmake_minor_min=%%j
+)
+del tmp
 
-where cmake
+where cmake >NUL
 if %ERRORLEVEL% == 0 (
    set CMAKE=cmake
    goto :has_cmake
 )
-where cmake3
+where cmake3 >NUL
 if %ERRORLEVEL% == 0 (
    set CMAKE=cmake3
    goto :has_cmake
@@ -434,6 +460,8 @@ if !force_local_pkgs! == 1 (
   if NOT "!local_pkgs!" == "" set cmake_args=!cmake_args! -DMQ_FORCE_LOCAL_PKGS=!local_pkgs!
 )
 
+if NOT "!prefix!" == "" set cmake_args=!cmake_args! -DCMAKE_INSTALL_PREFIX:FILEPATH=!prefix!
+
 if !ninja! == 1 (
   set cmake_args=!cmake_args! -GNinja
 ) else (
@@ -445,6 +473,9 @@ if NOT !n_jobs! == -1 (
   set cmake_args=!cmake_args! -DJOBS:STRING=!n_jobs!
   set make_args=!make_args! -j !n_jobs!
 )
+
+set target_args=
+if !do_install! == 1 set target_args=!target_args! --target install
 
 if !cmake_make_silent! == 0 set make_args=!make_args! -v
 
@@ -475,9 +506,9 @@ if !configure_only! == 1 goto :EOF
 
 if !do_clean! == 1 call :call_cmake --build "!build_dir!" --target clean
 
-call :call_cmake --build "!build_dir!" --config !build_type! !make_args!
-
 if !do_docs! == 1 call :call_cmake --build "!build_dir!" --config !build_type! --target docs !make_args!
+
+call :call_cmake --build "!build_dir!" --config !build_type! !target_args! !make_args!
 
 goto :EOF
 
@@ -579,10 +610,12 @@ exit /B 0
   echo   /Doc, /Docs         Setup the Python virtualenv for building the documentation and ask CMake to build the
   echo                       documentation
   echo   /Gpu                Enable GPU support
+  echo   /Install            Build the ´install´ target
   echo   /j,/Jobs [N]        Number of parallel jobs for building
   echo                       Defaults to: !n_jobs_default!
   echo   /LocalPkgs          Compile third-party dependencies locally
   echo   /Ninja              Use the Ninja CMake generator
+  echo   /Prefix             Specify installation prefix
   echo   /Quiet              Disable verbose build rules
   echo   /ShowLibraries      Show all known third-party libraries
   echo   /Test               Build C++ tests

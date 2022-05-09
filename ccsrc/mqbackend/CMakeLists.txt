@@ -16,17 +16,21 @@
 #
 # ==============================================================================
 
-# for pybind
-pybind11_add_module(mqbackend ${CMAKE_CURRENT_SOURCE_DIR}/binding.cc)
+pybind11_add_module(mqbackend MODULE OUTPUT_HINT "${MQ_PYTHON_PACKAGE_NAME}" ${CMAKE_CURRENT_LIST_DIR}/binding.cc)
+
 target_compile_definitions(mqbackend PUBLIC $<$<BOOL:${ENABLE_PROJECTQ}>:ENABLE_PROJECTQ>
                                             $<$<BOOL:${ENABLE_QUEST}>:ENABLE_QUEST>)
-target_include_directories(mqbackend PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(mqbackend PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>)
 
 target_link_libraries(mqbackend PUBLIC ${PARALLEL_LIBS} "$<$<BOOL:${ENABLE_PROJECTQ}>:mq_projectq>"
                                        "$<$<BOOL:${ENABLE_QUEST}>:QuEST;mq_quest>" mq_base)
 
-set_output_directory_auto(mqbackend mindquantum)
 python_install_set_rpath(mqbackend "")
+
+get_target_property(_mqbackend_output_dir mqbackend LIBRARY_OUTPUT_DIRECTORY)
+if(NOT _mqbackend_output_dir)
+  set(_mqbackend_output_dir "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+endif()
 
 if(WIN32)
   get_filename_component(CXX_DIR ${CMAKE_CXX_COMPILER} PATH)
@@ -38,9 +42,10 @@ if(WIN32)
     ${CXX_DIR}/libssp-0.dll
     ${CXX_DIR}/libgcc_s_*-1.dll
     ${CXX_DIR}/libgomp-1.dll)
-  # install(FILES ${LIB_LIST} DESTINATION ${CMAKE_BINARY_DIR})
   foreach(win_dep_lib ${LIB_LIST})
-    message("COPYING ${win_dep_lib}")
-    file(COPY ${win_dep_lib} DESTINATION ${MQBACKEND_OUTPUT_DIR} FOLLOW_SYMLINK_CHAIN)
+    if(EXISTS "${win_dep_lib}")
+      message("COPYING ${win_dep_lib}")
+      file(COPY ${win_dep_lib} DESTINATION ${_mqbackend_output_dir} FOLLOW_SYMLINK_CHAIN)
+    endif()
   endforeach()
 endif()

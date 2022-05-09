@@ -196,6 +196,7 @@ class CMakeBuildExt(build_ext):
 
         self.configure_extensions()
         build_ext.build_extensions(self)
+        self.cmake_install()
 
     def configure_extensions(self):
         """Run a CMake configuration and generation step for one extension."""
@@ -211,6 +212,9 @@ class CMakeBuildExt(build_ext):
             '-DIS_PYTHON_BUILD:BOOL=ON',
             '-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON',
             f'-DVERSION_INFO="{self.distribution.get_version()}"',
+            f'-DMQ_PYTHON_PACKAGE_NAME:STRING={self.distribution.get_name()}',
+            # NB: make sure that the install path is absolute!
+            f'-DCMAKE_INSTALL_PREFIX:FILEPATH={Path(self.build_lib, Path().resolve().name).resolve()}',
         ]  # yapf: disable
 
         if self.no_arch_native:
@@ -283,6 +287,22 @@ class CMakeBuildExt(build_ext):
             logging.info('Failed to compile optional extension %s (not an error)', ext.pymod)
         finally:
             logging.info(' End building %s '.center(80, '-'), ext.pymod)
+
+    def cmake_install(self):
+        """Run the CMake installation step"""
+        cwd = self._get_temp_dir(Path().resolve().name)
+        logging.info(' Building CMake install target '.center(80, '-'))
+        logging.info(
+            'CMake command: %s', ' '.join(self.cmake_cmd + ['--build', '.', '--target', 'install'] + self.build_args)
+        )
+        logging.info('   cwd: %s', cwd)
+        try:
+            subprocess.check_call(
+                self.cmake_cmd + ['--build', '.', '--target', 'install'] + self.build_args,
+                cwd=cwd,
+            )
+        finally:
+            logging.info(' End building target install '.center(80, '-'))
 
     def copy_extensions_to_source(self):
         """Copy the extensions."""

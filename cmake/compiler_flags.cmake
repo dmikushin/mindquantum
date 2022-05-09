@@ -84,6 +84,12 @@ endif()
 
 if(ENABLE_CUDA)
   test_compile_option(
+    cuda_allow_unsupported_flag FLAGCHECK
+    LANGS CUDA
+    FLAGS "-allow-unsupported-compiler"
+    CMAKE_OPTION CUDA_ALLOW_UNSUPPORTED_COMPILER)
+
+  test_compile_option(
     nvhpc_flagcheck_flags FLAGCHECK
     LANGS NVCXX
     FLAGS "--flagcheck"
@@ -154,6 +160,12 @@ elseif(AARCH64)
     FLAGS "-march=armv8.5-a -march=armv8.4-a -march=armv8.3-a -march=armv8.2-a")
 endif()
 
+foreach(_lang C CXX DPCXX)
+  if(TARGET intrin_flag_${_lang})
+    append_to_property(mq_install_targets GLOBAL intrin_flag_${_lang})
+  endif()
+endforeach()
+
 # --------------------------------------
 
 test_compile_option(
@@ -182,7 +194,7 @@ test_compile_option(
 if(NOT VERSION_INFO)
   execute_process(
     COMMAND ${Python_EXECUTABLE} setup.py --version
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     OUTPUT_VARIABLE _version_info
     OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
   set(VERSION_INFO "\"${_version_info}\"")
@@ -193,15 +205,21 @@ if(VERSION_INFO MATCHES [=["(.*)\.dev[0-9]+"$]=])
   set(VERSION_INFO "\"${CMAKE_MATCH_1}\"")
 endif()
 
+if(VERSION_INFO MATCHES [=["(.*)"]=])
+  set(MQ_VERSION ${CMAKE_MATCH_1})
+else()
+  set(MQ_VERSION ${VERSION_INFO })
+endif()
+message(STATUS "MindQuantum version: ${MQ_VERSION}")
+
 # --------------------------------------
 
-include(${CMAKE_CURRENT_LIST_DIR}/compiler_test.cmake)
+include(compiler_test)
 
 # --------------------------------------
 
-mq_add_compile_definitions(
-  "$<$<BOOL:${USE_OPENMP}>:USE_OPENMP>" "$<$<BOOL:${USE_PARALLEL_STL}>:USE_PARALLEL_STL>"
-  "$<$<BOOL:${ENABLE_OPENMP}>:ENABLE_OPENMP>" "$<$<AND:$<CONFIG:RELEASE>,$<COMPILE_LANGUAGE:CXX>>:_FORTIFY_SOURCE=2>")
+mq_add_compile_definitions("$<$<BOOL:${USE_OPENMP}>:USE_OPENMP>" "$<$<BOOL:${USE_PARALLEL_STL}>:USE_PARALLEL_STL>"
+                           "$<$<AND:$<CONFIG:RELEASE>,$<COMPILE_LANGUAGE:CXX>>:_FORTIFY_SOURCE=2>")
 
 # ==============================================================================
 # Platform specific flags
@@ -224,7 +242,14 @@ endif()
 
 # ==============================================================================
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake_config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/core/cmake_config.hpp)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake_config.hpp.in ${PROJECT_BINARY_DIR}/core/cmake_config.hpp)
 
 add_library(cmake_config INTERFACE)
-target_include_directories(cmake_config INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(cmake_config INTERFACE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
+
+# ------------------------------------------------------------------------------
+
+append_to_property(mq_install_targets GLOBAL cmake_config)
+install(FILES ${PROJECT_BINARY_DIR}/core/cmake_config.hpp DESTINATION ${MQ_INSTALL_INCLUDEDIR}/experimental/core)
+
+# ==============================================================================

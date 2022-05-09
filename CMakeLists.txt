@@ -27,7 +27,7 @@ list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/commands)
 # ==============================================================================
 # Macro definitions
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/macros.cmake)
+include(macros)
 
 # ==============================================================================
 # Create the MindQuantum project
@@ -45,33 +45,59 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo")
 endif()
 
-set(_doc_targets)
+# ------------------------------------------------------------------------------
+
+include(GNUInstallDirs)
+
+set(MQ_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}")
+set(MQ_INSTALL_SBINDIR "${CMAKE_INSTALL_SBINDIR}")
+set(MQ_INSTALL_SYSCONFDIR "${CMAKE_INSTALL_SYSCONFDIR}")
+set(MQ_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/mindquantum")
+set(MQ_INSTALL_DATADIR "${CMAKE_INSTALL_DATADIR}/mindquantum")
+set(MQ_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}/mindquantum")
+set(MQ_INSTALL_DOCDIR "${CMAKE_INSTALL_DATADIR}/doc/mindquantum")
+set(MQ_INSTALL_CMAKEDIR "${MQ_INSTALL_DATADIR}/cmake")
+set(MQ_INSTALL_3RDPARTYDIR "${MQ_INSTALL_LIBDIR}/third_party")
+
+foreach(
+  _type
+  BINDIR
+  SBINDIR
+  SYSCONFDIR
+  DATADIR
+  LIBDIR
+  DOCDIR
+  CMAKEDIR
+  3RDPARTYDIR)
+  GNUInstallDirs_get_absolute_install_dir(MQ_INSTALL_FULL_${_type} MQ_INSTALL_${_type} ${_type})
+endforeach()
 
 # ==============================================================================
 # OS-detection
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/os_detection.cmake)
+include(os_detection)
 
 # ==============================================================================
 # Options
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/options.cmake)
+include(options)
 
 # ==============================================================================
 # Package dependencies
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/packages.cmake)
+include(packages)
 
 # ==============================================================================
 # Setup compiler flags
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/compiler_flags.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/linker_flags.cmake)
+include(compiler_flags)
+include(linker_flags)
 
 is_language_enabled(C, _c_enabled)
 add_library(mindquantum_setup INTERFACE)
 target_link_libraries(mindquantum_setup INTERFACE CXX_mindquantum $<$<BOOL:${_c_enabled}>:C_mindquantum>
                                                   $<$<BOOL:${ENABLE_CUDA}>:CUDA_mindquantum;NVCXX_mindquantum>)
+append_to_property(mq_install_targets GLOBAL mindquantum_setup)
 
 if(ENABLE_CMAKE_DEBUG)
   message(STATUS "Content of language specific targets:")
@@ -95,7 +121,7 @@ endif()
 # Some more macro definitions
 
 if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/mindquantum)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/mindquantum)
 endif()
 
 # ==============================================================================
@@ -104,7 +130,7 @@ endif()
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/third_party)
 
 # Then re-define some CMake macros/functions
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/macros_more.cmake)
+include(macros_more)
 
 # Then add our libraries
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ccsrc)
@@ -148,3 +174,15 @@ if(NOT IS_PYTHON_BUILD)
 endif()
 
 # ==============================================================================
+
+include(install)
+
+# ==============================================================================
+
+list(POP_FRONT CMAKE_MODULE_PATH)
+list(POP_FRONT CMAKE_MODULE_PATH)
+list(POP_FRONT CMAKE_MODULE_PATH)
+
+if(_mq_added_nvcxx_module_path)
+  list(POP_FRONT CMAKE_MODULE_PATH)
+endif()

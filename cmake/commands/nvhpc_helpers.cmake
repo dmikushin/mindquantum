@@ -16,6 +16,8 @@
 #
 # ==============================================================================
 
+include_guard()
+
 # Convenience function to extract all compute capabilities from command line like strings
 #
 # nvhpc_extract_cc(<out-var> <element> [<element> ...])
@@ -90,7 +92,7 @@ function(nvhpc_sanitize_cc variable)
     string(REPLACE ";" " " _args "${_args}")
   endif()
 
-  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log "nvhpc_sanitize_cc(${variable} ${ARGN})\n"
+  file(APPEND ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log "nvhpc_sanitize_cc(${variable} ${ARGN})\n"
        "    result: ${_args}\n\n")
 
   set(${variable}

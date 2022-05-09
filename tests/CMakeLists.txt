@@ -36,3 +36,12 @@ add_subdirectory(optimisation)
 # add_test(NAME pytest COMMAND ${Python_EXECUTABLE} -m pytest -p no:warnings -v ${CMAKE_CURRENT_LIST_DIR})
 
 # ==============================================================================
+
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/utils.hpp DESTINATION ${MQ_INSTALL_INCLUDEDIR}/tests)
+install(
+  DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/core ${CMAKE_CURRENT_LIST_DIR}/ops
+  DESTINATION ${MQ_INSTALL_INCLUDEDIR}/tests
+  FILES_MATCHING
+  PATTERN "*.hpp")
+
+# ==============================================================================

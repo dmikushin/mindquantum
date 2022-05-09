@@ -17,6 +17,22 @@
 # ==============================================================================
 
 add_library(include_lib INTERFACE)
-target_include_directories(include_lib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(include_lib INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+                                                 $<INSTALL_INTERFACE:${MQ_INSTALL_INCLUDEDIR}/experimental>)
+append_to_property(mq_install_targets GLOBAL include_lib)
 
 target_link_libraries(mindquantum_cxx PUBLIC include_lib)
+
+# ------------------------------------------------------------------------------
+
+install(
+  DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/cengines
+            ${CMAKE_CURRENT_LIST_DIR}/core
+            ${CMAKE_CURRENT_LIST_DIR}/decompositions
+            ${CMAKE_CURRENT_LIST_DIR}/details
+            ${CMAKE_CURRENT_LIST_DIR}/mapping
+            ${CMAKE_CURRENT_LIST_DIR}/ops
+            ${CMAKE_CURRENT_LIST_DIR}/simulator
+  DESTINATION ${MQ_INSTALL_INCLUDEDIR}/experimental)
+
+# ==============================================================================

@@ -59,16 +59,9 @@ option(CUDA_STATIC "Use static version of Nvidia CUDA libraries during linking (
 # ==============================================================================
 # Compilation options
 
-# cmake-lint: disable=C0103
-set(_USE_OPENMP ON)
-if("x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC"
-   OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
-   OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel"
-   OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
-  set(_USE_OPENMP OFF)
-endif()
-option(USE_OPENMP "Use OpenMP instead parallel STL" ${_USE_OPENMP})
+option(USE_OPENMP "Enable the use of OpenMP throughout the code" ON)
 
+# cmake-lint: disable=C0103
 set(_USE_PARALLEL_STL OFF)
 if("x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC"
    OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
@@ -76,7 +69,8 @@ if("x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC"
    OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
   set(_USE_PARALLEL_STL ON)
 endif()
-option(USE_PARALLEL_STL "Use parallel STL algorithms (GCC, Intel, IntelLLVM and MSVC only for now)"
+option(USE_PARALLEL_STL
+       "Use parallel STL algorithms (GCC, Intel, IntelLLVM and MSVC only for now) over OpenMP if possible."
        ${_USE_PARALLEL_STL})
 
 # ------------------------------------------------------------------------------
@@ -146,6 +140,10 @@ endif()
 
 # ------------------------------------------------------------------------------
 
+if(DEFINED ENABLE_OPENMP) # For backwards compatibility
+  set(USE_OPENMP ${ENABLE_OPENMP})
+endif()
+
 if(IS_PYTHON_BUILD AND IN_PLACE_BUILD)
   message(FATAL_ERROR "Cannot specify both IS_PYTHON_BUILD=ON and IN_PLACE_BUILD=ON!")
 endif()
@@ -155,11 +153,9 @@ endif()
 
 include(CheckLanguage)
 
-if(CUDA_ALLOW_UNSUPPORTED_COMPILER)
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -allow-unsupported-compiler")
-endif()
-
+set(_mq_added_nvcxx_module_path FALSE)
 if(ENABLE_CUDA)
+  set(_mq_added_nvcxx_module_path TRUE)
   list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/NVCXX)
 
   # NB: NVHPC < 20.11 will fail this test since they do not support -x c++

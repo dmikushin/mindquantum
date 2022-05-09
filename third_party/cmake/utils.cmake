@@ -21,24 +21,11 @@
 include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)
 
+include(debug_print)
+
 # ==============================================================================
 # Setup helper variables
 
-list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules)
-
-# ------------------------------------------------------------------------------
-# Default values for searching for packages using the Config method
-
-set(MQ_FIND_NO_DEFAULT_PATH
-    NO_CMAKE_PATH
-    NO_CMAKE_ENVIRONMENT_PATH
-    NO_SYSTEM_ENVIRONMENT_PATH
-    NO_CMAKE_BUILDS_PATH
-    NO_CMAKE_PACKAGE_REGISTRY
-    NO_CMAKE_SYSTEM_PATH
-    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
-
-# ------------------------------------------------------------------------------
 # If the CMake generator is not `make`, then look for it NB: this is potentially used when installing packages in the
 # local prefix path
 
@@ -92,7 +79,7 @@ if(DEFINED ENV{MQLIBS_CACHE_PATH})
 elseif(DEFINED ENV{MQLIBS_LOCAL_PREFIX_PATH})
   set(_mq_local_prefix $ENV{MQLIBS_LOCAL_PREFIX_PATH})
 else()
-  set(_mq_local_prefix ${CMAKE_BINARY_DIR}/.mqlibs)
+  set(_mq_local_prefix ${PROJECT_BINARY_DIR}/.mqlibs)
 endif()
 message(STATUS "MQ local prefix:  ${_mq_local_prefix}")
 
@@ -214,14 +201,11 @@ function(__exec_cmd)
 
   cmake_parse_arguments(EXEC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  if(ENABLE_CMAKE_DEBUG)
-    message(STATUS "  execute_process(")
-    message(STATUS "      COMMAND ${EXEC_COMMAND}")
-    message(STATUS "      WORKING_DIRECTORY ${EXEC_WORKING_DIRECTORY}")
-    message(STATUS "      ...)")
-  endif()
-
   # cmake-format: off
+  debug_print(STATUS "  execute_process("
+                     "      COMMAND ${EXEC_COMMAND}"
+                     "      WORKING_DIRECTORY ${EXEC_WORKING_DIRECTORY}"
+                     "      ...)")
   execute_process(
     COMMAND ${EXEC_COMMAND}
     WORKING_DIRECTORY ${EXEC_WORKING_DIRECTORY}
@@ -231,12 +215,7 @@ function(__exec_cmd)
     RESULT_VARIABLE RESULT)
   # cmake-format: on
   if(NOT RESULT EQUAL "0")
-    if(ENABLE_CMAKE_DEBUG)
-      message(SEND_ERROR "STDOUT:\n${_stdout}")
-      message(SEND_ERROR "STDERR:\n${_stderr}")
-      message(SEND_ERROR "RESULTS OUT:\n${_results_out}")
-    endif()
-
+    debug_print(SEND_ERROR "STDOUT:\n${_stdout}" "STDERR:\n${_stderr}" "RESULTS OUT:\n${_results_out}")
     message(FATAL_ERROR "error! when ${EXEC_COMMAND} in ${EXEC_WORKING_DIRECTORY}")
   endif()
 endfunction()
@@ -298,15 +277,18 @@ endfunction()
 #         * targets: list of potential targets to alias
 #
 # Using 1. syntax:
-# __create_target_aliases([[<tgt_alias>, <tgt_name>]...])
+# __create_target_aliases(<skip_in_install_for_config> [[<tgt_alias>, <tgt_name>]...])
 # Using 2. syntax:
-# __create_target_aliases([[<N> <tgt_alias>, <tgt_name_1>...<tgt_name_N>]...])
+# __create_target_aliases(<skip_in_install_for_config> [[<N> <tgt_alias>, <tgt_name_1>...<tgt_name_N>]...])
 #
 # Examples:
-# __create_target_aliases(A B 3 D E F)
+# __create_target_aliases(FALSE A B 3 D E F)
 #   -> create alias A -> B, and either D -> E or D -> F
+#
+# NB: the <skip_in_install_for_config> argument only prevents this function from creating the alias targets into the
+#     installation configuration file but has otherwise no effect.
 # ~~~
-function(__create_target_aliases)
+function(__create_target_aliases skip_in_install_config)
   # cmake-lint: disable=R0915
   list(LENGTH ARGN n_args)
   if(NOT n_args)
@@ -367,13 +349,23 @@ function(__create_target_aliases)
     endif()
 
     get_target_property(_type ${tgt_name} TYPE)
+    list(APPEND _target_aliases "if(TARGET ${tgt_name} AND NOT TARGET ${tgt_alias})")
     if("${_type}" STREQUAL "EXECUTABLE")
       add_executable(${tgt_alias} ALIAS ${tgt_name})
+      list(APPEND _target_aliases "  add_executable(${tgt_alias} ALIAS ${tgt_name})")
     else()
       add_library(${tgt_alias} ALIAS ${tgt_name})
+      list(APPEND _target_aliases "  add_library(${tgt_alias} ALIAS ${tgt_name})")
     endif()
+    list(APPEND _target_aliases "endif()")
     message(STATUS "Creating alias target: ${tgt_alias} -> ${tgt_name}")
   endwhile()
+
+  if(NOT skip_in_install_config)
+    string(REPLACE ";" "\n" _target_aliases "${_target_aliases}")
+    append_to_property(mq_external_find_packages GLOBAL "\n${_target_aliases}")
+  endif()
+
   list(POP_BACK CMAKE_MESSAGE_INDENT)
 endfunction()
 
@@ -524,8 +516,8 @@ function(__generate_pseudo_cmake_package_config root_dir pkg_name pkg_namespace 
   # ----------------------------------------------------------------------------
 
   set(_config_version_content
+      "set(PACKAGE_VERSION \"${PKG_VER}\")"
       [[
-set(PACKAGE_VERSION "${PKG_VER}")
 
 if (PACKAGE_FIND_VERSION_RANGE)
   # Package version must be in the requested version range
@@ -549,6 +541,8 @@ else()
   endif()
 endif()
 ]])
+
+  string(REPLACE ";" "\n" _config_version_content ${_config_version_content})
   file(WRITE ${dest_dir}/${pkg_name}ConfigVersion.cmake ${_config_version_content})
 
   # ----------------------------------------------------------------------------
@@ -677,6 +671,12 @@ cmake_policy(POP)
       if(_val)
         set(_resolved_var)
         foreach(_value ${_val})
+          if(_value MATCHES [[\$<BUILD_INTERFACE:[^>]*>]])
+            continue()
+          endif()
+          if(_value MATCHES [[\$<INSTALL_INTERFACE:([^>]*)>]])
+            set(_value "\${_IMPORT_PREFIX}/${CMAKE_MATCH_1}")
+          endif()
           if(EXISTS "${_value}")
             real_path("${_value}" _value)
             string(REPLACE "${root_dir_absolute}" "\${_IMPORT_PREFIX}" _value "${_value}")
@@ -717,32 +717,22 @@ endfunction()
 # In practice this calls find_package() and performs some additional checks
 #
 # __find_package(<pkg_name>
-#                <version>
-#                <components>
-#                <pkg_search_no_components>
-#                <search_name>)
+#                [SEARCH_NAME <search_name>]
+#                [<arg1> <arg2> ... <argn>])
 # ~~~
-macro(__find_package pkg_name version components pkg_search_no_components search_name) # cmake-lint: disable=R0913
-  message(CHECK_START "Looking ${pkg_name} using CMake find_package(): ${search_name}")
+macro(__find_package pkg_name) # cmake-lint: disable=R0913
+  cmake_parse_arguments(FP "" "SEARCH_NAME" "" ${ARGN})
+
+  message(CHECK_START "Looking ${pkg_name} using CMake find_package(): ${FP_SEARCH_NAME}")
 
   list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
   string(TOUPPER ${pkg_name} PKG_NAME)
 
-  set(_find_package_args)
-  if(PKG_FORCE_EXACT_VERSION)
-    list(APPEND _find_package_args EXACT)
-  endif()
-
-  if(NOT pkg_search_no_components AND NOT "${components}" STREQUAL "")
-    list(APPEND _find_package_args COMPONENTS ${components})
-  endif()
-
   # Prefer system installed libraries instead of compiling everything from source
-  if(ENABLE_CMAKE_DEBUG)
-    message(STATUS "find_package(${pkg_name} ${version} ${_find_package_args} ${ARGN})")
-  endif()
-  find_package(${pkg_name} ${version} ${_find_package_args} ${ARGN})
+  debug_print(STATUS "find_package(${pkg_name} ${FP_UNPARSED_ARGUMENTS})")
+
+  find_package(${pkg_name} ${FP_UNPARSED_ARGUMENTS})
   if(${pkg_name}_FOUND)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
     message(CHECK_PASS "Done")
@@ -780,7 +770,7 @@ function(__check_package_location pkg_name pkg_namespace)
             FATAL_ERROR
               "Imported location of ${_tgt} not found in ${_base_dir}!
 - ${_imported_location}
-Please clear up CMake cache (${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt and re-run CMake.")
+Please clear up CMake cache (${PROJECT_BINARY_DIR}/CMakeCache.txt and re-run CMake.")
         endif()
       endif()
     endif()
@@ -811,6 +801,58 @@ function(__make_target_global pkg_namespace)
 endfunction()
 
 # ==============================================================================
+
+# ~~~
+# Setup the 3rd-party library for the CMake install target
+#
+# __setup_install_target(<pkg_name>)
+#
+# This function appends some pre-formatted strings to the mq_external_find_packages global CMake property.
+#
+# Those strings may contain references to MQ_3RDPARTY_PREFIX_PATH in the form of @MQ_3RDPARTY_PREFIX_PATH@ references
+# that must be substituted by calling string(CONFIGURE) at a later time.
+#
+# This function also saves the strings content into the CMake cache at _<pkg_name>_find_pkg_str.
+# ~~~
+function(__setup_install_target pkg_name)
+  if(NOT _${pkg_name}_find_pkg_str)
+    set(_find_pkg_str)
+    set(_find_pkg_args ${ARGN} REQUIRED)
+    if(_${pkg_name}_SYSTEM)
+      list(APPEND _find_pkg_str "# ${pkg_name} (system)")
+    else()
+      list(APPEND _find_pkg_str "# ${pkg_name} (local)")
+      # TODO(dnguyen): Replace value of PATHS arguments
+      set(_args_patched)
+      foreach(_value ${_find_pkg_args})
+        if(_value MATCHES "^${_mq_local_prefix}/(.*)")
+          cmake_path(RELATIVE_PATH _value BASE_DIRECTORY "${_mq_local_prefix}")
+          list(APPEND _args_patched "\"@MQ_3RDPARTY_PREFIX_PATH@/${_value}\"")
+        else()
+          list(APPEND _args_patched "${_value}")
+        endif()
+      endforeach()
+      set(_find_pkg_args ${_args_patched})
+      install(DIRECTORY ${${pkg_name}_BASE_DIR} DESTINATION ${MQ_INSTALL_3RDPARTYDIR})
+    endif()
+
+    string(REPLACE ";" ";@" _find_pkg_args "${_find_pkg_args}")
+    list(APPEND _find_pkg_str "find_package(${_find_pkg_args})")
+
+    # cmake-lint: disable=C0103
+    set(_${pkg_name}_find_pkg_str
+        "${_find_pkg_str}"
+        CACHE INTERNAL "")
+  else()
+    set(_find_pkg_str "${_${pkg_name}_find_pkg_str}")
+  endif()
+
+  string(REPLACE ";@" "\n             " _${pkg_name}_find_pkg_str "${_${pkg_name}_find_pkg_str}")
+  string(REPLACE ";" "\n" _${pkg_name}_find_pkg_str "${_${pkg_name}_find_pkg_str}")
+  append_to_property(mq_external_find_packages GLOBAL "\n${_${pkg_name}_find_pkg_str}")
+endfunction()
+
+# ==============================================================================
 # ==============================================================================
 
 # ~~~
@@ -818,7 +860,7 @@ endfunction()
 #
 # mindquantum_add_pkg(<pkg_name>
 #                     [CMAKE_PKG_NO_COMPONENTS, FORCE_CONFIG_SEARCH, FORCE_EXACT_VERSION, FORCE_LOCAL_PKG,
-#                        GEN_CMAKE_CONFIG, ONLY_MAKE, ONLY_UNPACK, SKIP_BUILD_STEP, SKIP_INSTALL_STEP]
+#                        GEN_CMAKE_CONFIG, ONLY_MAKE, SKIP_BUILD_STEP, SKIP_INSTALL_STEP, SKIP_IN_INSTALL_CONFIG]
 #                      [CMAKE_PATH <path-to-cmakefiles-txt>]
 #                      [CUSTOM_CMAKE <custom_cmake>]
 #                      [DIR <pkg-cache-directory>]
@@ -834,11 +876,11 @@ endfunction()
 #                      [BUILD_OPTION <option> [... <option>]]
 #                      [CMAKE_OPTION <cmake_option> [... <cmake_option>]]
 #                      [CONFIGURE_COMMAND  <command> [... <args>]]
-#                      [COPY_TO_BINARY_DIR <COPY_TO_BINARY_DIR>]
 #                      [INSTALL_COMMAND  <command> [... <args>]]
 #                      [INSTALL_INCS <directory> [... <directory>]]
 #                      [INSTALL_LIBS <directory> [... <directory>]]
 #                      [LIBS <lib-names> [... <lib-names>]]
+#                      [ONLY_COPY_DIRS <directory> [... <directory>]]
 #                      [ONLY_MAKE_INCS <directory> [... <directory>]]
 #                      [ONLY_MAKE_LIBS <directory> [... <directory>]]
 #                      [PATCHES <patch-file> [... <patch-file>]]
@@ -860,9 +902,9 @@ function(mindquantum_add_pkg pkg_name)
       FORCE_LOCAL_PKG
       GEN_CMAKE_CONFIG
       ONLY_MAKE
-      ONLY_UNPACK
       SKIP_BUILD_STEP
-      SKIP_INSTALL_STEP)
+      SKIP_INSTALL_STEP
+      SKIP_IN_INSTALL_CONFIG)
   set(oneValueArgs
       CMAKE_PATH
       CUSTOM_CMAKE
@@ -880,11 +922,11 @@ function(mindquantum_add_pkg pkg_name)
       BUILD_OPTION
       CMAKE_OPTION
       CONFIGURE_COMMAND
-      COPY_TO_BINARY_DIR
       INSTALL_COMMAND
       INSTALL_INCS
       INSTALL_LIBS
       LIBS
+      ONLY_COPY_DIRS
       ONLY_MAKE_INCS
       ONLY_MAKE_LIBS
       PATCHES
@@ -903,13 +945,31 @@ function(mindquantum_add_pkg pkg_name)
   message(CHECK_START "Adding external dependency: ${pkg_name}")
   list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
+  set(_find_package_args)
+  if(PKG_FORCE_EXACT_VERSION)
+    list(APPEND _find_package_args EXACT)
+  endif()
+
+  if(NOT PKG_CMAKE_PKG_NO_COMPONENTS AND NOT "${_components}" STREQUAL "")
+    list(APPEND _find_package_args COMPONENTS ${_components})
+  endif()
+
+  # TODO(dnguyen): Cleanup of the 3rd party directory does not work if the branch below is taken...
+
   # NB: this branch will only be taken if not the first CMake configure call (or if manually set)
   if(${pkg_name}_DIR)
-    __find_package("${pkg_name}" "${PKG_VER}" "${_components}" "${PKG_CMAKE_PKG_NO_COMPONENTS}" "config" CONFIG)
+    set(_args "${pkg_name}" "${PKG_VER}" CONFIG ${_find_package_args} NO_DEFAULT_PATH)
+    __find_package(${_args} SEARCH_NAME "config")
 
     if(${pkg_name}_FOUND)
+      if(${pkg_name}_DIR)
+        message(STATUS "Package CMake config dir: ${${pkg_name}_DIR}")
+      endif()
+      if(NOT PKG_SKIP_IN_INSTALL_CONFIG)
+        __setup_install_target(${pkg_name} ${_args})
+      endif()
       __make_target_global(${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
-      __create_target_aliases(${PKG_TARGET_ALIAS})
+      __create_target_aliases(${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
 
       list(POP_BACK CMAKE_MESSAGE_INDENT)
       message(CHECK_PASS "Done")
@@ -920,19 +980,26 @@ function(mindquantum_add_pkg pkg_name)
   if(NOT MQ_FORCE_LOCAL_PKGS
      AND NOT MQ_${PKG_NAME}_FORCE_LOCAL
      AND NOT PKG_FORCE_LOCAL_PKG)
-    set(_args)
+    set(_args "${pkg_name}" "${PKG_VER}")
     if(PKG_FORCE_CONFIG_SEARCH)
       list(APPEND _args CONFIG)
     endif()
-    __find_package("${pkg_name}" "${PKG_VER}" "${_components}" "${PKG_CMAKE_PKG_NO_COMPONENTS}" "system packages"
-                   ${_args})
+    list(APPEND _args ${_find_package_args})
+
+    __find_package(${_args} SEARCH_NAME "system packages")
 
     if(${pkg_name}_FOUND)
+      set(_${pkg_name}_SYSTEM
+          TRUE
+          CACHE BOOL "Found ${pkg_name} in the system folders")
       if(${pkg_name}_DIR)
         message(STATUS "Package CMake config dir: ${${pkg_name}_DIR}")
       endif()
+      if(NOT PKG_SKIP_IN_INSTALL_CONFIG)
+        __setup_install_target(${pkg_name} ${_args})
+      endif()
       __make_target_global(${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
-      __create_target_aliases(${PKG_TARGET_ALIAS})
+      __create_target_aliases(${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
 
       list(POP_BACK CMAKE_MESSAGE_INDENT)
       message(CHECK_PASS "Done")
@@ -944,6 +1011,10 @@ function(mindquantum_add_pkg pkg_name)
 
   # ==============================================================================
   # Ignore system installed libraries and compile a local version instead
+
+  set(_${pkg_name}_SYSTEM
+      FALSE
+      CACHE BOOL "Found ${pkg_name} in the system folders")
 
   set(${pkg_name}_PATCHES_HASH)
   foreach(_patch ${PKG_PATCHES})
@@ -978,23 +1049,26 @@ function(mindquantum_add_pkg pkg_name)
   endif()
 
   if(EXISTS "${${pkg_name}_BASE_DIR}")
-    __find_package(
-      "${pkg_name}"
-      "${PKG_VER}"
-      "${_components}"
-      "${PKG_CMAKE_PKG_NO_COMPONENTS}"
-      "MindQuantum build dir"
-      CONFIG
-      ${MQ_FIND_NO_DEFAULT_PATH}
-      PATHS
-      "${${pkg_name}_BASE_DIR}")
+    set(_args
+        "${pkg_name}"
+        "${PKG_VER}"
+        CONFIG
+        NO_DEFAULT_PATH
+        PATHS
+        "${${pkg_name}_BASE_DIR}"
+        ${_find_package_args})
+
+    __find_package(${_args} SEARCH_NAME "MindQuantum build dir")
     if(${pkg_name}_FOUND)
       if(${pkg_name}_DIR)
         message(STATUS "Package CMake config dir: ${${pkg_name}_DIR}")
       endif()
+      if(NOT PKG_SKIP_IN_INSTALL_CONFIG)
+        __setup_install_target(${pkg_name} ${_args})
+      endif()
       __check_package_location(${pkg_name} ${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
       __make_target_global(${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
-      __create_target_aliases(${PKG_TARGET_ALIAS})
+      __create_target_aliases(${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
 
       list(POP_BACK CMAKE_MESSAGE_INDENT)
       message(CHECK_PASS "Done")
@@ -1039,29 +1113,21 @@ function(mindquantum_add_pkg pkg_name)
   if(${pkg_name}_SOURCE_DIR)
     # Look for any dependencies (if any)
     foreach(_pkg_dep ${PKG_BUILD_DEPENDENCIES})
-      if(ENABLE_CMAKE_DEBUG)
-        message(STATUS "Looking for build dependency for ${pkg_name}: find_package(${_pkg_dep} REQUIRED)")
-      endif(ENABLE_CMAKE_DEBUG)
+      debug_print(STATUS "Looking for build dependency for ${pkg_name}: find_package(${_pkg_dep} REQUIRED)")
       find_package(${_pkg_dep} REQUIRED)
     endforeach()
 
-    if(PKG_ONLY_UNPACK)
-      file(GLOB ${pkg_name}_SOURCE_SUBDIRS ${${pkg_name}_SOURCE_DIR}/*)
-      file(COPY ${${pkg_name}_SOURCE_SUBDIRS} DESTINATION ${${pkg_name}_BASE_DIR})
-    elseif(PKG_COPY_TO_BINARY_DIR)
-      set(_dir_list)
-      foreach(_dir ${PKG_COPY_TO_BINARY_DIR})
-        message(STATUS "Copying ${${pkg_name}_SOURCE_DIR}/${_dir} -> ${CMAKE_BINARY_DIR}/${pkg_name}")
-        file(COPY ${${pkg_name}_SOURCE_DIR}/${_dir} DESTINATION ${CMAKE_BINARY_DIR}/${pkg_name})
-        list(APPEND _dir_list ${CMAKE_BINARY_DIR}/${pkg_name})
-      endforeach()
-
-      set(${pkg_name}_INC
-          ${${CMAKE_BINARY_DIR}/${pkg_name}}
-          PARENT_SCOPE)
+    if(PKG_ONLY_COPY_DIRS)
+      cmake_path(GET ${pkg_name}_BASE_DIR FILENAME _basename)
 
       add_library(${PKG_NS_NAME}::${pkg_name} INTERFACE IMPORTED)
-      target_include_directories(${PKG_NS_NAME}::${pkg_name} INTERFACE ${_dir_list})
+      foreach(_dir ${PKG_ONLY_COPY_DIRS})
+        message(STATUS "Copying ${${pkg_name}_SOURCE_DIR}/${_dir} -> ${${pkg_name}_BASE_DIR}")
+        cmake_path(GET _dir PARENT_PATH _parent)
+        file(COPY ${${pkg_name}_SOURCE_DIR}/${_dir} DESTINATION ${${pkg_name}_BASE_DIR}/${_parent})
+        target_include_directories(${PKG_NS_NAME}::${pkg_name} INTERFACE $<BUILD_INTERFACE:${${pkg_name}_BASE_DIR}>
+                                                                         $<INSTALL_INTERFACE:.>)
+      endforeach()
 
       message(STATUS "Generating fake CMake config file...")
       __generate_pseudo_cmake_package_config("${${pkg_name}_BASE_DIR}" ${pkg_name} ${PKG_NS_NAME} "${pkg_name}")
@@ -1185,7 +1251,7 @@ function(mindquantum_add_pkg pkg_name)
     endif()
   endif()
 
-  if(PKG_GEN_CMAKE_CONFIG AND NOT PKG_COPY_TO_BINARY_DIR)
+  if(PKG_GEN_CMAKE_CONFIG AND NOT PKG_ONLY_COPY_DIRS)
     message(STATUS "Generating fake CMake config file...")
 
     list(PREPEND CMAKE_PREFIX_PATH "${${pkg_name}_BASE_DIR}")
@@ -1207,20 +1273,22 @@ function(mindquantum_add_pkg pkg_name)
     list(POP_FRONT CMAKE_PREFIX_PATH)
   endif()
 
-  __find_package(
-    "${pkg_name}"
-    "${PKG_VER}"
-    "${_components}"
-    "${PKG_CMAKE_PKG_NO_COMPONENTS}"
-    "MindQuantum build dir"
-    REQUIRED
-    CONFIG
-    ${MQ_FIND_NO_DEFAULT_PATH}
-    HINTS
-    "${${pkg_name}_BASE_DIR}")
+  set(_args
+      "${pkg_name}"
+      "${PKG_VER}"
+      REQUIRED
+      CONFIG
+      NO_DEFAULT_PATH
+      HINTS
+      "${${pkg_name}_BASE_DIR}"
+      ${_find_package_args})
+  __find_package(${_args} SEARCH_NAME "MindQuantum build dir")
+  if(NOT PKG_SKIP_IN_INSTALL_CONFIG)
+    __setup_install_target(${pkg_name} ${_args})
+  endif()
   __check_package_location(${pkg_name} ${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
   __make_target_global(${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
-  __create_target_aliases(${PKG_TARGET_ALIAS})
+  __create_target_aliases(${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
 
   list(POP_BACK CMAKE_MESSAGE_INDENT)
   message(CHECK_PASS "Done")

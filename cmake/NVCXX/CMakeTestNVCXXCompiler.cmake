@@ -34,7 +34,7 @@ endif()
 if(NOT CMAKE_NVCXX_COMPILER_WORKS)
   PrintTestCompilerStatus("NVCXX")
   __testcompiler_settrycompiletargettype()
-  file(WRITE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testCXXCompiler.nvcpp "#ifndef __cplusplus\n"
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testCXXCompiler.nvcpp "#ifndef __cplusplus\n"
        "# error \"The CMAKE_NVCXX_COMPILER is set to a C compiler\"\n" "#endif\n" "int main(){return 0;}\n")
   # Clear result from normal variable.
   unset(CMAKE_NVCXX_COMPILER_WORKS)
@@ -42,13 +42,13 @@ if(NOT CMAKE_NVCXX_COMPILER_WORKS)
   message(
     STATUS
       "  try_compile(
-    CMAKE_NVCXX_COMPILER_WORKS ${CMAKE_BINARY_DIR}
-    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testCXXCompiler.nvcpp
+    CMAKE_NVCXX_COMPILER_WORKS ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testCXXCompiler.nvcpp
     OUTPUT_VARIABLE __CMAKE_NVCXX_COMPILER_OUTPUT)
 ")
   try_compile(
-    CMAKE_NVCXX_COMPILER_WORKS ${CMAKE_BINARY_DIR}
-    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testCXXCompiler.nvcpp
+    CMAKE_NVCXX_COMPILER_WORKS ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testCXXCompiler.nvcpp
     OUTPUT_VARIABLE __CMAKE_NVCXX_COMPILER_OUTPUT)
   # Move result from cache to normal variable.
   set(CMAKE_NVCXX_COMPILER_WORKS ${CMAKE_NVCXX_COMPILER_WORKS})
@@ -56,7 +56,7 @@ if(NOT CMAKE_NVCXX_COMPILER_WORKS)
   __testcompiler_restoretrycompiletargettype()
   if(NOT CMAKE_NVCXX_COMPILER_WORKS)
     printtestcompilerresult(CHECK_FAIL "broken")
-    file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
          "Determining if the NVCXX compiler works failed with "
          "the following output:\n${__CMAKE_NVCXX_COMPILER_OUTPUT}\n\n")
     string(REPLACE "\n" "\n  " _output "${__CMAKE_NVCXX_COMPILER_OUTPUT}")
@@ -66,7 +66,7 @@ if(NOT CMAKE_NVCXX_COMPILER_WORKS)
         "with the following output:\n  ${_output}\n\n" "CMake will not be able to correctly generate this project.")
   endif()
   printtestcompilerresult(CHECK_PASS "works")
-  file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
+  file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
        "Determining if the NVCXX compiler works passed with "
        "the following output:\n${__CMAKE_NVCXX_COMPILER_OUTPUT}\n\n")
 endif()

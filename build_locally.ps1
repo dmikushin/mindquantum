@@ -14,9 +14,7 @@
 
 Param(
     [ValidateNotNullOrEmpty()][string]$A,
-    [ValidateNotNullOrEmpty()][string]$B,
-    [ValidateNotNullOrEmpty()][string]$Build,
-    [switch]$C,
+    [Alias("B")][ValidateNotNullOrEmpty()][string]$Build,
     [switch]$CCache,
     [switch]$Clean,
     [switch]$Clean3rdParty,
@@ -24,23 +22,22 @@ Param(
     [switch]$CleanBuildDir,
     [switch]$CleanCache,
     [switch]$CleanVenv,
-    [switch]$Configure,
+    [Alias("C")][switch]$Configure,
     [switch]$ConfigureOnly,
     [ValidateNotNullOrEmpty()][string]$CudaArch,
     [switch]$Cxx,
     [switch]$Debug,
     [switch]$DebugCMake,
-    [switch]$DryRun,
-    [switch]$Doc,
-    [switch]$Docs,
+    [Alias("N")][switch]$DryRun,
+    [Alias("Docs")][switch]$Doc,
     [ValidateNotNullOrEmpty()][string]$G,
     [switch]$Gpu,
     [switch]$H,
     [switch]$Help,
-    [ValidateRange("Positive")][int]$J,
-    [ValidateRange("Positive")][int]$Jobs,
-    [switch]$N,
+    [switch]$Install,
+    [Alias("J")][ValidateRange("Positive")][int]$Jobs,
     [switch]$Ninja,
+    [ValidateNotNullOrEmpty()][string]$Prefix,
     [switch]$Quiet,
     [switch]$ShowLibraries,
     [switch]$Test,
@@ -71,6 +68,7 @@ $do_clean_cache = 0
 $do_clean_venv = 0
 $do_docs = 0
 $do_configure = 0
+$do_install = 0
 $do_update_venv = 0
 $dry_run = 0
 $enable_ccache = 0
@@ -82,6 +80,7 @@ $enable_tests = 0
 $force_local_pkgs = 0
 $local_pkgs = @()
 $n_jobs = -1
+$prefix_dir = ""
 
 $source_dir = Resolve-Path $BASEPATH
 $build_dir = "$BASEPATH\build"
@@ -205,9 +204,11 @@ function help_message() {
     Write-Output '                      documentation'
     Write-Output '  -n,-DryRun          Dry run; only print commands but do not execute them'
     Write-Output '  -Gpu                Enable GPU support'
+    Write-Output '  -Install            Build the ´install´ target'
     Write-Output '  -J,-Jobs [N]        Number of parallel jobs for building'
     Write-Output ("                      Defaults to: {0}" -f $n_jobs_default)
     Write-Output '  -LocalPkgs          Compile third-party dependencies locally'
+    Write-Output '  -Prefix             Specify installation prefix'
     Write-Output '  -Quiet              Disable verbose build rules'
     Write-Output '  -ShowLibraries      Show all known third-party libraries'
     Write-Output '  -Test               Build C++ tests'
@@ -235,7 +236,7 @@ function help_message() {
 
 # ==============================================================================
 
-if ($n.IsPresent -or $DryRun.IsPresent) {
+if ($DryRun.IsPresent) {
     $dry_run = 1
 }
 
@@ -270,6 +271,10 @@ if ($ConfigureOnly.IsPresent) {
     $configure_only = 1
 }
 
+if ($Install.IsPresent) {
+    $do_install = 1
+}
+
 if ($Cxx.IsPresent) {
     $enable_cxx = 1
 }
@@ -282,7 +287,7 @@ if ($DebugCMake.IsPresent) {
     $cmake_debug_mode = 1
 }
 
-if ($Doc.IsPresent -or $Docs.IsPresent) {
+if ($Doc.IsPresent) {
     $do_docs = 1
 }
 
@@ -306,18 +311,19 @@ if ($UpdateVenv.IsPresent) {
     $do_update_venv = 1
 }
 
-if ([bool]$B -or [bool]$Build) {
-    $build_dir = "$B" + "$Build"
+if ([bool]$Build) {
+    $build_dir = "$Build"
 }
 
 if ([bool]$CudaArch) {
     $cuda_arch = $CudaArch.Replace(' ', ';').Replace(',', ';')
 }
 
-if ($J -ne 0) {
-    $n_jobs = $J
+if ([bool]$Prefix) {
+    $prefix_dir = "$Prefix"
 }
-elseif ($Jobs -ne 0) {
+
+if ($Jobs -ne 0) {
     $n_jobs = $Jobs
 }
 
@@ -508,18 +514,18 @@ if ($has_cmake -eq 0) {
 if ($created_venv -eq 1 -or $do_update_venv -eq 1) {
     $pkgs = @("pip", "setuptools", "wheel", "build", "pybind11")
 
-    if($IsLinuxEnv) {
+    if($IsLinuxEnv -eq 1) {
         $pkgs += "auditwheel"
     }
-    elseif($IsMacOSEnv) {
+    elseif($IsMacOSEnv -eq 1) {
         $pkgs += "delocate"
     }
 
-    if($cmake_from_venv) {
+    if($cmake_from_venv -eq 1) {
         $pkgs += "cmake"
     }
 
-    if($do_docs) {
+    if($do_docs -eq 1) {
         $pkgs += "breathe", "sphinx", "sphinx_rtd_theme", "importlib-metadata", "myst-parser"
     }
 
@@ -555,6 +561,10 @@ $cmake_args = @('-DIN_PLACE_BUILD:BOOL=ON'
                 "-DCLEAN_3RDPARTY_INSTALL_DIR:BOOL={0}" -f $CMAKE_BOOL[$do_clean_3rdparty]
                 "-DUSE_VERBOSE_MAKEFILE:BOOL={0}" -f $CMAKE_BOOL[-not $cmake_make_silent]
                )
+
+if([bool]$prefix_dir) {
+    $cmake_args += "-DCMAKE_INSTALL_PREFIX:FILEPATH=`"${prefix_dir}`""
+}
 
 if ($enable_ccache -eq 1) {
     $ccache_exec=''
@@ -600,6 +610,11 @@ if($cmake_make_silent -eq 0) {
     $make_args += "-v"
 }
 
+$target_args = @()
+if($do_install -eq 1) {
+    $target_args += '--target', 'install'
+}
+
 # ------------------------------------------------------------------------------
 # Build
 
@@ -626,11 +641,11 @@ if ($do_clean -eq 1) {
     Call-CMake --build "$build_dir" --target clean
 }
 
-Call-CMake --build "$build_dir" --config "$build_type" @make_args
-
 if($do_docs) {
     Call-CMake --build "$build_dir" --config "$build_type" --target docs @make_args
 }
+
+Call-CMake --build "$build_dir" --config "$build_type" @target_args @make_args
 
 # ==============================================================================
 
@@ -651,9 +666,6 @@ knows how to find them.
 
 A pth-file will be created in the virtualenv site-packages directory so that the MindQuantum root folder will be added
 to the Python PATH without the need to modify PYTHONPATH.
-
-.PARAMETER B
-Specify build directory. Defaults to: Path\To\Script\build
 
 .PARAMETER Build
 Specify build directory. Defaults to: Path\To\Script\build
@@ -683,9 +695,6 @@ Delete Python virtualenv before building
 .PARAMETER Configure
 Force running the CMake configure step
 
-.PARAMETER C
-Force running the CMake configure step
-
 .PARAMETER ConfigureOnly
 Stop after the CMake configure and generation steps (ie. before building MindQuantum)
 
@@ -707,9 +716,6 @@ Dry run; only print commands but do not execute them
 .PARAMETER Doc
 Setup the Python virtualenv for building the documentation and ask CMake to build the documentation
 
-.PARAMETER Docs
-Setup the Python virtualenv for building the documentation and ask CMake to build the documentation
-
 .PARAMETER Gpu
 Enable GPU support
 
@@ -719,14 +725,17 @@ Show help message.
 .PARAMETER Help
 Show help message.
 
-.PARAMETER J
-Number of parallel jobs for building
+.PARAMETER Install
+Build the `install` target
 
 .PARAMETER Jobs
 Number of parallel jobs for building
 
 .PARAMETER LocalPkgs
 Compile third-party dependencies locally
+
+.PARAMETER Prefix
+Specify installation prefix
 
 .PARAMETER Quiet
 Disable verbose build rules

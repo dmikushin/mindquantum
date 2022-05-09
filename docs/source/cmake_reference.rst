@@ -149,8 +149,8 @@ Default values
 | ``USE_VERBOSE_MAKEFILE``          | ON                           |
 +-----------------------------------+------------------------------+
 
-Details descriptions
-++++++++++++++++++++
+Detailed descriptions
++++++++++++++++++++++
 
 ``CLEAN_3RDPARTY_INSTALL_DIR``
     This will delete any pre-existing installations within the local installation directory (by default

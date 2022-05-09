@@ -16,7 +16,11 @@
 #
 # ==============================================================================
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/utils.cmake)
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake ${CMAKE_CURRENT_LIST_DIR}/cmake/modules)
+
+# ------------------------------------------------------------------------------
+
+include(utils)
 
 # ==============================================================================
 
@@ -58,3 +62,30 @@ if(ENABLE_CXX_EXPERIMENTAL)
     include(${CMAKE_CURRENT_LIST_DIR}/catch2/catch2.cmake)
   endif()
 endif()
+
+# ==============================================================================
+
+get_property(_tmp GLOBAL PROPERTY mq_external_find_packages)
+string(REPLACE ";" "\n" _tmp "${_tmp}")
+
+# --------------------------------------
+
+set(MQ_3RDPARTY_PREFIX_PATH "\${MQ_PACKAGE_PREFIX_DIR}/${MQ_INSTALL_3RDPARTYDIR}")
+string(CONFIGURE "${_tmp}" MQ_FIND_EXTERNAL_PACKAGES)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/mindquantumTargetsExternal.cmake.in"
+               "${PROJECT_BINARY_DIR}/config_for_install/mindquantumTargetsExternal.cmake" @ONLY)
+
+install(FILES ${PROJECT_BINARY_DIR}/config_for_install/mindquantumTargetsExternal.cmake
+        DESTINATION ${MQ_INSTALL_CMAKEDIR})
+
+# --------------------------------------
+
+set(MQ_3RDPARTY_PREFIX_PATH "${_mq_local_prefix}")
+string(CONFIGURE "${_tmp}" MQ_FIND_EXTERNAL_PACKAGES)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/mindquantumTargetsExternal.cmake.in"
+               "${PROJECT_BINARY_DIR}/mindquantumTargetsExternal.cmake" @ONLY)
+
+# ==============================================================================
+
+list(POP_FRONT CMAKE_MODULE_PATH)
+list(POP_FRONT CMAKE_MODULE_PATH)

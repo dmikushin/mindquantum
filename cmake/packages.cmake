@@ -21,7 +21,7 @@
 # OpenMP
 
 set(PARALLEL_LIBS)
-if(ENABLE_OPENMP)
+if(USE_OPENMP)
   if(APPLE)
     find_program(BREW_CMD brew PATHS /usr/local/bin)
     if(BREW_CMD)
@@ -61,12 +61,21 @@ if(ENABLE_OPENMP)
   if(OpenMP_FOUND)
     list(APPEND PARALLEL_LIBS OpenMP::OpenMP_CXX)
   endif()
+  if(APPLE)
+    list(POP_FRONT CMAKE_MODULE_PATH)
+  endif()
 endif()
 
 if(USE_PARALLEL_STL)
   find_package(TBB REQUIRED tbb)
-  target_compile_options(TBB::tbb INTERFACE "$<$<COMPILE_LANGUAGE:DPCXX>:-tbb>")
-  list(APPEND PARALLEL_LIBS TBB::tbb)
+  if(TBB_FOUND)
+    target_compile_options(TBB::tbb INTERFACE "$<$<COMPILE_LANGUAGE:DPCXX>:-tbb>")
+    list(APPEND PARALLEL_LIBS TBB::tbb)
+  else()
+    set(USE_PARALLEL_STL
+        FALSE
+        CACHE BOOL "Use the parallel STL libraries (TBB)")
+  endif()
 endif()
 
 # ==============================================================================
@@ -74,7 +83,9 @@ endif()
 find_package(Threads REQUIRED)
 list(APPEND PARALLEL_LIBS Threads::Threads)
 
-find_package(Patch REQUIRED)
+if("${CMAKE_PROJECT_NAME}" STREQUAL "MindQuantum")
+  find_package(Patch REQUIRED)
+endif()
 
 # ==============================================================================
 # CUDA
@@ -107,103 +118,88 @@ else()
 endif()
 find_package(${_python_find_args})
 
-# NB: This should be removed for CMake >= 3.16
-if(NOT Python_FOUND)
-  # Use PYTHON_EXECUTABLE if it is defined, otherwise default to python
-  if(PYTHON_EXECUTABLE)
-    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE}) # cmake-lint: disable=C0103
-  elseif(NOT Python_EXECUTABLE)
-    find_program(Python_EXECUTABLE NAMES python3 python)
-    if(NOT Python_EXECUTABLE)
-      message(FATAL_ERROR "Unable to locate Python!")
-    endif()
-  endif()
+# ------------------------------------------------------------------------------
 
-  execute_process(
-    COMMAND "${Python_EXECUTABLE}" --version
-    RESULT_VARIABLE result
-    OUTPUT_VARIABLE _python_version)
-  string(STRIP "${_python_version}" Python_VERSION)
+# Check if we are being used directly or via add_subdirectory()
+if("${CMAKE_PROJECT_NAME}" STREQUAL "MindQuantum")
+  if(NOT MQ_PYTHON_PACKAGE_NAME)
+    execute_process(
+      COMMAND
+        "${Python_EXECUTABLE}" -c [=[
+import sys
+try:
+    from setuptools.config.setupcfg import read_configuration
+except ImportError:
+    from setuptools.config import read_configuration
 
-  if(Python_VERSION VERSION_LESS 3.6.0)
-    message(FATAL_ERROR "Cannot use Python ${Python_VERSION} (${Python_EXECUTABLE}): version too old!")
-  endif()
+sys.stdout.write(read_configuration("setup.cfg")["metadata"]["name"])
+]=]
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+      RESULT_VARIABLE result
+      OUTPUT_VARIABLE MQ_PYTHON_PACKAGE_NAME)
 
-  execute_process(
-    COMMAND "${Python_EXECUTABLE}" -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())"
-    RESULT_VARIABLE result
-    OUTPUT_VARIABLE _python_inc)
-  string(STRIP "${_python_inc}" _python_inc)
-
-  execute_process(
-    COMMAND "${Python_EXECUTABLE}" -c "import distutils.sysconfig as sysconfig; import os; \
-                  print(os.path.join(sysconfig.get_config_var('LIBDIR'), sysconfig.get_config_var('LDLIBRARY')))"
-    RESULT_VARIABLE result
-    OUTPUT_VARIABLE _python_lib)
-  string(STRIP "${_python_lib}" _python_lib)
-
-  # Define an imported library for Python
-  macro(_python_import_library lib_name)
-    if(lib MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}$")
-      set(_type SHARED)
-    else()
-      set(_type STATIC)
+    if(NOT result EQUAL 0)
+      message(FATAL_ERROR "Unable to determine MindQuantum's Python package name")
     endif()
 
-    add_library(${lib_name} ${_type} IMPORTED)
-    target_include_directories(${lib_name} INTERFACE "${_python_inc}")
-    # cmake-lint: disable=C0307
-    set_target_properties(${lib_name} PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES "C" IMPORTED_LOCATION
-                                                                                       "${_python_lib}")
-  endmacro()
+    set(MQ_PYTHON_PACKAGE_NAME
+        "${MQ_PYTHON_PACKAGE_NAME}"
+        CACHE STRING "MindQuantum's Python package name")
+    mark_as_advanced(MQ_PYTHON_PACKAGE_NAME)
+  endif()
 
-  _python_import_library(Python::Python)
-  if(WIN32
-     OR CYGWIN
-     OR MSYS)
-    # On Windows/Cygwin/MSYS Python::Module is an alias for Python::Python. See CMake code for FindPython.
-    _python_import_library(Python::Module)
-  else()
-    if(NOT TARGET Python::Module)
-      add_library(Python::Module INTERFACE IMPORTED)
+  # ----------------------------------------------------------------------------
+
+  if(NOT MQ_INSTALL_PYTHONDIR)
+    execute_process(
+      COMMAND
+        "${Python_EXECUTABLE}" -c [=[
+import sys
+from pathlib import Path
+
+try:
+    from distutils import sysconfig
+
+    platlib = Path(sysconfig.get_python_lib(plat_specific=True, standard_lib=False))
+    platbase = Path(sysconfig.EXEC_PREFIX)
+except Exception:
+    import sysconfig
+
+    platlib = Path(sysconfig.get_path("platlib"))
+    platbase = Path(sysconfig.get_config_var("base"))
+
+sys.stdout.write(str(platlib.relative_to(platbase)))
+]=]
+      RESULT_VARIABLE result
+      OUTPUT_VARIABLE MQ_INSTALL_PYTHONDIR)
+
+    if(NOT result EQUAL 0)
+      message(FATAL_ERROR "Unable to determine Python path to site-packages sub-directory")
     endif()
-    target_include_directories(Python::Module INTERFACE "${_python_inc}")
-    target_link_options(Python::Module INTERFACE $<$<PLATFORM_ID:Darwin>:LINKER:-undefined,dynamic_lookup>
-                        $<$<PLATFORM_ID:SunOS>:LINKER:-z,nodefs> $<$<PLATFORM_ID:AIX>:LINKER:-b,erok>)
+
+    set(MQ_INSTALL_PYTHONDIR
+        "${MQ_INSTALL_PYTHONDIR}"
+        CACHE FILEPATH "Python path to site-packages sub-directory")
+    mark_as_advanced(MQ_INSTALL_PYTHONDIR)
   endif()
-endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.17)
-  message(CHECK_START "Looking for python SOABI")
-
-  execute_process(
-    COMMAND "${Python_EXECUTABLE}" "-c" "from sysconfig import get_config_var; \
-print(get_config_var ('EXT_SUFFIX') or s.get_config_var ('SO'))"
-    RESULT_VARIABLE _soabi_success
-    OUTPUT_VARIABLE _python_so_extension
-    ERROR_VARIABLE _soabi_error_value
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  if(NOT _soabi_success MATCHES 0)
-    message(CHECK_FAIL "failed")
-    message(FATAL_ERROR "Failed to extract Python SOABI extension:\n${_soabi_error_value}")
-  else()
-    message(CHECK_PASS "done")
-  endif()
+  GNUInstallDirs_get_absolute_install_dir(MQ_INSTALL_FULL_PYTHONDIR MQ_INSTALL_PYTHONDIR PYTHONDIR)
 endif()
 
 # ==============================================================================
 # For Huawei internal security assessment
 
-if(BINSCOPE)
-  get_filename_component(_binscope_path ${BINSCOPE} DIRECTORY)
-  get_filename_component(_binscope_name ${BINSCOPE} NAME)
-endif()
+if("${CMAKE_PROJECT_NAME}" STREQUAL "MindQuantum")
+  if(BINSCOPE)
+    get_filename_component(_binscope_path ${BINSCOPE} DIRECTORY)
+    get_filename_component(_binscope_name ${BINSCOPE} NAME)
+  endif()
 
-find_program(
-  binscope_exec
-  NAMES binscope ${_binscope_name}
-  HINTS ${_binscope_path})
-include(${CMAKE_CURRENT_LIST_DIR}/binscope.cmake)
+  find_program(
+    binscope_exec
+    NAMES binscope ${_binscope_name}
+    HINTS ${_binscope_path})
+  include(binscope)
+endif()
 
 # ==============================================================================

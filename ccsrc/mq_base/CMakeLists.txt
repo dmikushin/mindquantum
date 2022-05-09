@@ -33,12 +33,28 @@ set(MQ_BASE_HEADERS
 set(MQ_BASE_SOURCES utils.cc)
 
 if(ENABLE_CUDA)
-  add_library(mq_base STATIC ${MQ_BASE_SOURCES} ${MQ_BASE_HEADERS})
-
+  add_library(mq_base STATIC ${MQ_BASE_SOURCES})
   target_compile_definitions(mq_base PUBLIC GPUACCELERATED)
   target_link_libraries(mq_base PUBLIC $<IF:$<BOOL:${CUDA_STATIC}>,CUDA::cudart_static,CUDA::cudart>)
 else()
-  add_library(mq_base STATIC ${MQ_BASE_SOURCES} ${MQ_BASE_HEADERS})
+  add_library(mq_base STATIC ${MQ_BASE_SOURCES})
 endif()
-target_include_directories(mq_base PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_sources(mq_base PRIVATE $<BUILD_INTERFACE:${MQ_BASE_HEADERS}>)
+target_include_directories(mq_base PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+                                          $<INSTALL_INTERFACE:${MQ_INSTALL_INCLUDEDIR}>)
 target_link_libraries(mq_base PUBLIC mindquantum_setup)
+append_to_property(mq_install_targets GLOBAL mq_base)
+
+# ==============================================================================
+
+install(
+  DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/core
+            ${CMAKE_CURRENT_LIST_DIR}/gate
+            ${CMAKE_CURRENT_LIST_DIR}/hamiltonian
+            ${CMAKE_CURRENT_LIST_DIR}/matrix
+            ${CMAKE_CURRENT_LIST_DIR}/pr
+            ${CMAKE_CURRENT_LIST_DIR}/projector
+            ${CMAKE_CURRENT_LIST_DIR}/sparse
+  DESTINATION ${MQ_INSTALL_INCLUDEDIR})
+
+# ==============================================================================

@@ -93,13 +93,13 @@ file(WRITE \"\${CMAKE_CURRENT_BINARY_DIR}/result.cmake\"
       RESULT_VARIABLE _cl_result)
     include(${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/Check${lang}/result.cmake OPTIONAL)
     if(CMAKE_${lang}_COMPILER AND "${_cl_result}" STREQUAL "0")
-      file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
+      file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
            "${_desc} passed with the following output:\n" "${_cl_output}\n")
       set(_CHECK_COMPILER_STATUS CHECK_PASS)
     else()
       set(CMAKE_${lang}_COMPILER NOTFOUND)
       set(_CHECK_COMPILER_STATUS CHECK_FAIL)
-      file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+      file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
            "${_desc} failed with the following output:\n" "${_cl_output}\n")
     endif()
     message(${_CHECK_COMPILER_STATUS} "${CMAKE_${lang}_COMPILER}")

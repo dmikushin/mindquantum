@@ -16,30 +16,19 @@
 #
 # ==============================================================================
 
-# cmake-lint: disable=C0103
+include_guard()
 
-set(REQ_URL "https://github.com/catchorg/Catch2/archive/refs/tags/v2.13.9.tar.gz")
-set(MD5 "feda9b6fd01621d404537d38df56ff83")
-
-set(CMAKE_OPTION
-    -DCATCH_BUILD_TESTING=OFF
-    -DCATCH_INSTALL_DOCS=OFF
-    -DCATCH_INSTALL_HELPERS=ON
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -G${CMAKE_GENERATOR})
-
-if(CMAKE_C_COMPILER)
-  list(APPEND CMAKE_OPTION -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
-endif()
-
-mindquantum_add_pkg(
-  Catch2
-  VER 2.13.0
-  URL ${REQ_URL}
-  MD5 ${MD5}
-  CMAKE_PKG_NO_COMPONENTS
-  CMAKE_OPTION ${CMAKE_OPTION}
-  TARGET_ALIAS mindquantum::catch2 Catch2::Catch2
-  SKIP_IN_INSTALL_CONFIG)
+# ~~~
+# Print a message only if some debug mode variable are set.
+#
+# debug_print(<mode>)
+# ~~~
+function(debug_print mode)
+  if(ENABLE_CMAKE_DEBUG
+     OR MINDQUANTUM_DEBUG
+     OR mindquantum_DEBUG)
+    foreach(_msg ${ARGN})
+      message(${mode} ${_msg})
+    endforeach()
+  endif()
+endfunction()

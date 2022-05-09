@@ -73,7 +73,7 @@ the script will only re-compile MindQuantum.
 For reference, here is the output of the help message from the Bash script (NB: might differ from the actual help
 message):
 
-.. code-block::
+.. code-block:: bash
 
   Build MindQunantum locally (in-source build)
 
@@ -137,6 +137,8 @@ message):
                          building MindQuantum)
     --doc                Setup the Python virtualenv for building the documentation and ask
                          CMake to build the documentation
+    --install            Build the ´install´ target
+    --prefix             Specify installation prefix
 
   Any options after "--" will be passed onto CMake during the configuration step
 
@@ -147,9 +149,7 @@ message):
   build_locally.sh -B build -- -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc
 
 .. [1] PowerShell and Bash scripts typically have identical functionality sets whereas the MS-DOS BATCH script might
-       not. For example, the latter is not able to automatically detect the minimum CMake version required by
-       MindQuantum by parsing the content of the top-most ``CMakeLists.txt`` file or does not support ``/WithOutXXX``
-       arguments.
+       not. For example, the latter does not support the ``/WithOutXXX``-type arguments.
 
 .. _build_wheels:
 

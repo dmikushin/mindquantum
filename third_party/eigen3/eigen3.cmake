@@ -41,4 +41,4 @@ mindquantum_add_pkg(
   URL ${REQ_URL}
   MD5 ${MD5}
   CMAKE_OPTION ${CMAKE_OPTION}
-  TARGET_ALIAS mindspore::eigen Eigen3::Eigen)
+  TARGET_ALIAS mindquantum::eigen Eigen3::Eigen)
