@@ -297,6 +297,34 @@ int main() {
 }
 ]])
 
+# --------------------------------------
+
+check_cxx_code_compiles(
+  compiler_has_constexpr_std_vector
+  MQ_HAS_CONSTEXPR_STD_VECTOR
+  cxx_std_20
+  [[
+#ifdef __has_include
+#    if __has_include(<version>)
+#        include <version>
+#    endif
+#endif
+#include <vector>
+
+#if __cpp_lib_constexpr_vector >= 201907L
+constexpr auto foo() { std::vector<int> vec = {1,2,3,4,5}; return vec.size(); }
+#endif
+
+int main() {
+#if __cpp_lib_constexpr_vector >= 201907L
+    return foo();
+#else
+#    error C++20 constexpr std::vector not supported
+#endif
+    return 0;
+}
+]])
+
 # ==============================================================================
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/cxx20_config.hpp.in ${PROJECT_BINARY_DIR}/core/cxx20_config.hpp)

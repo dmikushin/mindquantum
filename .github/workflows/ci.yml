@@ -160,7 +160,8 @@ jobs:
           - 8
           - 9
           - 10
-          - latest
+          - 11
+          - 12
     env:
       CMAKE_VERSION: 3.22.3
     name: "GCC ${{ matrix.gcc }} • x64"
@@ -243,7 +244,7 @@ jobs:
           - 11
           - 12
           - 13
-          - latest
+          - 14
     env:
       CC: clang
       CXX: clang++

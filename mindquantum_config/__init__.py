@@ -27,16 +27,20 @@ _ROOT = Path(__file__).parent.parent.resolve()
 def print_includes():
     """Print a list of include directories using the -I<dir> syntax."""
     dirs = [
-        _ROOT / 'include' / 'mindquantum',
+        _ROOT / 'mindquantum' / 'include' / 'mindquantum',
         _ROOT / 'ccsrc' / 'mq_base',
         _ROOT / 'ccsrc' / 'cxx_experimental' / 'include',
         _ROOT / 'ccsrc' / 'cxx_experimental' / 'python' / 'include',
     ]
 
     root = _ROOT / 'mindquantum' / 'lib' / 'mindquantum' / 'third_party'
+    print(f'root = {root}')
     if root.exists():
         for folder in root.iterdir():
-            dirs.append(folder / 'include')
+            if (folder / 'include').exists():
+                dirs.append(folder / 'include')
+            else:
+                dirs.append(folder)
 
     root = _ROOT / 'build' / '.mqlibs'
     if root.exists():

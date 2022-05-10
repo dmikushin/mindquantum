@@ -35,4 +35,6 @@
 
 #cmakedefine01 MQ_HAS_STD_LAUNDER
 
+#cmakedefine01 MQ_HAS_CONSTEXPR_STD_VECTOR
+
 #endif /* CXX20_CONFIG_HPP */

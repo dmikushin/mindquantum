@@ -24,6 +24,12 @@
 
 #include <tweedledum/IR/Operator.h>
 
+#if MQ_HAS_CONSTEXPR_STD_VECTOR
+#    define CONSTEXPR constexpr
+#else
+#    define CONSTEXPR
+#endif  // MQ_HAS_CONSTEXPR_STD_VECTOR
+
 namespace mindquantum::traits {
 #if MQ_HAS_CONCEPTS
 template <typename op_t>
@@ -35,7 +41,7 @@ template <concepts::SingleDoubleGate op_t>
 struct gate_traits<op_t> {
     using non_param_type = op_t;
 
-    static constexpr auto param(const tweedledum::Operator& op) {
+    static constexpr auto param(const tweedledum::Operator& op) -> double {
         return op.cast<op_t>().param();
     }
 };
@@ -44,7 +50,7 @@ template <concepts::MultiDoubleGate op_t>
 struct gate_traits<op_t> {
     using non_param_type = op_t;
 
-    static constexpr auto param(const tweedledum::Operator& op) {
+    static CONSTEXPR auto param(const tweedledum::Operator& op) -> std::vector<double> {
         return op.cast<op_t>().params();
     }
 };
@@ -53,7 +59,7 @@ template <concepts::AngleGate op_t>
 struct gate_traits<op_t> {
     using non_param_type = op_t;
 
-    static constexpr auto param(const tweedledum::Operator& op) {
+    static constexpr auto param(const tweedledum::Operator& op) -> double {
         return op.cast<op_t>().angle();
     }
 };
@@ -62,7 +68,7 @@ template <concepts::ParametricGate op_t>
 struct gate_traits<op_t> {
     using non_param_type = typename op_t::non_param_type;
 
-    static constexpr auto param(const tweedledum::Operator& op) {
+    static CONSTEXPR auto param(const tweedledum::Operator& op) -> ops::parametric::param_list_t {
         return op.cast<op_t>().params();
     }
 };
@@ -95,8 +101,15 @@ struct param_traits {
             return optor.params();
         } else if constexpr (has_angle<op_t>::value) {
             return optor.angle();
+        } else {
+            return optor.params();
         }
     }
+};
+
+template <typename op_t>
+struct param_traits_return_type {
+    using type = decltype(param_traits<op_t>::apply(std::declval<op_t>()));
 };
 }  // namespace details
 
@@ -104,7 +117,8 @@ template <typename op_t>
 struct gate_traits {
     using non_param_type = op_t;
 
-    static constexpr auto param(const tweedledum::Operator& op) {
+    static constexpr auto param(const tweedledum::Operator& op) ->
+        typename details::param_traits_return_type<op_t>::type {
         return details::param_traits<op_t>::apply(op.cast<op_t>());
     }
 };
@@ -112,4 +126,5 @@ struct gate_traits {
 
 }  // namespace mindquantum::traits
 
+#undef CONSTEXPR
 #endif /* GATE_TRAITS_HPP */
