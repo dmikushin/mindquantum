@@ -21,6 +21,7 @@ list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake ${CMAKE_CURRENT_L
 # ------------------------------------------------------------------------------
 
 include(utils)
+include(external_targets)
 
 # ==============================================================================
 
@@ -65,13 +66,20 @@ endif()
 
 # ==============================================================================
 
-get_property(_tmp GLOBAL PROPERTY mq_external_find_packages)
-string(REPLACE ";" "\n" _tmp "${_tmp}")
+get_property(_pkgs GLOBAL PROPERTY mq_external_packages)
+
+set(_external_pkgs_str)
+foreach(_pkg ${_pkgs})
+  load_from_cache(_${_pkg}_find_pkg_str _tmp)
+  set(_external_pkgs_str "${_external_pkgs_str}\n\n${_tmp}")
+endforeach()
+
+# get_property(_tmp GLOBAL PROPERTY mq_external_find_packages) string(REPLACE ";" "\n" _tmp "${_tmp}")
 
 # --------------------------------------
 
 set(MQ_3RDPARTY_PREFIX_PATH "\${MQ_PACKAGE_PREFIX_DIR}/${MQ_INSTALL_3RDPARTYDIR}")
-string(CONFIGURE "${_tmp}" MQ_FIND_EXTERNAL_PACKAGES)
+string(CONFIGURE "${_external_pkgs_str}" MQ_FIND_EXTERNAL_PACKAGES)
 configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/mindquantumTargetsExternal.cmake.in"
                "${PROJECT_BINARY_DIR}/config_for_install/mindquantumTargetsExternal.cmake" @ONLY)
 
@@ -81,7 +89,7 @@ install(FILES ${PROJECT_BINARY_DIR}/config_for_install/mindquantumTargetsExterna
 # --------------------------------------
 
 set(MQ_3RDPARTY_PREFIX_PATH "${_mq_local_prefix}")
-string(CONFIGURE "${_tmp}" MQ_FIND_EXTERNAL_PACKAGES)
+string(CONFIGURE "${_external_pkgs_str}" MQ_FIND_EXTERNAL_PACKAGES)
 configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/mindquantumTargetsExternal.cmake.in"
                "${PROJECT_BINARY_DIR}/mindquantumTargetsExternal.cmake" @ONLY)
 

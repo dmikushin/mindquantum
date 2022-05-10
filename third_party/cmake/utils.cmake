@@ -22,6 +22,7 @@ include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)
 
 include(debug_print)
+include(external_targets)
 
 # ==============================================================================
 # Setup helper variables
@@ -277,9 +278,9 @@ endfunction()
 #         * targets: list of potential targets to alias
 #
 # Using 1. syntax:
-# __create_target_aliases(<skip_in_install_for_config> [[<tgt_alias>, <tgt_name>]...])
+# __create_target_aliases(<pkg_name> <skip_in_install_for_config> [[<tgt_alias>, <tgt_name>]...])
 # Using 2. syntax:
-# __create_target_aliases(<skip_in_install_for_config> [[<N> <tgt_alias>, <tgt_name_1>...<tgt_name_N>]...])
+# __create_target_aliases(<pkg_name> <skip_in_install_for_config> [[<N> <tgt_alias>, <tgt_name_1>...<tgt_name_N>]...])
 #
 # Examples:
 # __create_target_aliases(FALSE A B 3 D E F)
@@ -288,7 +289,7 @@ endfunction()
 # NB: the <skip_in_install_for_config> argument only prevents this function from creating the alias targets into the
 #     installation configuration file but has otherwise no effect.
 # ~~~
-function(__create_target_aliases skip_in_install_config)
+function(__create_target_aliases pkg_name skip_in_install_config)
   # cmake-lint: disable=R0915
   list(LENGTH ARGN n_args)
   if(NOT n_args)
@@ -362,8 +363,9 @@ function(__create_target_aliases skip_in_install_config)
   endwhile()
 
   if(NOT skip_in_install_config)
-    string(REPLACE ";" "\n" _target_aliases "${_target_aliases}")
-    append_to_property(mq_external_find_packages GLOBAL "\n${_target_aliases}")
+    load_from_cache(_${pkg_name}_find_pkg_str _tmp)
+    list(APPEND _tmp ${_target_aliases})
+    store_in_cache(_${pkg_name}_find_pkg_str "${_tmp}")
   endif()
 
   list(POP_BACK CMAKE_MESSAGE_INDENT)
@@ -815,7 +817,15 @@ endfunction()
 # This function also saves the strings content into the CMake cache at _<pkg_name>_find_pkg_str.
 # ~~~
 function(__setup_install_target pkg_name)
-  if(NOT _${pkg_name}_find_pkg_str)
+  set(_generate_data TRUE)
+  if(_${pkg_name}_find_pkg_str)
+    string(MD5 _hash "${ARGN}")
+    if("${_hash}" STREQUAL "${_${pkg_name}_find_pkg_str_control_hash}")
+      set(_generate_data FALSE)
+    endif()
+  endif()
+
+  if(_generate_data)
     set(_find_pkg_str)
     set(_find_pkg_args ${ARGN} REQUIRED)
     if(_${pkg_name}_SYSTEM)
@@ -836,21 +846,14 @@ function(__setup_install_target pkg_name)
       # NB: to filter static libraries, use  (... REGEX [[.*\.(a|lib)$]] EXCLUDE) below
       install(DIRECTORY ${${pkg_name}_BASE_DIR} DESTINATION ${MQ_INSTALL_3RDPARTYDIR})
     endif()
+    set(_tmp)
+    string(REPLACE ";" ";             " _tmp "${_find_pkg_args}")
+    list(APPEND _find_pkg_str "find_package(${_tmp})")
 
-    string(REPLACE ";" ";@" _find_pkg_args "${_find_pkg_args}")
-    list(APPEND _find_pkg_str "find_package(${_find_pkg_args})")
-
-    # cmake-lint: disable=C0103
-    set(_${pkg_name}_find_pkg_str
-        "${_find_pkg_str}"
-        CACHE INTERNAL "")
-  else()
-    set(_find_pkg_str "${_${pkg_name}_find_pkg_str}")
+    store_in_cache(_${pkg_name}_find_pkg_str "${_find_pkg_str}")
   endif()
 
-  string(REPLACE ";@" "\n             " _${pkg_name}_find_pkg_str "${_${pkg_name}_find_pkg_str}")
-  string(REPLACE ";" "\n" _${pkg_name}_find_pkg_str "${_${pkg_name}_find_pkg_str}")
-  append_to_property(mq_external_find_packages GLOBAL "\n${_${pkg_name}_find_pkg_str}")
+  append_to_property(mq_external_packages GLOBAL ${pkg_name})
 endfunction()
 
 # ==============================================================================
@@ -959,7 +962,14 @@ function(mindquantum_add_pkg pkg_name)
 
   # NB: this branch will only be taken if not the first CMake configure call (or if manually set)
   if(${pkg_name}_DIR)
-    set(_args "${pkg_name}" "${PKG_VER}" CONFIG ${_find_package_args} NO_DEFAULT_PATH)
+    set(_args
+        "${pkg_name}"
+        "${PKG_VER}"
+        CONFIG
+        ${_find_package_args}
+        NO_DEFAULT_PATH
+        PATHS
+        ${${pkg_name}_DIR})
     __find_package(${_args} SEARCH_NAME "config")
 
     if(${pkg_name}_FOUND)
@@ -970,7 +980,7 @@ function(mindquantum_add_pkg pkg_name)
         __setup_install_target(${pkg_name} ${_args})
       endif()
       __make_target_global(${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
-      __create_target_aliases(${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
+      __create_target_aliases(${pkg_name} ${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
 
       list(POP_BACK CMAKE_MESSAGE_INDENT)
       message(CHECK_PASS "Done")
@@ -1000,7 +1010,7 @@ function(mindquantum_add_pkg pkg_name)
         __setup_install_target(${pkg_name} ${_args})
       endif()
       __make_target_global(${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
-      __create_target_aliases(${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
+      __create_target_aliases(${pkg_name} ${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
 
       list(POP_BACK CMAKE_MESSAGE_INDENT)
       message(CHECK_PASS "Done")
@@ -1069,7 +1079,7 @@ function(mindquantum_add_pkg pkg_name)
       endif()
       __check_package_location(${pkg_name} ${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
       __make_target_global(${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
-      __create_target_aliases(${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
+      __create_target_aliases(${pkg_name} ${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
 
       list(POP_BACK CMAKE_MESSAGE_INDENT)
       message(CHECK_PASS "Done")
@@ -1289,7 +1299,7 @@ function(mindquantum_add_pkg pkg_name)
   endif()
   __check_package_location(${pkg_name} ${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
   __make_target_global(${PKG_NS_NAME} ${PKG_LIBS} ${PKG_EXE})
-  __create_target_aliases(${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
+  __create_target_aliases(${pkg_name} ${PKG_SKIP_IN_INSTALL_CONFIG} ${PKG_TARGET_ALIAS})
 
   list(POP_BACK CMAKE_MESSAGE_INDENT)
   message(CHECK_PASS "Done")
