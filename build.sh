@@ -20,8 +20,9 @@ PROGRAM=$(basename "${BASH_SOURCE[0]:-$0}")
 # ==============================================================================
 # Default values for this particular script
 
-output_path="${BASEPATH}/output"
 delocate_wheel=1
+build_isolation=0
+output_path="${BASEPATH}/output"
 platform_name=''
 
 # Override some of the default values
@@ -47,6 +48,8 @@ function help_header() {
 function extra_help() {
     echo 'Extra options:'
     echo '  --delocate           Delocate the binary wheels after build is finished'
+    echo '                       (enabled by default; pass --no-delocate to disable)'
+    echo '  --no-isolation       Pass --no-isolation to python3 -m build'
     echo '  -o,--output=[dir]    Output directory for built wheels'
     echo '  -p,--plat-name=[dir] Platform name to use for wheel delocation'
     echo '                       (only effective if --delocate is used)'
@@ -62,14 +65,20 @@ getopts_args_extra='o:p:'
 
 function parse_extra_args() {
     case "$OPT" in
+        delocate )       no_arg;
+                         delocate_wheel=1
+                         ;;
+        no-delocate )    no_arg;
+                         delocate_wheel=0
+                         ;;
+        no-isolation )   no_arg;
+                         build_isolation=1
+                         ;;
         o | output )     needs_arg;
                          output_path="$OPTARG"
                          ;;
         p | plat-name )  needs_arg;
                          platform_name="$OPTARG"
-                         ;;
-        delocate )       no_arg;
-                         delocate_wheel=1
                          ;;
         ??* )            die "Illegal option --OPT: $OPT"
                          ;;
@@ -124,11 +133,15 @@ cmake_option_names[do_clean_3rdparty]=CLEAN_3RDPARTY_INSTALL_DIR
 for var in "${!cmake_option_names[@]}"; do
     if [ "${!var}" -eq 1 ]; then
         args+=(--set "${cmake_option_names[$var]}")
+    else
+        args+=(--unset "${cmake_option_names[$var]}")
     fi
 done
 
 if [ $cmake_make_silent -eq 0 ]; then
     args+=(--set USE_VERBOSE_MAKEFILE)
+else
+    args+=(--unset USE_VERBOSE_MAKEFILE)
 fi
 
 if [ -n "$cmake_generator" ]; then
@@ -166,6 +179,11 @@ for arg in "${args[@]}"; do
     fixed_args+=("-C--global-option=$arg")
 done
 
+args=("-w")
+if [ $build_isolation -eq 1 ]; then
+    args+=("--no-isolation")
+fi
+
 # ------------------------------------------------------------------------------
 # Build the wheels
 
@@ -175,10 +193,9 @@ if [ $delocate_wheel -eq 1 ]; then
     if [ -n "$platform_name" ]; then
         env_vars+=(MQ_DELOCATE_WHEEL_PLAT="$platform_name")
     fi
-
-    call_cmd env "${env_vars[@]}" "${PYTHON}" -m build -w "${fixed_args[@]}" "$@"
+    call_cmd env "${env_vars[@]}" "${PYTHON}" -m build "${args[@]}" "${fixed_args[@]}" "$@"
 else
-    call_cmd "${PYTHON}" -m build -w "${fixed_args[@]}" "$@"
+    call_cmd "${PYTHON}" -m build "${args[@]}" "${fixed_args[@]}" "$@"
 fi
 
 # ------------------------------------------------------------------------------
