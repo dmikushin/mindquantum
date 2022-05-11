@@ -25,3 +25,6 @@ requirements.txt
 cmake-build-debug
 venv
 docs/doxygen
+Testing
+# clangd local cache directory
+.cache

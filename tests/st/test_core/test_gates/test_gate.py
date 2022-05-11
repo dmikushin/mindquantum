@@ -52,7 +52,10 @@ def test_phase_shift():
     Expectation:
     """
     angle = 0.5
-    f = lambda theta: np.array([[1, 0], [0, np.exp(1.0j * theta)]])
+
+    def f(theta):
+        return np.array([[1, 0], [0, np.exp(1.0j * theta)]])
+
     assert np.allclose(G.PhaseShift(angle).matrix(), f(angle))
 
 

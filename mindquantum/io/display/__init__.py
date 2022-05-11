@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""display"""
 
-from .circuit_text_drawer import brick_model
-from .measure_res_drawer import measure_text_drawer
-from .qubit_bloch_drawer import (
+"""Circuit display utilities."""
+
+from .circuit_text_drawer import brick_model  # noqa: F401
+from .measure_res_drawer import measure_text_drawer  # noqa: F401
+from .qubit_bloch_drawer import (  # noqa: F401
     decompose,
     draw_on_jupyter,
     draw_single_qubit_bloch,

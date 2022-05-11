@@ -14,31 +14,33 @@
 # limitations under the License.
 # ============================================================================
 """Benchmakr for gradient calculation of mindquantum."""
+
 import os
 import time
 
-from _parse_args import parser
-
-args = parser.parse_args()
-os.environ['OMP_NUM_THREADS'] = str(args.omp_num_threads)
 import mindspore.context as context
 import numpy as np
 import tqdm
+from _parse_args import parser
 
 from mindquantum.core import XX, ZZ, Circuit, H, Hamiltonian, QubitOperator, X
 from mindquantum.simulator import Simulator
 
+args = parser.parse_args()
+os.environ['OMP_NUM_THREADS'] = str(args.omp_num_threads)
 context.set_context(mode=context.PYNATIVE_MODE, device_target="CPU")
 
 
 class CircuitLayerBuilder:
-    """CircuitLayerBuilder"""
+    """CircuitLayerBuilder class."""
 
     def __init__(self, data_qubits, readout):
+        """Initialize a CircuitLayerBuilder object."""
         self.data_qubits = data_qubits
         self.readout = readout
 
     def add_layer(self, circuit, gate, prefix):
+        """Add a layer to this instance."""
         for i, qubit in enumerate(self.data_qubits):
             symbol = prefix + '-' + str(i)
             circuit.append(gate({symbol: np.pi / 2}).on([qubit, self.readout]))
@@ -46,7 +48,7 @@ class CircuitLayerBuilder:
 
 def convert_to_circuit(image, data_qubits=None):
     """
-    convert_to_circuit
+    Convert an image to a circuit.
 
     Returns:
         Circuit

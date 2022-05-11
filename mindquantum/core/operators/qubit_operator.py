@@ -17,7 +17,8 @@
 #   This module we develop is default being licensed under Apache 2.0 license,
 #   and also uses or refactor Fermilib and OpenFermion licensed under
 #   Apache 2.0 license.
-"""This is the module for the Qubit Operator. """
+
+"""This is the module for the Qubit Operator."""
 
 import ast
 import json
@@ -25,7 +26,7 @@ import json
 import numpy as np
 from scipy.sparse import csr_matrix, kron
 
-from mindquantum.core.parameterresolver import ParameterResolver as PR
+from mindquantum.core.parameterresolver import ParameterResolver
 from mindquantum.utils.type_value_check import _check_input_type, _check_int_type
 
 from ._base_operator import _Operator
@@ -76,6 +77,7 @@ def _check_valid_qubit_operator_term(term):
 class QubitOperator(_Operator):
     """
     A sum of terms acting on qubits, e.g., 0.5 * 'X1 X5' + 0.3 * 'Z1 Z2'.
+
     A term is an operator acting on n qubits and can be represented as:
     coefficient * local_operator[0] x ... x local_operator[n-1]
     where x is the tensor product. A local operator is a Pauli operator
@@ -116,6 +118,7 @@ class QubitOperator(_Operator):
     __hash__ = None
 
     def __init__(self, term=None, coefficient=1.0):
+        """Initialize a QubitOperator object."""
         super(QubitOperator, self).__init__(term, coefficient)
         _check_valid_qubit_operator_term(term)
         self.operators = ('X', 'Y', 'Z')
@@ -131,7 +134,8 @@ class QubitOperator(_Operator):
             self.terms[term] = self.coefficient
 
     def count_gates(self):
-        """Returns the gate number when treated in single Hamiltonian
+        """
+        Return the gate number when treated in single Hamiltonian.
 
         Returns:
             int, number of the single qubit quantum gates.
@@ -143,20 +147,20 @@ class QubitOperator(_Operator):
         return self.gates_number
 
     def to_openfermion(self):
-        """Convert qubit operator to openfermion format"""
-        from openfermion import QubitOperator as oqo
+        """Convert qubit operator to openfermion format."""
+        from openfermion import QubitOperator as OFQubitOperator
 
         terms = {}
         for k, v in self.terms.items():
             if not v.is_const():
                 raise ValueError("Cannot convert parameteized fermion operator to openfermion format")
             terms[k] = v.const
-        of = oqo()
+        of = OFQubitOperator()
         of.terms = terms
         return of
 
     def _parse_string(self, terms_string):
-        """Parse a term given as a string type
+        """Parse a term given as a string type.
 
         e.g. For QubitOperator:
                 'X2 Y0 Z3' -> ((0, 'Y'),(2, 'X'), (3,'Z'))
@@ -280,15 +284,14 @@ class QubitOperator(_Operator):
         return out
 
     def _simplify(self, terms, coefficient=1.0):
-        r"""Simplify the list by using the commuation and
-        anti-commutation relationship.
+        r"""Simplify the list by using the commuation and       anti-commutation relationship.
 
         Args:
-            terms (str, list((int, str),), tuple((int, str),)): The input terms_lst
-                could be a sorted list or unsorted list e.g. [(3, 'Z'),(2, 'X'), (3,'Z')] -> [(2,'X')]
+            terms (str, list((int, str),), tuple((int, str),)): The input terms_lst could be a sorted list or unsorted
+                list e.g. [(3, 'Z'),(2, 'X'), (3,'Z')] -> [(2,'X')]
                 Also, it could accept input with tuples ((3, 'Z'),(2, 'X'), (3,'Z')) ->[(2,'X')]
-            coefficient (int, float, complex, str, ParameterResolver): The coefficient
-                for the corresponding single operators
+            coefficient (int, float, complex, str, ParameterResolver): The coefficient for the corresponding single
+                operators
 
         Returns:
             tuple(coefficient, tuple(reduced_terms)), the simplified coefficient and operators
@@ -322,9 +325,7 @@ class QubitOperator(_Operator):
         return coefficient, tuple(reduced_terms)
 
     def __str__(self):
-        """
-        Return an easy-to-read string representation of the QubitOperator.
-        """
+        """Return an easy-to-read string representation of the QubitOperator."""
         if not self.terms:
             return '0'
 
@@ -332,7 +333,7 @@ class QubitOperator(_Operator):
         term_cnt = 0
         for term, coeff in sorted(self.terms.items()):
             term_cnt += 1
-            if isinstance(coeff, PR):
+            if isinstance(coeff, ParameterResolver):
                 tmp_string = '{} ['.format(coeff.expression())
             else:
                 tmp_string = '{} ['.format(coeff)
@@ -357,11 +358,12 @@ class QubitOperator(_Operator):
         return string_rep
 
     def __repr__(self):
+        """Return a string representation of the object."""
         return str(self)
 
     def dumps(self, indent=4):
-        '''
-        Dump QubitOperator into JSON(JavaScript Object Notation)
+        r"""
+        Dump QubitOperator into JSON(JavaScript Object Notation).
 
         Args:
             indent (int): Then JSON array elements and object members will be
@@ -381,7 +383,7 @@ class QubitOperator(_Operator):
                 "__class__": "QubitOperator",
                 "__module__": "operators.qubit_operator"
             }
-        '''
+        """
         if indent is not None:
             _check_int_type('indent', indent)
         d = self.terms
@@ -396,7 +398,7 @@ class QubitOperator(_Operator):
         for j, v in enumerate(value_list):
             if isinstance(v, (complex, int, float)):
                 value_list[j] = str(v)
-            elif isinstance(v, PR):
+            elif isinstance(v, ParameterResolver):
                 value_list[j] = v.dumps(None)
             else:
                 raise ValueError(
@@ -415,7 +417,7 @@ class QubitOperator(_Operator):
     @staticmethod
     def loads(strs):
         '''
-        Load JSON(JavaScript Object Notation) into QubitOperator
+        Load JSON(JavaScript Object Notation) into QubitOperator.
 
         Args:
             strs (str): The dumped qubit operator string.
@@ -450,7 +452,7 @@ class QubitOperator(_Operator):
                 for j, v in enumerate(value_list):
                     if isinstance(v, str):
                         if '__class__' in v:
-                            value_list[j] = PR.loads(v)
+                            value_list[j] = ParameterResolver.loads(v)
                         else:
                             value_list[j] = complex(v)
 

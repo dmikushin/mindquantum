@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""This module is generated the Fermion Operator"""
+
+"""This module is generated the Fermion Operator."""
 
 import ast
 import json
@@ -22,7 +23,7 @@ from functools import lru_cache
 import numpy as np
 from scipy.sparse import csr_matrix, kron
 
-from mindquantum.core.parameterresolver import ParameterResolver as PR
+from mindquantum.core.parameterresolver import ParameterResolver
 from mindquantum.utils.type_value_check import _check_input_type, _check_int_type
 
 from ._base_operator import _Operator
@@ -40,7 +41,7 @@ def _n_sz(n):
 
 @lru_cache()
 def _n_identity(n):
-    """n_identity"""
+    """N_identity."""
     if n == 0:
         return csr_matrix(np.array([1]), dtype=np.complex128)
     tmp = [csr_matrix(np.array([[1, 0], [0, 1]], dtype=np.complex128)) for _ in range(n)]
@@ -51,7 +52,7 @@ def _n_identity(n):
 
 @lru_cache()
 def _single_fermion_word(idx, dag, n_qubits):
-    """single_fermion_word"""
+    """Single_fermion_word."""
     m = csr_matrix(np.array([[0, 1], [0, 0]], dtype=np.complex128))
     if dag:
         m = csr_matrix(np.array([[0, 0], [1, 0]], dtype=np.complex128))
@@ -60,7 +61,7 @@ def _single_fermion_word(idx, dag, n_qubits):
 
 @lru_cache()
 def _two_fermion_word(idx1, dag1, idx2, dag2, n_qubits):
-    """two_fermion_word"""
+    """Two_fermion_word."""
     return _single_fermion_word(idx1, dag1, n_qubits) * _single_fermion_word(idx2, dag2, n_qubits)
 
 
@@ -89,16 +90,19 @@ def _check_valid_fermion_operator_term(term):
 
 class FermionOperator(_Operator):
     r"""
-    The Fermion Operator such as FermionOperator(' 4^ 3 9 3^ ')
-    are used to represent :math:`a_4^\dagger a_3 a_9 a_3^\dagger`.
-    These are the Basic Operators to describe a fermionic system,
-    such as a Molecular system.
+    Definition of a Fermion Operator.
+
+    The Fermion Operator such as FermionOperator(' 4^ 3 9 3^ ') are used to represent :math:`a_4^\dagger a_3 a_9
+    a_3^\dagger`.
+
+
+    These are the Basic Operators to describe a fermionic system, such as a Molecular system.
     The FermionOperator are follows the anti-commutation relationship.
 
     Args:
         terms (str): The input term of fermion operator. Default: None.
-        coefficient (Union[numbers.Number, str, ParameterResolver]): The
-            coefficient for the corresponding single operators Default: 1.0.
+        coefficient (Union[numbers.Number, str, ParameterResolver]): The coefficient for the corresponding single
+            operators Default: 1.0.
 
     Examples:
         >>> from mindquantum.core.operators import FermionOperator
@@ -126,6 +130,7 @@ class FermionOperator(_Operator):
     __hash__ = None
 
     def __init__(self, term=None, coefficient=1.0):
+        """Initialize a FermionOperator object."""
         super(FermionOperator, self).__init__(term, coefficient)
         _check_valid_fermion_operator_term(term)
         self.operators = {1: '^', 0: '', '^': '^', '': ''}
@@ -145,11 +150,11 @@ class FermionOperator(_Operator):
 
     def _parse_string(self, terms_string):
         """
-        Parse a term given as a string type
+        Parse a term given as a string type.
+
         e.g. For FermionOperator:
                  4^ 3  -> ((4, 1),(3, 0))
-        Note here the '1' and '0' in the second col represents creation
-        and annihilaiton operator respectively
+        Note here the '1' and '0' in the second col represents creation and annihilaiton operator respectively
 
         Returns:
             tuple, return a tuple list, such as ((4, 1),(3, 0))
@@ -158,7 +163,11 @@ class FermionOperator(_Operator):
             '1.5 4^ 3' is not the proper format and
             could raise TypeError.
         """
-        map_operator_to_integer_rep = lambda operator: 1 if operator == '^' else 0
+
+        def map_operator_to_integer_rep(operator):
+            """Map operator to integer."""
+            return 1 if operator == '^' else 0
+
         terms = terms_string.split()
         terms_to_tuple = []
         for sub_term in terms:
@@ -191,29 +200,27 @@ class FermionOperator(_Operator):
         return tuple(terms_to_tuple)
 
     def to_openfermion(self):
-        """Convert fermion operator to openfermion format"""
-        from openfermion import FermionOperator as of_op
+        """Convert fermion operator to openfermion format."""
+        from openfermion import FermionOperator as OFFermionOperator
 
         terms = {}
         for k, v in self.terms.items():
             if not v.is_const():
                 raise ValueError("Cannot convert parameteized fermion operator to openfermion format")
             terms[k] = v.const
-        of = of_op()
+        of = OFFermionOperator()
         of.terms = terms
         return of
 
     def __str__(self):
-        """
-        Return an easy-to-read string representation of the FermionOperator.
-        """
+        """Return an easy-to-read string representation of the FermionOperator."""
         if not self.terms:
             return '0'
         string_rep = ''
         term_cnt = 0
         for term, coeff in sorted(self.terms.items()):
             term_cnt += 1
-            if isinstance(coeff, PR):
+            if isinstance(coeff, ParameterResolver):
                 tmp_string = '{} ['.format(coeff.expression())  # begin of the '['
             else:
                 tmp_string = '{} ['.format(coeff)  # begin of the '['
@@ -244,6 +251,7 @@ class FermionOperator(_Operator):
         return string_rep
 
     def __repr__(self):
+        """Return a string representation of the object."""
         return str(self)
 
     def matrix(self, n_qubits=None):
@@ -335,7 +343,8 @@ class FermionOperator(_Operator):
         return out
 
     def normal_ordered(self):
-        """Return the normal ordered form of the Fermion Operator.
+        """
+        Return the normal ordered form of the Fermion Operator.
 
         Returns:
             FermionOperator, the normal ordered FermionOperator.
@@ -355,8 +364,8 @@ class FermionOperator(_Operator):
         return ordered_op
 
     def dumps(self, indent=4):
-        '''
-        Dump FermionOperator into JSON(JavaScript Object Notation)
+        r"""
+        Dump FermionOperator into JSON(JavaScript Object Notation).
 
         Args:
             indent (int): Then JSON array elements and object members will be
@@ -371,12 +380,12 @@ class FermionOperator(_Operator):
             >>> print(f.dumps())
             {
                 "((0, 0),)": "(1+2j)",
-                "((0, 1),)": "{\"a\": 1, \"__class__\": \"ParameterResolver\", \"__module__\": \
-                    \"parameterresolver.parameterresolver\", \"no_grad_parameters\": []}",
+                "((0, 1),)": "{"a": 1, "__class__": "ParameterResolver", "__module__": \
+                    "parameterresolver.parameterresolver", "no_grad_parameters": []}",
                 "__class__": "FermionOperator",
                 "__module__": "operators.fermion_operator"
             }
-        '''
+        """
         if indent is not None:
             _check_int_type('indent', indent)
         d = self.terms
@@ -392,7 +401,7 @@ class FermionOperator(_Operator):
         for j, v in enumerate(value_list):
             if isinstance(v, (complex, int, float)):
                 value_list[j] = str(v)
-            elif isinstance(v, PR):
+            elif isinstance(v, ParameterResolver):
                 value_list[j] = v.dumps(None)
             else:
                 raise ValueError(
@@ -410,8 +419,8 @@ class FermionOperator(_Operator):
 
     @staticmethod
     def loads(strs):
-        '''
-        Load JSON(JavaScript Object Notation) into FermionOperator
+        """
+        Load JSON(JavaScript Object Notation) into FermionOperator.
 
         Args:
             strs (str): The dumped fermion operator string.
@@ -426,7 +435,7 @@ class FermionOperator(_Operator):
             >>> obj = FermionOperator.loads(strings)
             >>> print(obj)
             (1+2j) [0] + a [0^]
-        '''
+        """
         _check_input_type('strs', str, strs)
         dic = json.loads(strs)
         if '__class__' in dic:
@@ -446,7 +455,7 @@ class FermionOperator(_Operator):
                 for j, v in enumerate(value_list):
                     if isinstance(v, str):
                         if '__class__' in v:
-                            value_list[j] = PR.loads(v)
+                            value_list[j] = ParameterResolver.loads(v)
                         else:
                             value_list[j] = complex(v)
 
@@ -466,8 +475,8 @@ class FermionOperator(_Operator):
 
 
 def _normal_ordered_term(term, coefficient):
-    r"""Return the normal ordered term of the FermionOperator with high index
-    and creation operator in front.
+    r"""
+    Return the normal ordered term of the FermionOperator with high index and creation operator in front.
 
     eg. :math:`a_3\dagger a_2\dagger a_1 a_0`
 
@@ -486,7 +495,7 @@ def _normal_ordered_term(term, coefficient):
                 # If indice are same, employ the anti-commutation relationship
                 # And generate the new term
                 if left_sub_term[0] == right_sub_term[0]:
-                    new_term = term[: (j - 1)] + term[(j + 1) :]
+                    new_term = term[: (j - 1)] + term[(j + 1) :]  # noqa: E203
                     ordered_term += _normal_ordered_term(new_term, -1 * coefficient)
             elif left_sub_term[1] == right_sub_term[1]:
                 # If indice are same,evaluate it to zero.

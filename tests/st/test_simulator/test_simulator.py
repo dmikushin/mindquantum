@@ -14,8 +14,9 @@
 # limitations under the License.
 # ============================================================================
 """Test simulator."""
-import mindspore as ms
+
 import numpy as np
+import pytest
 from scipy.sparse import csr_matrix
 
 import mindquantum.core.operators as ops
@@ -25,9 +26,18 @@ from mindquantum import QubitOperator
 from mindquantum.algorithm import qft
 from mindquantum.core import gates as G
 from mindquantum.core.circuit import UN
-from mindquantum.framework.layer import MQAnsatzOnlyLayer
 from mindquantum.simulator import inner_product
 from mindquantum.simulator.simulator import Simulator
+
+_has_mindspore = True
+try:
+    import mindspore as ms
+
+    from mindquantum.framework.layer import MQAnsatzOnlyLayer
+
+    ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
+except ImportError:
+    _has_mindspore = False
 
 
 def _test_init_reset(virtual_qc):
@@ -119,8 +129,13 @@ def _test_non_hermitian_grad_ops(virtual_qc):
 
 def generate_test_circuit():
     tmpg = G.RX('a')
-    rx_matrix_generator = lambda x: tmpg.matrix({'a': x})
-    rx_diff_matrix_generator = lambda x: tmpg.diff_matrix({'a': x}, 'a')
+
+    def rx_matrix_generator(x):
+        return tmpg.matrix({'a': x})
+
+    def rx_diff_matrix_generator(x):
+        return tmpg.diff_matrix({'a': x}, 'a')
+
     c = Circuit()
     c += UN(G.H, 3)
     c.x(0).y(1).z(2)
@@ -183,12 +198,15 @@ def _test_all_gate_with_simulator(virtual_qc):
     assert np.allclose(g_a_1, g_a_2, atol=1e-4)
 
 
+@pytest.mark.skipif(not _has_mindspore, reason='MindSpore is not installed')
 def _test_optimization_with_custom_gate(virtual_qc):
     """
     test
     Description:
     Expectation:
     """
+    if not _has_mindspore:  # NB: take care to avoid errors with 'ms' module below
+        return
 
     def _matrix(theta):
         return np.array([[np.cos(theta / 2), -1j * np.sin(theta / 2)], [-1j * np.sin(theta / 2), np.cos(theta / 2)]])

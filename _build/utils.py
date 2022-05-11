@@ -15,7 +15,6 @@
 
 """Helper functions for building MindQuantum."""
 
-import contextlib
 import errno
 import logging
 import os
@@ -23,36 +22,10 @@ import shutil
 import stat
 import subprocess
 import sys
+from pathlib import Path
 
-# ==============================================================================
-
-
-@contextlib.contextmanager
-def fdopen(fname, mode, perms=0o644):  # pragma: no cover
-    """
-    Context manager for opening files with correct permissions.
-
-    Args:
-        fname (str): Path to file to open for reading/writing
-        mode (str): Mode in which the file is opened (see help for builtin `open()`)
-        perms (int): Permission mask (see help for `os.open()`)
-    """
-    if 'r' in mode:
-        flags = os.O_RDONLY
-    elif 'w' in mode:
-        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-    elif 'a' in mode:
-        flags = os.O_WRONLY | os.O_CREAT
-    else:
-        raise RuntimeError(f'Unsupported mode: {mode}')
-
-    file_object = open(os.open(fname, flags, perms), mode=mode, encoding='utf-8')
-
-    try:
-        yield file_object
-    finally:
-        file_object.close()
-
+sys.path.append(str(Path(__file__).parent.parent / 'mindquantum' / 'utils'))
+from fdopen import fdopen  # noqa: E402
 
 # ==============================================================================
 

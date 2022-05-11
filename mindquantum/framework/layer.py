@@ -79,6 +79,7 @@ class MQLayer(nn.Cell):
     """
 
     def __init__(self, expectation_with_grad, weight='normal'):
+        """Initialize a MQLayer object."""
         super(MQLayer, self).__init__()
         self.evolution = MQOps(expectation_with_grad)
         weight_size = len(self.evolution.expectation_with_grad.ansatz_params_name)
@@ -88,13 +89,16 @@ class MQLayer(nn.Cell):
         self.weight = Parameter(initializer(weight, weight_size, dtype=ms.float32), name='ansatz_weight')
 
     def construct(self, x):
+        """Construct a MQLayer node."""
         return self.evolution(x, self.weight)
 
 
 class MQN2Layer(nn.Cell):
     """
-    MindQuantum trainable layer. The parameters of ansatz circuit are trainable parameters.
-    This layer will calculate the square of absolute value of expectation automatically.
+    MindQuantum trainable layer.
+
+    The parameters of ansatz circuit are trainable parameters.  This layer will calculate the square of absolute value
+    of expectation automatically.
 
     Args:
         expectation_with_grad (GradOpsWrapper): a grad ops that receive encoder data and
@@ -149,6 +153,7 @@ class MQN2Layer(nn.Cell):
     """
 
     def __init__(self, expectation_with_grad, weight='normal'):
+        """Initialize a MQN2Layer object."""
         super(MQN2Layer, self).__init__()
         self.evolution = MQN2Ops(expectation_with_grad)
         weight_size = len(self.evolution.expectation_with_grad.ansatz_params_name)
@@ -158,12 +163,15 @@ class MQN2Layer(nn.Cell):
         self.weight = Parameter(initializer(weight, weight_size, dtype=ms.float32), name='ansatz_weight')
 
     def construct(self, x):
+        """Construct a MQN2Layer node."""
         return self.evolution(x, self.weight)
 
 
 class MQAnsatzOnlyLayer(nn.Cell):
     """
-    MindQuantum trainable layer. The parameters of ansatz circuit are trainable parameters.
+    MindQuantum trainable layer.
+
+    The parameters of ansatz circuit are trainable parameters.
 
     Args:
         expectation_with_grad (GradOpsWrapper): a grad ops that receive encoder data and
@@ -210,6 +218,7 @@ class MQAnsatzOnlyLayer(nn.Cell):
     """
 
     def __init__(self, expectation_with_grad, weight='normal'):
+        """Initialize a MQAnsatzOnlyLayer object."""
         super(MQAnsatzOnlyLayer, self).__init__()
         self.evolution = MQAnsatzOnlyOps(expectation_with_grad)
         weight_size = len(self.evolution.expectation_with_grad.ansatz_params_name)
@@ -219,13 +228,16 @@ class MQAnsatzOnlyLayer(nn.Cell):
         self.weight = Parameter(initializer(weight, weight_size, dtype=ms.float32), name='ansatz_weight')
 
     def construct(self):
+        """Construct a MQAnsatzOnlyLayer node."""
         return self.evolution(self.weight)
 
 
 class MQN2AnsatzOnlyLayer(nn.Cell):
     """
-    MindQuantum trainable layer. The parameters of ansatz circuit are trainable parameters.
-    This layer will calculate the square of absolute value of expectation automatically.
+    MindQuantum trainable layer.
+
+    The parameters of ansatz circuit are trainable parameters.  This layer will calculate the square of absolute value
+    of expectation automatically.
 
     Args:
         expectation_with_grad (GradOpsWrapper): a grad ops that receive encoder data and
@@ -275,6 +287,7 @@ class MQN2AnsatzOnlyLayer(nn.Cell):
     """
 
     def __init__(self, expectation_with_grad, weight='normal'):
+        """Initialize a MQN2AnsatzOnlyLayer object."""
         super(MQN2AnsatzOnlyLayer, self).__init__()
         self.evolution = MQN2AnsatzOnlyOps(expectation_with_grad)
         weight_size = len(self.evolution.expectation_with_grad.ansatz_params_name)
@@ -284,4 +297,5 @@ class MQN2AnsatzOnlyLayer(nn.Cell):
         self.weight = Parameter(initializer(weight, weight_size, dtype=ms.float32), name='ansatz_weight')
 
     def construct(self):
+        """Construct a MQN2AnsatzOnlyLayer node."""
         return self.evolution(self.weight)

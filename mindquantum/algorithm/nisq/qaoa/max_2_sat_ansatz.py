@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+
 """Max-2-SAT ansatz."""
 
 from math import copysign as sign
@@ -50,7 +51,7 @@ def _get_clause_act_qubits(clauses):
 
 
 def _check_clause(clauses):
-    """check clauses"""
+    """Check clauses."""
     if not isinstance(clauses, list):
         raise TypeError(f"clauses requires a list, but get {type(clauses)}")
     for clause in clauses:
@@ -64,8 +65,7 @@ def _check_clause(clauses):
 
 class Max2SATAnsatz(Ansatz):
     r"""
-    The Max-2-SAT ansatz. For more detail,
-    please refers to https://arxiv.org/pdf/1906.11259.pdf.
+    The Max-2-SAT ansatz. For more detail, please refers to https://arxiv.org/pdf/1906.11259.pdf.
 
     .. math::
 
@@ -114,6 +114,7 @@ class Max2SATAnsatz(Ansatz):
     """
 
     def __init__(self, clauses, depth=1):
+        """Initialize a Max2SATAnsatz object."""
         if not isinstance(depth, int):
             raise TypeError(f"depth requires a int, but get {type(depth)}")
         if depth <= 0:
@@ -187,6 +188,7 @@ class Max2SATAnsatz(Ansatz):
     def get_sat_value(self, string):
         """
         Get the sat values for given strings.
+
         The string is a str that satisfies all the clauses of the given max-2-sat problem.
 
         Args:

@@ -13,27 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Benchmark for mnist classification with MindQuantum"""
+
+"""Benchmark for mnist classification with MindQuantum."""
 
 import os
 import time
 
+import mindspore as ms
+import mindspore.dataset as ds
 import numpy as np
 from _parse_args import parser
-
-args = parser.parse_args()
-os.environ['OMP_NUM_THREADS'] = str(args.omp_num_threads)
-
-import mindspore as ms
-import mindspore.context as context
-import mindspore.dataset as ds
 from mindspore import Model, Tensor, nn
-from mindspore.ops import operations as P
+from mindspore.ops import operations as ops
 from mindspore.train.callback import Callback
 
 from mindquantum.core import RX, XX, ZZ, Circuit, H, Hamiltonian, QubitOperator, X, Z
 from mindquantum.framework import MQLayer
 from mindquantum.simulator import Simulator
+
+args = parser.parse_args()
+os.environ['OMP_NUM_THREADS'] = str(args.omp_num_threads)
 
 ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
 
@@ -42,18 +41,21 @@ class FPSMonitor(Callback):
     """A fps monitor."""
 
     def __init__(self, forget_first_n=2):
+        """Initialize a FPSMonitor object."""
         super(FPSMonitor, self).__init__()
         self.forget_first_n = forget_first_n
         self.step = 0
         self.times = np.array([])
 
     def step_begin(self, run_context):
+        """Step initialization method."""
         run_context.original_args()
         self.step += 1
         if self.step > self.forget_first_n:
             self.times = np.append(self.times, time.time())
 
     def step_end(self, run_context):
+        """Step finalization method."""
         run_context.original_args()
         if self.times.size > 0:
             self.times[-1] = time.time() - self.times[-1]
@@ -64,12 +66,14 @@ class Hinge(nn.MSELoss):
     """Hinge loss."""
 
     def __init__(self, reduction='mean'):
+        """Initialize a Hinge object."""
         super(Hinge, self).__init__(reduction)
-        self.maximum = P.Maximum()
-        self.mul = P.Mul()
+        self.maximum = ops.Maximum()
+        self.mul = ops.Mul()
         self.zero = Tensor(np.array([0]).astype(np.float32))
 
     def construct(self, base, target):
+        """Construct a Hinge node (?)."""
         x = 1 - self.mul(base, target)
         x = self.maximum(x, self.zero)
         return self.get_loss(x)
@@ -79,10 +83,12 @@ class MnistNet(nn.Cell):
     """Net for mnist dataset."""
 
     def __init__(self, net):
+        """Initialize a MnistNet object."""
         super(MnistNet, self).__init__()
         self.net = net
 
     def construct(self, x):
+        """Construct a MnistNet node (?)."""
         x = self.net(x)
         return x
 
@@ -104,6 +110,7 @@ class CircuitLayerBuilder:
     """Build ansatz layer."""
 
     def __init__(self, data_qubits, readout):
+        """Initialize a CircuitLayerBuild object."""
         self.data_qubits = data_qubits
         self.readout = readout
 

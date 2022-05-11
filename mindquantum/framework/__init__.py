@@ -18,10 +18,15 @@ import warnings
 
 __all__ = []
 try:
-    import mindspore
+    import mindspore  # noqa: F401
 
-    from .layer import MQAnsatzOnlyLayer, MQLayer, MQN2AnsatzOnlyLayer, MQN2Layer
-    from .operations import (
+    from .layer import (  # noqa: F401
+        MQAnsatzOnlyLayer,
+        MQLayer,
+        MQN2AnsatzOnlyLayer,
+        MQN2Layer,
+    )
+    from .operations import (  # noqa: F401
         MQAnsatzOnlyOps,
         MQEncoderOnlyOps,
         MQN2AnsatzOnlyOps,

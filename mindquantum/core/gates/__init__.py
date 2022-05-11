@@ -19,7 +19,7 @@ Gate.
 Gate provides different quantum gate.
 """
 
-from .basic import (
+from .basic import (  # noqa: F401
     HERMITIAN_PROPERTIES,
     BasicGate,
     NoiseGate,

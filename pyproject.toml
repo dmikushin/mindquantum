@@ -31,6 +31,10 @@ backend-path = ["_build"]
     extension-pkg-allow-list = [
     ]
 
+    init-hook = '''from pylint.config import find_default_config_files;\
+    import os, sys; \
+    sys.path.append(os.path.dirname(list(find_default_config_files())[0]))'''
+
     [tool.pylint.basic]
     good-names = []
 
@@ -44,13 +48,17 @@ backend-path = ["_build"]
     ]
 
 
-# [tool.pytest.ini_options]
+[tool.pytest.ini_options]
 
-# minversion = '6.0'
-# addopts = '-pno:warnings'
-# testpaths = ['mindquantum']
-# norecursedirs = 'third_party'
-# mock_use_standalone_module = true
+minversion = '6.0'
+testpaths = ['tests']
+addopts = "--ignore='tests/quick_test.py'"
+norecursedirs = ['third_party', 'mindquantum/ccsrc']
+mock_use_standalone_module = true
+markers = [
+    "symengine: test using the mindquantum.symengine module",
+]
+
 
 [tool.isort]
 

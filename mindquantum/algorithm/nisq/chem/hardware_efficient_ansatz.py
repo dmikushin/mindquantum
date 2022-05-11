@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+
 """Hardware efficient ansatz."""
 
 import itertools
@@ -31,7 +32,7 @@ from .._ansatz import Ansatz
 
 
 def _check_single_rot_gate_seq(single_rot_gate_seq):
-    """check single rotation gate seq"""
+    """Check single rotation gate seq."""
     if not isinstance(single_rot_gate_seq, list):
         raise TypeError(f"single_rot_gate_seq requires a list, but get {type(single_rot_gate_seq)}")
     for gate in single_rot_gate_seq:
@@ -39,7 +40,7 @@ def _check_single_rot_gate_seq(single_rot_gate_seq):
             raise ValueError(f"single rotation gate require a parameterized gate, but get {gate}")
         gate_shape = gate(0).matrix().shape
         if gate_shape[0] != 2 or gate_shape[1] != 2:
-            raise ValueError(f"single rotation gate should be a one qubit gate.")
+            raise ValueError("single rotation gate should be a one qubit gate.")
 
 
 class HardwareEfficientAnsatz(Ansatz):
@@ -79,6 +80,7 @@ class HardwareEfficientAnsatz(Ansatz):
     """
 
     def __init__(self, n_qubits, single_rot_gate_seq, entangle_gate=X, entangle_mapping='linear', depth=1):
+        """Initialize a HardwareEfficientAnsatz object."""
         _check_single_rot_gate_seq(single_rot_gate_seq)
         _check_int_type('depth', depth)
         _check_value_should_not_less('depth', 1, depth)
@@ -87,7 +89,7 @@ class HardwareEfficientAnsatz(Ansatz):
         super().__init__('Hardware Efficient', n_qubits, single_rot_gate_seq, entangle_gate, entangle_mapping, depth)
 
     def _implement(self, single_rot_gate_seq, entangle_gate, entangle_mapping, depth):
-        """Implement of hardware efficient ansatz"""
+        """Implement of hardware efficient ansatz."""
         entangle_mapping = self._get_entangle_mapping(entangle_mapping)
         circ = Circuit()
         for d in range(depth):
@@ -97,7 +99,7 @@ class HardwareEfficientAnsatz(Ansatz):
         self._circuit = circ
 
     def _get_entangle_mapping(self, entangle_mapping):
-        """Get entanglement mapping"""
+        """Get entanglement mapping."""
         if isinstance(entangle_mapping, str):
             if entangle_mapping == 'all':
                 return list(itertools.combinations(range(self.n_qubits), 2))
@@ -125,7 +127,7 @@ or a list of tuple of the qubits that the entanglement gate act on."
         return entangle_mapping
 
     def _build_entangle(self, entangle_gate, entangle_mapping):
-        """build entanglement layer"""
+        """Build entanglement layer."""
         gate_qubit = int(np.log2(entangle_gate.matrix().shape[0]))
         circ = Circuit()
         for qs in entangle_mapping:
@@ -141,7 +143,7 @@ or two qubits gate, but get {gate_qubit} qubits gate."
         return circ
 
     def _build_single_rot(self, single_rot_gate_seq):
-        """build single rotation layer"""
+        """Build single rotation layer."""
         circ = Circuit()
         single_circ = Circuit()
         for index, gate in enumerate(single_rot_gate_seq):

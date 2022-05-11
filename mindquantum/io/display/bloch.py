@@ -43,8 +43,8 @@ _bloch_config_type = {
 
 
 class SQBloch:
-    """
-    Bloch sphere for Single qubit.
+    r"""
+    Single qubit Bloch sphere.
 
     Args:
         radius (float): Radius of bloch. Default: 1.
@@ -69,7 +69,7 @@ class SQBloch:
         >>> b = SQBloch() # Generate a bloch with default configuration.
         >>> b.plot(ax, [1, 0, 0])
         >>> plt.show()
-        >>> b = SQBloch({'label':["x", "y", ['$\\left|0\\right>$', '$\\left|1\\right>$']],
+        >>> b = SQBloch({'label':["x", "y", ['$\left|0\right>$', '$\left|1\right>$']],
                          'label_size':22,
                          'label_color':'blue'},
                          arr={'arr_color':'g', 'arr_width':2, 'arr_size':0.2},
@@ -82,6 +82,7 @@ class SQBloch:
     """
 
     def __init__(self, *args, **kwargs):
+        """Initialize a SQBloch object."""
         self.ax = None
         self.para = {}
         self.revise_config(*args, **kwargs)
@@ -183,9 +184,7 @@ class SQBloch:
         self.check_config()
 
     def show(self, ax):
-        """
-        Plot bloch only.
-        """
+        """Plot bloch only."""
         self.ax = ax
         self.ax.grid(False)  # 隐藏网格线
         self.ax.set_axis_off()  # 隐藏坐标轴
@@ -230,7 +229,7 @@ class SQBloch:
                 alpha -= d_
 
     def _check_vectors_type(self, v):
-        """Check vectors type"""
+        """Check vectors type."""
         if not isinstance(v, (list, tuple, np.ndarray)):
             raise TypeError("Type must be a list, tuple or np.ndarray, but get {}".format(type(v)))
         v = np.array(v).squeeze()
@@ -301,7 +300,7 @@ class SQBloch:
         ao = self.para.get("ax_offset", (0, 0))
         self.ax.view_init(30 + ao[0], 45 + ao[1])
 
-    def _draw_label(self, l, x, y, z, s, c, noe):
+    def _draw_label(self, l, x, y, z, s, c, noe):  # noqa: E741
         """Draw the label of bloch."""
         if isinstance(l, str):
             self.ax.text(x, y, z, l, size=s, color=c, ha="center", va="center")

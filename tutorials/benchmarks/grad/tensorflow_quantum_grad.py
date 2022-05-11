@@ -13,19 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Benchmakr for gradient calculation of tensorflow quantum."""
+
+"""Benchmark for gradient calculation of tensorflow quantum."""
+
 import time
 
+import cirq
 import numpy as np
+import sympy
 import tensorflow as tf
+import tensorflow_quantum as tfq
+import tqdm
 from _parse_args import parser
 
 args = parser.parse_args()
 tf.config.threading.set_intra_op_parallelism_threads(args.omp_num_threads)
-import cirq
-import sympy
-import tensorflow_quantum as tfq
-import tqdm
 
 
 def convert_to_circuit(image):
@@ -40,13 +42,15 @@ def convert_to_circuit(image):
 
 
 class CircuitLayerBuilder:
-    """CircuitLayerBuilder"""
+    """CircuitLayerBuilder class."""
 
     def __init__(self, data_qubits, readout):
+        """Initialize a CircuitLayerBuilder object."""
         self.data_qubits = data_qubits
         self.readout = readout
 
     def add_layer(self, circuit, gate, prefix):
+        """Add a layer to this instance."""
         for i, qubit in enumerate(self.data_qubits):
             symbol = sympy.Symbol(prefix + '-' + str(i))
             circuit.append(gate(qubit, self.readout) ** symbol)
@@ -81,7 +85,7 @@ x_train_circ = [convert_to_circuit(x) for x in x_train_bin]
 x_test_circ = [convert_to_circuit(x) for x in x_test_bin]
 
 model_circuit, model_readout = create_quantum_model()
-names = sorted(list(model_circuit._parameter_names_()))
+names = sorted(model_circuit._parameter_names_())
 init = np.random.random(len(names))[None, :].astype(np.float32)
 values_tensor = tf.convert_to_tensor(init)
 for c in x_train_circ:

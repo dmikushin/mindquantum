@@ -13,27 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Benchmark for QAOA with MindQuantum"""
+
+"""Benchmark for QAOA with MindQuantum."""
+
 import os
 import time
 
-from _parse_args import parser
-
-args = parser.parse_args()
-os.environ['OMP_NUM_THREADS'] = str(args.omp_num_threads)
 import mindspore.context as context
 import mindspore.dataset as ds
 import mindspore.nn as nn
 import numpy as np
+from _parse_args import parser
 
 from mindquantum.core import RX, RZ, UN, Circuit, H, Hamiltonian, QubitOperator, X
 from mindquantum.framework import MQAnsatzOnlyLayer
 from mindquantum.simulator import Simulator
 
+args = parser.parse_args()
+os.environ['OMP_NUM_THREADS'] = str(args.omp_num_threads)
+
 context.set_context(mode=context.PYNATIVE_MODE, device_target="CPU")
 
 
 def circuit_qaoa(p):
+    """Build a QAOA circuit."""
     circ = Circuit()
     circ += UN(H, n)
     for layer in range(p):

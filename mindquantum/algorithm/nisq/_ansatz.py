@@ -30,6 +30,7 @@ class Ansatz:
     """
 
     def __init__(self, name, n_qubits, *args, **kwargs):
+        """Initialize an Ansatz object."""
         self.name = name
         self.n_qubits = n_qubits
         self._circuit = Circuit()

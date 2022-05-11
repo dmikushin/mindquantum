@@ -211,7 +211,7 @@ function help_message() {
     Write-Output '  -Prefix             Specify installation prefix'
     Write-Output '  -Quiet              Disable verbose build rules'
     Write-Output '  -ShowLibraries      Show all known third-party libraries'
-    Write-Output '  -Test               Build C++ tests'
+    Write-Output '  -Test               Build C++ tests and install dependencies for Python testing as well'
     Write-Output '  -Venv <path>        Path to Python virtual environment'
     Write-Output ("                      Defaults to: {0}" -f $python_venv_path)
     Write-Output '  -With<library>      Build the third-party <library> from source (<library> is case-insensitive)'
@@ -525,6 +525,10 @@ if ($created_venv -eq 1 -or $do_update_venv -eq 1) {
         $pkgs += "cmake"
     }
 
+    if($enable_tests -eq 1) {
+        $pkgs += "pytest", "pytest-cov", "pytest-mock"
+    }
+
     if($do_docs -eq 1) {
         $pkgs += "breathe", "sphinx", "sphinx_rtd_theme", "importlib-metadata", "myst-parser"
     }
@@ -744,7 +748,7 @@ Disable verbose build rules
 Show all known third-party libraries.
 
 .PARAMETER Test
-Build C++ tests
+Build C++ tests and install dependencies for Python testing as well
 
 .PARAMETER Venv
 Path to Python virtual environment. Defaults to: Path\To\Script\venv

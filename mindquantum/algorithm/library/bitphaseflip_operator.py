@@ -22,7 +22,7 @@ from mindquantum.utils.type_value_check import _check_input_type
 
 def bitphaseflip_operator(phase_inversion_index, n_qubits):
     """
-    This operator generate a circuit that can flip the sign of any calculation bases.
+    Generate a circuit that can flip the sign of any calculation bases.
 
     Args:
         phase_inversion_index (list[int]): Index of calculation bases want to flip phase.

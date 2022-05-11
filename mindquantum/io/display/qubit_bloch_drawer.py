@@ -94,7 +94,7 @@ def decompose(amplitudes):
 
 
 def draw_single_qubit_bloch(amplitude, ax=None, fig=None, figsize=(8, 8), dpi=100, **kwargs):
-    """
+    r"""
     Draw the quantum state on bloch.
 
     Args:
@@ -118,7 +118,7 @@ def draw_single_qubit_bloch(amplitude, ax=None, fig=None, figsize=(8, 8), dpi=10
         >>> from mindquantum.io.display import draw_single_qubit_bloch
         >>> amp = np.array([-0.29426025+0.64297038j,
                            -0.29426025-0.64297038j])
-        >>> fig, ax = draw_single_qubit_bloch(amp, label=['x', 'y', ['$\\left|0\\right>$', '$\\left|1\\right>$']])
+        >>> fig, ax = draw_single_qubit_bloch(amp, label=['x', 'y', ['$\left|0\right>$', '$\left|1\right>$']])
     """
     if ax is None:
         if fig is None:
@@ -225,7 +225,8 @@ def draw_on_jupyter(images, interval, fable=False):
 
 def _main(graph=0):
     """
-    Test.
+    Run test.
+
         'draw_single_qubit_bloch' if graph == 0
         'draw_single_qubit_bloch_time_evolution' if graph == 1
         'draw_single_qubit_bloch_time_evolution_static' if graph == 2

@@ -13,7 +13,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from ._mindquantum_cxx import circuit, ops, symengine
+"""Experimental C++ backend for MindQuantum."""
+
+from ._mindquantum_cxx import circuit, ops, symengine  # noqa: F401
 
 # isort: split
 

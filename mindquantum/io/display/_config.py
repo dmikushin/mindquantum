@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Configuration"""
+
+"""Configuration."""
 
 CIRCUIT_HTML_FORMAT = """\
 <div style="{stylesheet}color: {foreground}; background-color: {background}"></div>

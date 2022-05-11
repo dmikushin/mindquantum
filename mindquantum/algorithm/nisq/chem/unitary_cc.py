@@ -87,6 +87,7 @@ class UCCAnsatz(Ansatz):
     """
 
     def __init__(self, n_qubits=None, n_electrons=None, occ_orb=None, vir_orb=None, generalized=False, trotter_step=1):
+        """Initialize a UCCAnsatz object."""
         if n_qubits is not None and not isinstance(n_qubits, int):
             raise ValueError(
                 "The number of qubits should be integer, \
@@ -123,7 +124,7 @@ but get {}.".format(
         super().__init__("Unitary CC", n_qubits, n_qubits, n_electrons, occ_orb, vir_orb, generalized, trotter_step)
 
     def _implement(self, n_qubits, n_electrons, occ_orb=None, vir_orb=None, generalized=False, trotter_step=1):
-        """Implement the UCC ansatz using uccsd0"""
+        """Implement the UCC ansatz using uccsd0."""
         ansatz_circuit = Circuit()
         for trotter_idx in range(trotter_step):
             uccsd0_fermion_op = uccsd0_singlet_generator(n_qubits, n_electrons, True, occ_orb, vir_orb, generalized)

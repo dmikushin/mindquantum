@@ -103,7 +103,7 @@ repos:
                                   flake8-docstrings, flake8-secure-coding-standard]
       - id: flake8
         name: flake8-test-files
-        files: (.test_*\.py)$
+        files: (test_.*\.py)$
         additional_dependencies: [flake8-comprehensions, flake8-breakpoint,
                                   flake8-eradicate, flake8-mutable]
 
@@ -120,11 +120,12 @@ repos:
                                   pylint-secure-coding-standard]
       - id: pylint
         name: pylint-test-files
-        files: ^(test_.*\.py)$
-        args: ['--score=n']
+        files: (test_.*\.py)$
+        args: [--score=n, --load-plugins=pylint_pytest]
         # This is a slow hook, so only run this if --hook-stage manual is passed
         stages: [manual]
-        additional_dependencies: [pybind11>=2.6, numpy, scipy, projectq, openfermion, sympy, matplotlib, rich]
+        additional_dependencies: [pybind11>=2.6, numpy, scipy, projectq, openfermion, sympy, matplotlib, rich, pytest,
+                                  pylint-pytest]
 
   - repo: https://github.com/mgedmin/check-manifest
     rev: '0.48'

@@ -79,7 +79,7 @@ help_message() {
     echo '  --ninja              Build using Ninja instead of make'
     echo '  --quiet              Disable verbose build rules'
     echo '  --show-libraries     Show all known third-party libraries'
-    echo '  --test               Build C++ tests'
+    echo '  --test               Build C++ tests and install dependencies for Python testing as well'
     echo '  -v, --verbose        Enable verbose output from the Bash scripts'
     echo '  --venv=[dir]         Path to Python virtual environment'
     echo "                       Defaults to: $python_venv_path"

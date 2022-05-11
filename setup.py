@@ -289,7 +289,7 @@ class CMakeBuildExt(build_ext):
             logging.info(' End building %s '.center(80, '-'), ext.pymod)
 
     def cmake_install(self):
-        """Run the CMake installation step"""
+        """Run the CMake installation step."""
         cwd = self._get_temp_dir(Path().resolve().name)
         logging.info(' Building CMake install target '.center(80, '-'))
         logging.info(

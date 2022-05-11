@@ -1,8 +1,27 @@
 # -*- coding: utf-8 -*-
-import numpy as np
+#   Copyright 2022 <Huawei Technologies Co., Ltd>
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 
-import mindquantum as mq
-from mindquantum.core import RX, RY, RZ, Circuit, H
+"""Example of running a quantum neural network."""
+
+import mindspore as ms
+import numpy as np
+from mindspore.nn import Adam, TrainOneStepCell
+
+from mindquantum.core import RX, RY, RZ, Circuit, H, Hamiltonian, QubitOperator
+from mindquantum.framework import MQLayer
+from mindquantum.simulator import Simulator
 
 encoder = Circuit()
 encoder += H.on(0)
@@ -29,7 +48,6 @@ print(state)
 circuit = encoder + ansatz
 circuit
 
-from mindquantum.core import Hamiltonian, QubitOperator
 
 ham = Hamiltonian(QubitOperator('Z0', -1))
 print(ham)
@@ -40,7 +58,6 @@ ansatz_names = ansatz.params_name
 print('encoder_names = ', encoder.params_name, '\nansatz_names =', ansatz.params_name)
 
 # 导入Simulator模块
-from mindquantum.simulator import Simulator
 
 sim = Simulator('projectq', circuit.n_qubits)
 
@@ -58,9 +75,6 @@ print('Measurement result: ', measure_result)
 print('Gradient of encoder parameters: ', encoder_grad)
 print('Gradient of ansatz parameters: ', ansatz_grad)
 
-import mindspore as ms
-
-from mindquantum.framework import MQLayer
 
 ms.set_seed(1)
 ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
@@ -68,8 +82,6 @@ ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
 QuantumNet = MQLayer(grad_ops)
 QuantumNet
 
-from mindspore import nn
-from mindspore.nn import Adam, TrainOneStepCell
 
 opti = Adam(QuantumNet.trainable_params(), learning_rate=0.5)
 net = TrainOneStepCell(QuantumNet, opti)

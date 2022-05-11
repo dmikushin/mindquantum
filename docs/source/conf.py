@@ -20,15 +20,15 @@
 # list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
+"""Sphinx configuration file for MindQuantum."""
+
 # -- Path setup --------------------------------------------------------------
 
 import os
 import pathlib
 import subprocess
-import sys
 
 try:
-    import importlib
     import importlib.metadata as importlib_metadata  # pragma: no cover (PY38+)
 except ImportError:
     import importlib_metadata  # pragma: no cover (<PY38)

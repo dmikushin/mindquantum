@@ -65,6 +65,7 @@ class IQPEncoding(Ansatz):
     """
 
     def __init__(self, n_feature, first_rotation_gate=RZ, second_rotation_gate=RZ, num_repeats=1):
+        """Initialize an IQPEncoding object."""
         _check_int_type("n_feature", n_feature)
         _check_value_should_not_less("n_feature", 1, n_feature)
         _check_int_type("num_repeats", num_repeats)
@@ -93,8 +94,10 @@ class IQPEncoding(Ansatz):
 
     def data_preparation(self, data):
         r"""
-        The IQPEncoding ansatz provide a ansatz to encode classical data into quantum state.
-        This method will prepare the classical data into suitable dimension for IQPEncoding.
+        Prepare the classical data into suitable dimension for IQPEncoding.
+
+        The IQPEncoding ansatz provides an ansatz to encode classical data into quantum state.
+
         Suppose the origin data has :math:`n` features, then the output data will have :math:`2n-1` features,
         with first :math:`n` features keep the same and for :math:`m > n`,
 

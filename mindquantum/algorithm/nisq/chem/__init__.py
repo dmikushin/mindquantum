@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Algorithm for quantum chemistry"""
+
+"""Algorithm for quantum chemistry."""
 
 from mindquantum.third_party.unitary_cc import (
     uccsd_singlet_generator,

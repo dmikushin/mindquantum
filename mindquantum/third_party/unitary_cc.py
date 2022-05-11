@@ -11,6 +11,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
 """Module to create and manipulate unitary coupled cluster operators."""
 
 import itertools
@@ -18,11 +19,12 @@ import itertools
 import numpy
 from openfermion.utils.indexing import down_index, up_index
 
-from mindquantum.core.parameterresolver import ParameterResolver as PR
+from mindquantum.core.parameterresolver import ParameterResolver
 
 
 def uccsd_singlet_get_packed_amplitudes(single_amplitudes, double_amplitudes, n_qubits, n_electrons):
-    r"""Convert amplitudes for use with singlet UCCSD
+    r"""
+    Convert amplitudes for use with singlet UCCSD.
 
     The output list contains only those amplitudes that are relevant to
     singlet UCCSD, in an order suitable for use with the function
@@ -59,9 +61,9 @@ def uccsd_singlet_get_packed_amplitudes(single_amplitudes, double_amplitudes, n_
     n_occupied = int(numpy.ceil(n_electrons / 2))
     n_virtual = n_spatial_orbitals - n_occupied
 
-    singles = PR()
-    doubles_1 = PR()
-    doubles_2 = PR()
+    singles = ParameterResolver()
+    doubles_1 = ParameterResolver()
+    doubles_2 = ParameterResolver()
 
     # Get singles and doubles amplitudes associated with one
     # spatial occupied-virtual pair
@@ -104,7 +106,8 @@ def uccsd_singlet_get_packed_amplitudes(single_amplitudes, double_amplitudes, n_
 
 
 def uccsd_singlet_generator(n_qubits, n_electrons, anti_hermitian=True):
-    """Create a singlet UCCSD generator for a system with n_electrons
+    """
+    Create a singlet UCCSD generator for a system with n_electrons.
 
     This function generates a FermionOperator for a UCCSD generator designed
     to act on a single reference state consisting of n_qubits spin orbitals
@@ -169,13 +172,13 @@ def uccsd_singlet_generator(n_qubits, n_electrons, anti_hermitian=True):
             occupied_other = other_index(occupied_spatial)
 
             # Generate single excitations
-            coeff = PR({f's_{i}': 1})
+            coeff = ParameterResolver({f's_{i}': 1})
             generator += FermionOperator(((virtual_this, 1), (occupied_this, 0)), coeff)
             if anti_hermitian:
                 generator += FermionOperator(((occupied_this, 1), (virtual_this, 0)), -1 * coeff)
 
             # Generate double excitation
-            coeff = PR({f'd1_{i}': 1})
+            coeff = ParameterResolver({f'd1_{i}': 1})
             generator += FermionOperator(
                 ((virtual_this, 1), (occupied_this, 0), (virtual_other, 1), (occupied_other, 0)), coeff
             )
@@ -197,7 +200,7 @@ def uccsd_singlet_generator(n_qubits, n_electrons, anti_hermitian=True):
         occupied_spatial_2 = s
 
         # Generate double excitations
-        coeff = PR({f'd2_{i}': 1})
+        coeff = ParameterResolver({f'd2_{i}': 1})
         for (spin_a, spin_b) in itertools.product(range(2), repeat=2):
             # Get the functions which map a spatial orbital index to a
             # spin orbital index

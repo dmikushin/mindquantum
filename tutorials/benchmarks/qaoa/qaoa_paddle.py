@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Benchmark for QAOA with PaddlePaddle Quantum"""
+
+"""Benchmark for QAOA with PaddlePaddle Quantum."""
+
 import time
 
 import numpy as np
@@ -48,6 +50,7 @@ for (u, v) in E:
 
 
 def circuit_qaoa(p, gamma, beta):
+    """Generate a QAOA circuit."""
     cir = UAnsatz(n)
     cir.superposition_layer()
     for layer in range(p):
@@ -63,7 +66,10 @@ def circuit_qaoa(p, gamma, beta):
 
 
 class Net(paddle.nn.Layer):
+    """Net class."""
+
     def __init__(self, p, dtype="float64"):
+        """Initialize a Net object."""
         super(Net, self).__init__()
 
         self.p = p
@@ -81,6 +87,7 @@ class Net(paddle.nn.Layer):
         )
 
     def forward(self):
+        """Forward algorithm method."""
         cir = circuit_qaoa(self.p, self.gamma, self.beta)
         cir.run_state_vector()
         loss = -cir.expecval(h_d_list)

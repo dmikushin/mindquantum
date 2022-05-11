@@ -14,6 +14,8 @@
 # limitations under the License.
 # ============================================================================
 """Test uccsd."""
+import warnings
+
 import numpy as np
 
 from mindquantum.algorithm.nisq.chem import generate_uccsd
@@ -25,7 +27,10 @@ def test_generate_uccsd():
     Description: Test generate_uccsd
     Expectation:
     """
-    circ, init_amp, params_name, ham, n_q, n_e = generate_uccsd('./tests/st/LiH.hdf5')
+
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', category=DeprecationWarning)
+        circ, init_amp, params_name, ham, n_q, n_e = generate_uccsd('./tests/st/LiH.hdf5')
     circ = circ.remove_barrier()
     assert len(circ) == 4416
     assert circ[2000] == G.X.on(9, 8)

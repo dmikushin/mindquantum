@@ -210,7 +210,16 @@ if(VERSION_INFO MATCHES [=["(.*)"]=])
 else()
   set(MQ_VERSION ${VERSION_INFO})
 endif()
-message(STATUS "MindQuantum version: ${MQ_VERSION}")
+
+if("${MQ_VERSION}" STREQUAL "" AND EXISTS "${PROJECT_SOURCE_DIR}/VERSION.txt")
+  file(STRINGS "${PROJECT_SOURCE_DIR}/VERSION.txt" MQ_VERSION)
+endif()
+
+if("${MQ_VERSION}" STREQUAL "")
+  message(FATAL_ERROR "Unable to get MindQuantum version number!")
+else()
+  message(STATUS "MindQuantum version: ${MQ_VERSION}")
+endif()
 
 # --------------------------------------
 

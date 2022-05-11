@@ -13,13 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Tools for MindQuantum eDSL"""
+
+"""Tools for MindQuantum eDSL."""
+
 import copy
 from types import FunctionType, MethodType
 
 import numpy as np
-from openfermion.ops import QubitOperator as of_operator
-from projectq.ops import QubitOperator as pq_operator
+from openfermion.ops import QubitOperator as OFOperator
+
+try:
+    from projectq.ops import QubitOperator as PQOperator
+except ImportError:
+
+    class PQOperator:
+        """Dummy class for ProjectQ operators."""
+
 
 from mindquantum.core.parameterresolver.parameterresolver import ParameterResolver
 from mindquantum.utils.type_value_check import _check_input_type
@@ -57,9 +66,8 @@ def decompose_single_term_time_evolution(term, para):
                          │               │
         q1: ──RX(π/2)────X────RZ(2*a)────X────RX(7π/2)──
     """
-    from mindquantum import gates as G
+    from mindquantum import gates
     from mindquantum.core.circuit import Circuit
-    from mindquantum.core.parameterresolver import ParameterResolver as PR
     from mindquantum.utils.type_value_check import _num_type
 
     if not isinstance(term, tuple):
@@ -86,30 +94,30 @@ evolution operator, but get {}".format(
         raise ValueError("Get constant hamiltonian, please use GlobalPhase gate and give the obj_qubit by yourself.")
     if len(term) == 1:  # single pauli operator
         if term[0][1] == 'X':
-            out.append(G.RX(para * 2).on(term[0][0]))
+            out.append(gates.RX(para * 2).on(term[0][0]))
         elif term[0][1] == 'Y':
-            out.append(G.RY(para * 2).on(term[0][0]))
+            out.append(gates.RY(para * 2).on(term[0][0]))
         else:
-            out.append(G.RZ(para * 2).on(term[0][0]))
+            out.append(gates.RZ(para * 2).on(term[0][0]))
     else:
         for index, action in term:
             if action == 'X':
-                out.append(G.H.on(index))
+                out.append(gates.H.on(index))
             elif action == 'Y':
                 rxs.append(len(out))
-                out.append(G.RX(np.pi / 2).on(index))
+                out.append(gates.RX(np.pi / 2).on(index))
 
-        out.append(G.BarrierGate(False))
+        out.append(gates.BarrierGate(False))
         for i in range(len(term) - 1):
-            out.append(G.X.on(term[i + 1][0], term[i][0]))
-        out.append(G.BarrierGate(False))
-        if isinstance(para, (dict, PR)):
-            out.append(G.RZ({i: 2 * j for i, j in para.items()}).on(term[-1][0]))
+            out.append(gates.X.on(term[i + 1][0], term[i][0]))
+        out.append(gates.BarrierGate(False))
+        if isinstance(para, (dict, ParameterResolver)):
+            out.append(gates.RZ({i: 2 * j for i, j in para.items()}).on(term[-1][0]))
         else:
-            out.append(G.RZ(2 * para).on(term[-1][0]))
+            out.append(gates.RZ(2 * para).on(term[-1][0]))
         for i in range(len(out) - 1)[::-1]:
             if i in rxs:
-                out.append(G.RX(np.pi * 3.5).on(out[i].obj_qubits))
+                out.append(gates.RX(np.pi * 3.5).on(out[i].obj_qubits))
             else:
                 out.append(out[i])
     return Circuit(out)
@@ -140,11 +148,11 @@ def pauli_word_to_circuits(qubitops):
                    │
         q1: ──Y────X──
     """
-    from mindquantum import gates as G
+    from mindquantum import gates
     from mindquantum import operators as ops
     from mindquantum.core import Circuit
 
-    allow_ops = (pq_operator, of_operator, ops.QubitOperator, ops.Hamiltonian)
+    allow_ops = (PQOperator, OFOperator, ops.QubitOperator, ops.Hamiltonian)
     if not isinstance(qubitops, allow_ops):
         raise TypeError("qubitops require a QubitOperator or a Hamiltonian, but get {}!".format(type(qubitops)))
     if isinstance(qubitops, ops.Hamiltonian):
@@ -153,20 +161,20 @@ def pauli_word_to_circuits(qubitops):
         qubitops = qubitops.hamiltonian
     if len(qubitops.terms) > 1:
         raise ValueError("Onle work for QubitOperator with single pauliword!")
-    gate_map = {'X': G.X, 'Y': G.Y, 'Z': G.Z}
-    for ops in qubitops.terms.keys():
+    gate_map = {'X': gates.X, 'Y': gates.Y, 'Z': gates.Z}
+    for operator in qubitops.terms.keys():
         circ = Circuit()
-        if ops:
-            for ind, single_op in ops:
+        if operator:
+            for ind, single_op in operator:
                 circ += gate_map[single_op].on(ind)
         else:
-            circ += G.I.on(0)
+            circ += gates.I.on(0)
     return circ
 
 
 def _add_ctrl_qubits(circ, ctrl_qubits):
     """Add control qubits on a circuit."""
-    from mindquantum import gates as G
+    from mindquantum import gates
     from mindquantum.core import Circuit
 
     if not isinstance(ctrl_qubits, (int, list)):
@@ -188,7 +196,7 @@ def _add_ctrl_qubits(circ, ctrl_qubits):
         curr_ctrl = list(curr_ctrl.union(ctrl_qubits))
         curr_ctrl.sort()
         new_gate = copy.deepcopy(gate)
-        if not isinstance(gate, (G.Measure, G.BarrierGate)):
+        if not isinstance(gate, (gates.Measure, gates.BarrierGate)):
             new_gate.ctrl_qubits = curr_ctrl
         circ_out += new_gate
     return circ_out
@@ -196,12 +204,13 @@ def _add_ctrl_qubits(circ, ctrl_qubits):
 
 def controlled(circuit_fn):
     """
-    Add control qubits on a quantum circuit or a quantum operator (a function
-    that can generate a quantum circuit)
+    Add control qubits on a quantum circuit or a quantum operator.
+
+    (a function that can generate a quantum circuit)
 
     Args:
-        circuit_fn (Union[Circuit, FunctionType, MethodType]): A quantum circuit,
-            or a function that can generate a quantum circuit.
+        circuit_fn (Union[Circuit, FunctionType, MethodType]): A quantum circuit, or a function that can generate a
+            quantum circuit.
 
     Raises:
         TypeError: circuit_fn is not a Circuit or can not return a Circuit.
@@ -247,12 +256,13 @@ def controlled(circuit_fn):
 
 def dagger(circuit_fn):
     """
-    Get the hermitian dagger of a quantum circuit or a quantum operator (a function
-    that can generate a quantum circuit)
+    Get the hermitian dagger of a quantum circuit or a quantum operator.
+
+    (a function that can generate a quantum circuit)
 
     Args:
-        circuit_fn (Union[Circuit, FunctionType, MethodType]): A quantum circuit,
-            or a function that can generate a quantum circuit.
+        circuit_fn (Union[Circuit, FunctionType, MethodType]): A quantum circuit, or a function that can generate a
+            quantum circuit.
 
     Raises:
         TypeError: If circuit_fn is not a Circuit or can not return a Circuit.
@@ -296,7 +306,7 @@ def _apply_circuit(circ, qubits):
     """Apply a circuit to other different qubits."""
     from mindquantum.core import Circuit
 
-    old_qubits = set([])
+    old_qubits = set()
     for g in circ:
         old_qubits.update(g.obj_qubits)
         old_qubits.update(g.ctrl_qubits)
@@ -316,12 +326,11 @@ def _apply_circuit(circ, qubits):
 
 def apply(circuit_fn, qubits):
     """
-    Apply a quantum circuit or a quantum operator (a function
-    that can generate a quantum circuit) to different qubits.
+    Apply a quantum circuit or a quantum operator (a function that can generate a quantum circuit) to different qubits.
 
     Args:
-        circuit_fn (Union[Circuit, FunctionType, MethodType]): A quantum circuit,
-            or a function that can generate a quantum circuit.
+        circuit_fn (Union[Circuit, FunctionType, MethodType]): A quantum circuit, or a function that can generate a
+            quantum circuit.
         qubits (list[int]): The new qubits that you want to apply.
 
     Raises:
@@ -355,7 +364,7 @@ def apply(circuit_fn, qubits):
     if len(qubits) > 1:
         for index, q in enumerate(qubits[1:]):
             if q < 0 or qubits[index] < 0:
-                raise ValueError(f"Qubit index can not negative!")
+                raise ValueError("Qubit index can not negative!")
     if isinstance(circuit_fn, (FunctionType, MethodType)):
 
         def wrapper(*arg, **keywords):
@@ -372,14 +381,13 @@ def apply(circuit_fn, qubits):
 
 def _add_prefix(circ, prefix):
     """Add prefix to every parameters in circuit."""
-    from mindquantum.core import Circuit
-    from mindquantum.core import ParameterResolver as PR
+    from mindquantum.core import Circuit, ParameterResolver
 
     out = Circuit()
     for g in circ:
         g = copy.deepcopy(g)
         if g.parameterized:
-            pr = PR()
+            pr = ParameterResolver()
             for k, v in g.coeff.items():
                 pr[f'{prefix}_{k}'] = v
             g.coeff = pr
@@ -389,8 +397,9 @@ def _add_prefix(circ, prefix):
 
 def add_prefix(circuit_fn, prefix):
     """
-    Add a prefix on the parameter of a parameterized quantum circuit or a parameterized
-    quantum operator (a function that can generate a parameterized quantum circuit).
+    Add a prefix on the parameter of a parameterized quantum circuit or a parameterized quantum operator.
+
+    (a function that can generate a parameterized quantum circuit).
 
     Args:
         circuit_fn (Union[Circuit, FunctionType, MethodType]): A quantum circuit,
@@ -469,14 +478,13 @@ def shift(circ, p):
 
 def _change_param_name(circ, name_map):
     """Change the parameter of circuit according to the name map."""
-    from mindquantum.core import Circuit
-    from mindquantum.core import ParameterResolver as PR
+    from mindquantum.core import Circuit, ParameterResolver
 
     out = Circuit()
     for g in circ:
         g = copy.deepcopy(g)
         if g.parameterized:
-            pr = PR()
+            pr = ParameterResolver()
             for k, v in g.coeff.items():
                 if k not in name_map:
                     raise KeyError(f"Original parameter {k} not in name_map!")
@@ -488,8 +496,9 @@ def _change_param_name(circ, name_map):
 
 def change_param_name(circuit_fn, name_map):
     """
-    Change the parameter name of a parameterized quantum circuit or a parameterized
-    quantum operator (a function that can generate a parameterized quantum circuit).
+    Change the parameter name of a parameterized quantum circuit or a parameterized quantum operator.
+
+    (a function that can generate a parameterized quantum circuit).
 
     Args:
         circuit_fn (Union[Circuit, FunctionType, MethodType]): A quantum circuit,

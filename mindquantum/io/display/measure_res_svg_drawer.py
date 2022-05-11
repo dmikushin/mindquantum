@@ -14,7 +14,7 @@
 # limitations under the License.
 # ============================================================================
 """SVG module."""
-#%%
+
 import time
 
 import numpy as np
@@ -33,6 +33,7 @@ class AnimationSVG(BaseComponent):
     """Animation a svg property."""
 
     def __init__(self, svg_id, attr, v_from, v_to, dur, spline=None):
+        """Initialize an AnimationSVG object."""
         super().__init__('animate')
         self.id = svg_id
         self.attr = attr
@@ -56,27 +57,34 @@ class AnimationSVG(BaseComponent):
 
     @property
     def bottom(self):
+        """Getter for bottom."""
         return -np.inf
 
     @property
     def top(self):
+        """Getter for top."""
         return np.inf
 
     @property
     def left(self):
+        """Getter for left."""
         return np.inf
 
     @property
     def right(self):
+        """Getter for right."""
         return -np.inf
 
     def change_color(self, color):
+        """Getter for change of color."""
         return self
 
     def scale(self, scale):
+        """Getter for scale factor."""
         return self
 
     def shift(self, x, y):
+        """Getter for shift factor."""
         return self
 
 
@@ -84,6 +92,7 @@ class SVGMeasure(SVGContainer):
     """SVG object of measure result."""
 
     def __init__(self, res, style):
+        """Initialize an SVGMeasure object."""
         super().__init__()
         self.style = style
         self.res = res
@@ -102,7 +111,7 @@ class SVGMeasure(SVGContainer):
         self.add(main_box)
 
     def build_title(self):
-        """build title"""
+        """Build title."""
         shots_text = Text(0, 0, f"Shots:\n {str(self.res.shots)}")
         shots_text.text_anchor("start")
         shots_text.shift(0, (shots_text.bottom - shots_text.top) / 2)
@@ -115,7 +124,7 @@ class SVGMeasure(SVGContainer):
         return text
 
     def build_box(self):
-        """build box"""
+        """Build box."""
         animations = SVGContainer()
         max_bar_animations = SVGContainer()
         sampling_animations = SVGContainer()

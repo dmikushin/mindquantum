@@ -14,17 +14,18 @@
 # limitations under the License.
 # ============================================================================
 """Benchmakr for mnist classification of tensorflow quantum."""
+
 import time
 
+import cirq
 import numpy as np
+import sympy
 import tensorflow as tf
+import tensorflow_quantum as tfq
 from _parse_args import parser
 
 args = parser.parse_args()
 tf.config.threading.set_intra_op_parallelism_threads(args.omp_num_threads)
-import cirq
-import sympy
-import tensorflow_quantum as tfq
 
 
 def convert_to_circuit(image):
@@ -39,11 +40,15 @@ def convert_to_circuit(image):
 
 
 class CircuitLayerBuilder:
+    """CircuitLayerBuilder class."""
+
     def __init__(self, data_qubits, readout):
+        """Initialize a CircuitLayerBuilder object."""
         self.data_qubits = data_qubits
         self.readout = readout
 
     def add_layer(self, circuit, gate, prefix):
+        """Add a layer to this instance."""
         for i, qubit in enumerate(self.data_qubits):
             symbol = sympy.Symbol(prefix + '-' + str(i))
             circuit.append(gate(qubit, self.readout) ** symbol)
@@ -91,6 +96,7 @@ y_test_hinge = 2.0 * y_test - 1.0
 
 
 def hinge_accuracy(y_true, y_pred):
+    """Hinge accuracy calculation function."""
     y_true = tf.squeeze(y_true) > 0.0
     y_pred = tf.squeeze(y_pred) > 0.0
     result = tf.cast(y_true == y_pred, tf.float32)

@@ -1,15 +1,26 @@
 # -*- coding: utf-8 -*-
 import os
 
-os.environ['OMP_NUM_THREADS'] = '8'
-import mindspore as ms
+import pytest
 
 from mindquantum import Circuit, Hamiltonian, Simulator
 from mindquantum.algorithm.nisq.chem import generate_uccsd
 from mindquantum.core import gates as G
-from mindquantum.framework import MQAnsatzOnlyLayer
+
+os.environ.setdefault('OMP_NUM_THREADS', '8')
+
+_has_mindspore = True
+try:
+    import mindspore as ms
+
+    from mindquantum.framework import MQAnsatzOnlyLayer
+
+    ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
+except ImportError:
+    _has_mindspore = False
 
 
+@pytest.mark.skipif(not _has_mindspore, reason='MindSpore is not installed')
 def test_vqe_net():
     """
     Description: Test vqe

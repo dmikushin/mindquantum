@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Implement UCCSD0/UCCGSD0 ansatz using CCD0 excitation operators"""
+
+"""Implement UCCSD0/UCCGSD0 ansatz using CCD0 excitation operators."""
 
 import itertools
 import warnings
@@ -22,7 +23,7 @@ import numpy
 
 from mindquantum.core.operators import FermionOperator
 from mindquantum.core.operators.utils import hermitian_conjugated, normal_ordered
-from mindquantum.core.parameterresolver import ParameterResolver as PR
+from mindquantum.core.parameterresolver import ParameterResolver
 
 
 def _check_int_list(input_list, name):
@@ -45,7 +46,7 @@ but get {}.".format(
 
 def _pij(i: int, j: int):
     r"""
-    Helper function for CCD0 ansatz.
+    CCD0 ansatz helper function.
 
     See :class: `mindquantum.third_party.unitary_cc.spin_adapted_t2`.
     """
@@ -60,7 +61,7 @@ def _pij(i: int, j: int):
 
 def _pij_dagger(i: int, j: int):
     r"""
-    Helper function for CCD0 ansatz.
+    CCD0 ansatz helper function.
 
     See :class: `mindquantum.third_party.unitary_cc.spin_adapted_t2`.
     """
@@ -69,7 +70,7 @@ def _pij_dagger(i: int, j: int):
 
 def _qij_plus(i: int, j: int):
     r"""
-    Helper function for CCD0 ansatz.
+    CCD0 ansatz helper function.
 
     See :class: `mindquantum.third_party.unitary_cc.spin_adapted_t2`.
     """
@@ -81,7 +82,7 @@ def _qij_plus(i: int, j: int):
 
 def _qij_minus(i: int, j: int):
     r"""
-    Helper function for CCD0 ansatz.
+    CCD0 ansatz helper function.
 
     See :class: `mindquantum.third_party.unitary_cc.spin_adapted_t2`.
     """
@@ -93,7 +94,7 @@ def _qij_minus(i: int, j: int):
 
 def _qij_0(i: int, j: int):
     r"""
-    Helper function for CCD0 ansatz.
+    CCD0 ansatz helper function.
 
     See :class: `mindquantum.third_party.unitary_cc.spin_adapted_t2`.
     """
@@ -108,7 +109,7 @@ def _qij_0(i: int, j: int):
 
 def _qij_vec(i: int, j: int):
     r"""
-    Helper function for CCD0 ansatz.
+    CCD0 ansatz helper function.
 
     See :class: `mindquantum.third_party.unitary_cc.spin_adapted_t2`.
     """
@@ -117,7 +118,7 @@ def _qij_vec(i: int, j: int):
 
 def _qij_vec_dagger(i: int, j: int):
     r"""
-    Helper function for CCD0 ansatz.
+    CCD0 ansatz helper function.
 
     See :class: `mindquantum.third_party.unitary_cc.spin_adapted_t2`.
     """
@@ -126,7 +127,7 @@ def _qij_vec_dagger(i: int, j: int):
 
 def _qij_vec_inner(a: int, b: int, i: int, j: int):
     r"""
-    Helper function for CCD0 ansatz.
+    CCD0 ansatz helper function.
 
     See :class: `mindquantum.third_party.unitary_cc.spin_adapted_t2`.
     """
@@ -353,7 +354,7 @@ should be even.'
     if n_electrons is not None:
         n_orb_occ = int(numpy.ceil(n_electrons / 2))
         n_orb_vir = n_orb - n_orb_occ
-        occ_indices = [i for i in range(n_orb_occ)]
+        occ_indices = list(range(n_orb_occ))
         vir_indices = [i + n_orb_occ for i in range(n_orb_vir)]
     warn_flag = False
     if occ_orb is not None:
@@ -407,7 +408,7 @@ contain no parameters."
         q = occ_indices[q_idx]
         tpq_list = spin_adapted_t1(p, q)
         for tpq in tpq_list:
-            coeff_s = PR({f'd0_s_{singles_counter}': 1})
+            coeff_s = ParameterResolver({f'd0_s_{singles_counter}': 1})
             if anti_hermitian:
                 tpq = tpq - hermitian_conjugated(tpq)
             tpq = normal_ordered(tpq)
@@ -432,7 +433,7 @@ contain no parameters."
                 continue
             tpqrs_list = spin_adapted_t2([p, q], [r, s])
             for tpqrs in tpqrs_list:
-                coeff_d = PR({f'd0_d_{doubles_counter}': 1})
+                coeff_d = ParameterResolver({f'd0_d_{doubles_counter}': 1})
                 if anti_hermitian:
                     tpqrs = tpqrs - hermitian_conjugated(tpqrs)
                 tpqrs = normal_ordered(tpqrs)

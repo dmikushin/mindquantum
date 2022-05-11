@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Generate qUCCSD operators"""
+
+"""Generate qUCCSD operators."""
 
 import itertools
 import warnings
@@ -22,7 +23,7 @@ import numpy
 
 from mindquantum.core.operators import QubitExcitationOperator
 from mindquantum.core.operators.utils import hermitian_conjugated
-from mindquantum.core.parameterresolver import ParameterResolver as PR
+from mindquantum.core.parameterresolver import ParameterResolver as ParameterResolver
 
 
 def _check_int_list(input_list, name):
@@ -146,7 +147,7 @@ should be even.'
     if n_electrons is not None:
         n_orb_occ = int(numpy.ceil(n_electrons / 2))
         n_orb_vir = n_orb - n_orb_occ
-        occ_indices = [i for i in range(n_orb_occ)]
+        occ_indices = list(range(n_orb_occ))
         vir_indices = [i + n_orb_occ for i in range(n_orb_vir)]
     warn_flag = False
     if occ_orb is not None:
@@ -213,7 +214,7 @@ contain no parameters."
 
     singles_counter = 0
     for (p, q) in itertools.product(vir_indices_spin, occ_indices_spin):
-        coeff_s = PR({f'q_s_{singles_counter}': 1})
+        coeff_s = ParameterResolver({f'q_s_{singles_counter}': 1})
         q_pq = QubitExcitationOperator(((p, 1), (q, 0)), 1.0)
         if anti_hermitian:
             q_pq = q_pq - hermitian_conjugated(q_pq)
@@ -237,7 +238,7 @@ contain no parameters."
             s = occ_indices_spin[s_idx]
             if generalized and pq_counter > rs_counter:
                 continue
-            coeff_d = PR({f'q_d_{doubles_counter}': 1})
+            coeff_d = ParameterResolver({f'q_d_{doubles_counter}': 1})
             q_pqrs = QubitExcitationOperator(((p, 1), (q, 1), (r, 0), (s, 0)), 1.0)
             if anti_hermitian:
                 q_pqrs = q_pqrs - hermitian_conjugated(q_pqrs)

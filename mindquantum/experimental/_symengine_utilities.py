@@ -45,6 +45,7 @@ _range = _re.compile('([0-9]*:[0-9]+|[a-zA-Z]?:[a-zA-Z])')
 def symbols(names, **args):
     r"""
     Transform strings into instances of :class:`Symbol` class.
+
     :func:`symbols` function returns a sequence of symbols with names taken
     from ``names`` argument, which can be a comma or whitespace delimited
     string, or a sequence of strings::
@@ -150,9 +151,9 @@ def symbols(names, **args):
             raise ValueError('missing symbol between commas')
         # split on spaces
         for i in range(len(names) - 1, -1, -1):
-            names[i : i + 1] = names[i].split()
+            names[i : i + 1] = names[i].split()  # noqa: E203
 
-        cls = args.pop('cls', symengine.Symbol)
+        cls = args.pop('cls', symengine.symbol)
         seq = args.pop('seq', as_seq)
 
         for name in names:

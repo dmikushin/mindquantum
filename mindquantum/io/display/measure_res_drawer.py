@@ -13,15 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Text measure result"""
-# from mindquantum.core.gates import MeasureResult
+
+"""Text measure result."""
+
 import math
 
 from ._config import _res_text_drawer_config
 
 
-def _trans(v, l, m):
-    return math.ceil(v / m * l)
+def _trans(v, k, m):
+    return math.ceil(v / m * k)
 
 
 def measure_text_drawer(res):

@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Circuit library"""
+
+"""Circuit library."""
 
 from .amplitude_encoder import amplitude_encoder
 from .bitphaseflip_operator import bitphaseflip_operator

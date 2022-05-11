@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""parse argument"""
+
+"""Parse argument."""
+
 import argparse
 
 parser = argparse.ArgumentParser()

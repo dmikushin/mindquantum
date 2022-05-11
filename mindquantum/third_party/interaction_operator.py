@@ -16,9 +16,11 @@
 #   This module we develop is default being licensed under Apache 2.0 license,
 #   and also uses or refactor Fermilib and OpenFermion licensed under
 #   Apache 2.0 license.
+
 """
-This is the class that to store the non-zero coefficient of the molecular
-Hamiltonian. It can be further used to construct the molecular Hamiltonian.
+This is the class that to store the non-zero coefficient of the molecular Hamiltonian.
+
+It can be further used to construct the molecular Hamiltonian.
 """
 # Note this module, we did not modify much of the OpenFermion file
 
@@ -29,8 +31,7 @@ from mindquantum.core.operators.polynomial_tensor import PolynomialTensor
 
 class InteractionOperator(PolynomialTensor):
     r"""
-    Class to store 'interaction opeartors' which are used to configure
-    a ferinonic molecular Hamiltonian.
+    Class to store 'interaction opeartors' which are used to configure a ferinonic molecular Hamiltonian.
 
     The Hamiltonian including one-body and two-body terms which conserve spin
     and parity. In this module, the stored coefficient could be represented the
@@ -60,6 +61,7 @@ class InteractionOperator(PolynomialTensor):
     """
 
     def __init__(self, constant, one_body_tensor, two_body_tensor):
+        """Initialize an InteractionOperator object."""
         # make sure only non-zero tensor elements exist in the normal-ordered
         # form
         super().__init__({(): constant, (1, 0): one_body_tensor, (1, 1, 0, 0): two_body_tensor})

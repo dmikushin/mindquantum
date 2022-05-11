@@ -126,7 +126,6 @@ def test_qubit_ops_sub():
     """
     q1 = QubitOperator('X0')
     q2 = QubitOperator('Y0')
-    q = QubitOperator('X0') + QubitOperator('Y0', -1)
     assert str(q1 - q2) == '1 [X0] +\n-1 [Y0] '
 
 

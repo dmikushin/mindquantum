@@ -14,15 +14,25 @@
 # limitations under the License.
 # ============================================================================
 """Test QNN layers."""
-import mindspore as ms
-import numpy as np
 
-from mindquantum import Circuit, Hamiltonian, MQLayer, QubitOperator, Simulator
+import numpy as np
+import pytest
+
+from mindquantum import Circuit, Hamiltonian, QubitOperator, Simulator
 from mindquantum.core import gates as G
 
-ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
+_has_mindspore = True
+try:
+    import mindspore as ms
+
+    from mindquantum import MQLayer
+
+    ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
+except ImportError:
+    _has_mindspore = False
 
 
+@pytest.mark.skipif(not _has_mindspore, reason='MindSpore is not installed')
 def test_mindquantumlayer():
     """
     Description: Test MQLayer

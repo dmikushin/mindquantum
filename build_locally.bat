@@ -401,6 +401,8 @@ set pkgs=pip setuptools wheel build pybind11
 
 if !cmake_from_venv! == 1 set pkgs=!pkgs! cmake
 
+if !enable_tests! == 1 set pkgs=!pkgs! pytest pytest-cov pytest-mock mock
+
 if !do_docs! == 1 set pkgs=!pkgs! breathe sphinx sphinx_rtd_theme importlib-metadata myst-parser
 
 rem  TODO(dnguyen): add wheel delocation package for Windows once we figure this out
@@ -618,7 +620,7 @@ exit /B 0
   echo   /Prefix             Specify installation prefix
   echo   /Quiet              Disable verbose build rules
   echo   /ShowLibraries      Show all known third-party libraries
-  echo   /Test               Build C++ tests
+  echo   /Test               Build C++ tests and install dependencies for Python testing as well
   echo   /Venv *path*        Path to Python virtual environment
   echo                       Defaults to: %python_venv_path%
   echo   /With*library*      Build the third-party *library* from source (*library* is case-insensitive)

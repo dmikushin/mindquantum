@@ -30,7 +30,7 @@ from mindquantum.core.gates.basic import (
     PauliStringGate,
     RotSelfHermMat,
 )
-from mindquantum.core.parameterresolver import ParameterResolver as PR
+from mindquantum.core.parameterresolver import ParameterResolver
 from mindquantum.utils.f import is_power_of_two
 
 
@@ -54,6 +54,7 @@ class UnivMathGate(NoneParamNonHermMat):
     """
 
     def __init__(self, name, matrix_value):
+        """Initialize a UnivMathGate object."""
         if len(matrix_value.shape) != 2:
             raise ValueError(f"matrix_value require shape of 2, but get shape of {matrix_value.shape}")
         if matrix_value.shape[0] != matrix_value.shape[1]:
@@ -64,6 +65,7 @@ class UnivMathGate(NoneParamNonHermMat):
         super().__init__(name=name, n_qubits=n_qubits, matrix_value=matrix_value)
 
     def get_cpp_obj(self):
+        """Get the underlying C++ object."""
         mat = mb.dim2matrix(self.matrix())
         cpp_gate = mb.basic_gate(False, self.name, 1, mat)
         cpp_gate.daggered = self.hermitianed
@@ -74,6 +76,8 @@ class UnivMathGate(NoneParamNonHermMat):
 
 class HGate(NoneParamSelfHermMat):
     r"""
+    Hadamard gate.
+
     Hadamard gate with matrix as:
 
     .. math::
@@ -84,6 +88,7 @@ class HGate(NoneParamSelfHermMat):
     """
 
     def __init__(self):
+        """Initialize an HGate object."""
         super().__init__(
             name='H',
             n_qubits=1,
@@ -93,6 +98,8 @@ class HGate(NoneParamSelfHermMat):
 
 class XGate(PauliGate):
     r"""
+    Pauli-X gate.
+
     Pauli X gate with matrix as:
 
     .. math::
@@ -130,6 +137,7 @@ class XGate(PauliGate):
     """
 
     def __init__(self):
+        """Initialize an XGate object."""
         super().__init__(
             name='X',
             n_qubits=1,
@@ -139,6 +147,8 @@ class XGate(PauliGate):
 
 class YGate(PauliGate):
     r"""
+    Pauli Y gate.
+
     Pauli Y gate with matrix as:
 
     .. math::
@@ -149,6 +159,7 @@ class YGate(PauliGate):
     """
 
     def __init__(self):
+        """Initialize a YGate object."""
         super().__init__(
             name='Y',
             n_qubits=1,
@@ -158,6 +169,8 @@ class YGate(PauliGate):
 
 class ZGate(PauliGate):
     r"""
+    Pauli-Z gate.
+
     Pauli Z gate with matrix as:
 
     .. math::
@@ -168,6 +181,7 @@ class ZGate(PauliGate):
     """
 
     def __init__(self):
+        """Initialize a ZGate object."""
         super().__init__(
             name='Z',
             n_qubits=1,
@@ -177,6 +191,8 @@ class ZGate(PauliGate):
 
 class IGate(PauliGate):
     r"""
+    Identity gate.
+
     Identity gate with matrix as:
 
     .. math::
@@ -187,6 +203,7 @@ class IGate(PauliGate):
     """
 
     def __init__(self):
+        """Initialize an IGate object."""
         super().__init__(
             name='I',
             n_qubits=1,
@@ -202,6 +219,7 @@ class CNOTGate(NoneParamSelfHermMat):
     """
 
     def __init__(self):
+        """Initialize a CNOTGate object."""
         super().__init__(
             name='CNOT',
             n_qubits=2,
@@ -209,6 +227,7 @@ class CNOTGate(NoneParamSelfHermMat):
         )
 
     def on(self, obj_qubits, ctrl_qubits=None):
+        """Define which qubit the gate act on and the control qubit."""
         if ctrl_qubits is None:
             raise ValueError("A control qubit is needed for CNOT gate!")
         if isinstance(ctrl_qubits, (int, np.int64)):
@@ -227,6 +246,7 @@ class SWAPGate(NoneParamSelfHermMat):
     """
 
     def __init__(self):
+        """Initialize a SWAPGate object."""
         super().__init__(
             name='SWAP',
             n_qubits=2,
@@ -236,14 +256,16 @@ class SWAPGate(NoneParamSelfHermMat):
 
 class ISWAPGate(NoneParamNonHermMat):
     r"""
-    ISWAP gate that swap two different qubits and phase the
-    :math:`\left|01\right>` and :math:`\left|10\right>` amplitudes by
-    :math:`i`.
+    ISWAP gate.
+
+    ISWAP gate that swap two different qubits and phase the :math:`\left|01\right>` and :math:`\left|10\right>`
+    amplitudes by :math:`i`.
 
     More usage, please see :class:`mindquantum.core.gates.XGate`.
     """
 
     def __init__(self):
+        """Initialize an ISWAPGate object."""
         super().__init__(
             name='ISWAP',
             n_qubits=2,
@@ -253,6 +275,8 @@ class ISWAPGate(NoneParamNonHermMat):
 
 class TGate(NoneParamNonHermMat):
     r"""
+    T gate.
+
     T gate with matrix as :
 
     .. math::
@@ -262,6 +286,7 @@ class TGate(NoneParamNonHermMat):
     """
 
     def __init__(self):
+        """Initialize a TGate object."""
         super().__init__(
             name='T',
             n_qubits=1,
@@ -271,6 +296,8 @@ class TGate(NoneParamNonHermMat):
 
 class SGate(NoneParamNonHermMat):
     r"""
+    S gate.
+
     S gate with matrix as :
 
     .. math::
@@ -280,6 +307,7 @@ class SGate(NoneParamNonHermMat):
     """
 
     def __init__(self):
+        """Initialize an SGate object."""
         super().__init__(
             name='S',
             n_qubits=1,
@@ -343,8 +371,9 @@ class RX(RotSelfHermMat):
     """
 
     def __init__(self, pr):
+        """Initialize an RX gate."""
         super().__init__(
-            pr=PR(pr),
+            pr=ParameterResolver(pr),
             name='RX',
             n_qubits=1,
             core=XGate(),
@@ -366,8 +395,9 @@ class RY(RotSelfHermMat):
     """
 
     def __init__(self, pr):
+        """Initialize an RY object."""
         super().__init__(
-            pr=PR(pr),
+            pr=ParameterResolver(pr),
             name='RY',
             n_qubits=1,
             core=YGate(),
@@ -389,8 +419,9 @@ class RZ(RotSelfHermMat):
     """
 
     def __init__(self, pr):
+        """Initialize an RZ object."""
         super().__init__(
-            pr=PR(pr),
+            pr=ParameterResolver(pr),
             name='RZ',
             n_qubits=1,
             core=ZGate(),
@@ -411,17 +442,20 @@ class ZZ(RotSelfHermMat):
     """
 
     def __init__(self, pr):
+        """Initialize a ZZ object."""
         super().__init__(
-            pr=PR(pr),
+            pr=ParameterResolver(pr),
             name='ZZ',
             n_qubits=2,
             core=PauliStringGate([Z, Z]),
         )
 
     def matrix(self, pr=None, frac=1):
+        """Matrix of parameterized gate."""
         return super().matrix(pr, frac)
 
     def diff_matrix(self, pr=None, about_what=None, frac=1):
+        """Differential form of this parameterized gate."""
         return super().diff_matrix(pr, about_what, frac)
 
 
@@ -439,17 +473,20 @@ class XX(RotSelfHermMat):
     """
 
     def __init__(self, pr):
+        """Initialize an XX object."""
         super().__init__(
-            pr=PR(pr),
+            pr=ParameterResolver(pr),
             name='XX',
             n_qubits=2,
             core=PauliStringGate([X, X]),
         )
 
     def matrix(self, pr=None, frac=1):
+        """Matrix of parameterized gate."""
         return super().matrix(pr, frac)
 
     def diff_matrix(self, pr=None, about_what=None, frac=1):
+        """Differential form of this parameterized gate."""
         return super().diff_matrix(pr, about_what, frac)
 
 
@@ -467,26 +504,33 @@ class YY(RotSelfHermMat):
     """
 
     def __init__(self, pr):
+        """Initialize an YY object."""
         super().__init__(
-            pr=PR(pr),
+            pr=ParameterResolver(pr),
             name='YY',
             n_qubits=2,
             core=PauliStringGate([Y, Y]),
         )
 
     def matrix(self, pr=None, frac=1):
+        """Matrix of parameterized gate."""
         return super().matrix(pr, frac)
 
     def diff_matrix(self, pr=None, about_what=None, frac=1):
+        """Differential form of this parameterized gate."""
         return super().diff_matrix(pr, about_what, frac)
 
 
 class BarrierGate(FunctionalGate):
+    """Barrier gate."""
+
     def __init__(self, show=True):
+        """Initialize a BarrierGate object."""
         super().__init__(name='BARRIER', n_qubits=0)
         self.show = show
 
     def on(self, obj_qubits, ctrl_qubits=None):
+        """Define which qubit the gate act on and the control qubit."""
         raise RuntimeError("Cannot call on for BarrierGate.")
 
 
@@ -505,17 +549,20 @@ class GlobalPhase(RotSelfHermMat):
     """
 
     def __init__(self, pr):
+        """Initialize a GlobalPhase object."""
         super().__init__(
-            pr=PR(pr),
+            pr=ParameterResolver(pr),
             name='GP',
             n_qubits=1,
             core=IGate(),
         )
 
     def matrix(self, pr=None, **kwargs):
+        """Matrix of parameterized gate."""
         return RotSelfHermMat.matrix(self, pr, 1)
 
     def diff_matrix(self, pr=None, about_what=None, **kwargs):
+        """Differential form of this parameterized gate."""
         return RotSelfHermMat.diff_matrix(self, pr, about_what, 1)
 
 
@@ -537,8 +584,9 @@ class PhaseShift(ParameterOppsGate):
     """
 
     def __init__(self, pr):
+        """Initialize a PhaseShift object."""
         super().__init__(
-            pr=PR(pr),
+            pr=ParameterResolver(pr),
             name='PS',
             n_qubits=1,
         )
@@ -576,7 +624,7 @@ class PhaseShift(ParameterOppsGate):
         val = new_pr.const
         if about_what is None:
             if len(self.coeff) != 1:
-                raise ValueError(f"Should specific which parameter are going to do derivation.")
+                raise ValueError("Should specific which parameter are going to do derivation.")
             for i in self.coeff:
                 about_what = i
         return np.array([[0, 0], [0, 1j * self.coeff[about_what] * np.exp(1j * val)]])
@@ -599,6 +647,7 @@ class Power(NoneParamNonHermMat):
     """
 
     def __init__(self, gate, t=0.5):
+        """Initialize a Power object."""
         name = f'{gate}^{t}'
         n_qubits = gate.n_qubits
         matrix_value = fractional_matrix_power(gate.matrix(), t)
@@ -611,6 +660,7 @@ class Power(NoneParamNonHermMat):
         self.t = t
 
     def get_cpp_obj(self):
+        """Get the underlying C++ object."""
         mat = mb.dim2matrix(self.matrix())
         cpp_gate = mb.basic_gate(False, self.name, 1, mat)
         cpp_gate.daggered = self.hermitianed
@@ -621,8 +671,7 @@ class Power(NoneParamNonHermMat):
 
 def gene_univ_parameterized_gate(name, matrix_generator, diff_matrix_generator):
     """
-    Generate a customer parameterized gate based on the single parameter defined
-    unitary matrix.
+    Generate a customer parameterized gate based on the single parameter defined unitary matrix.
 
     Args:
         name (str): The name of this gate.
@@ -660,7 +709,7 @@ def gene_univ_parameterized_gate(name, matrix_generator, diff_matrix_generator):
 
         def __init__(self, pr):
             super().__init__(
-                pr=PR(pr),
+                pr=ParameterResolver(pr),
                 name=name,
                 n_qubits=n_qubits,
                 matrix_generator=matrix_generator,
@@ -692,7 +741,7 @@ def gene_univ_parameterized_gate(name, matrix_generator, diff_matrix_generator):
 X = XGate()
 Y = YGate()
 Z = ZGate()
-I = IGate()
+I = IGate()  # noqa: E741
 H = HGate()
 T = TGate()
 S = SGate()

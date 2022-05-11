@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-'''Amplitude encoder for quantum machine learning'''
+
+"""Amplitude encoder for quantum machine learning."""
 
 import math
 
@@ -24,9 +25,7 @@ from mindquantum.utils.type_value_check import _check_input_type
 
 
 def controlled_gate(circuit, gate, tqubit, cqubits, zero_qubit):
-    '''
-    Extended quantum controlled gate
-    '''
+    """Add an extended quantum controlled gate."""
     tmp = []
     for i in range(len(cqubits)):
         tmp.append(cqubits[i])
@@ -42,8 +41,8 @@ def controlled_gate(circuit, gate, tqubit, cqubits, zero_qubit):
 
 
 def amplitude_encoder(x, n_qubits):
-    '''
-    Quantum circuit for amplitude encoding
+    """
+    Quantum circuit for amplitude encoding.
 
     Note:
         the length of classic data ought to be the power of 2, otherwise will be filled up with 0
@@ -72,7 +71,7 @@ def amplitude_encoder(x, n_qubits):
         1/2¦00000011⟩
         -1/2¦00000100⟩
         1/2¦00000101⟩
-    '''
+    """
     _check_input_type('amplitude_encoder', (np.ndarray, list), x)
     _check_input_type('n_qubits', (int), n_qubits)
     if isinstance(x, np.ndarray):

@@ -24,7 +24,7 @@ from mindquantum.core.circuit import Circuit
 from mindquantum.core.gates import CNOT, RY, X
 from mindquantum.core.operators import QubitExcitationOperator
 from mindquantum.core.operators.utils import hermitian_conjugated
-from mindquantum.core.parameterresolver import ParameterResolver as PR
+from mindquantum.core.parameterresolver import ParameterResolver
 
 from .._ansatz import Ansatz
 
@@ -49,6 +49,8 @@ but get {}.".format(
 
 class QubitUCCAnsatz(Ansatz):
     r"""
+    Qubit Unitary Coupled-Cluster (qUCC) ansatz class.
+
     Qubit Unitary Coupled-Cluster (qUCC) ansatz is a variant of unitary
     coupled-cluster ansatz which uses qubit excitation operators instead of
     Fermion excitation operators. The Fock space spanned by qubit excitation
@@ -113,6 +115,7 @@ class QubitUCCAnsatz(Ansatz):
     """
 
     def __init__(self, n_qubits=None, n_electrons=None, occ_orb=None, vir_orb=None, generalized=False, trotter_step=1):
+        """Initialize a QubitUCCAnsatz object."""
         if n_qubits is not None and not isinstance(n_qubits, int):
             raise ValueError(
                 "The number of qubits should be integer, \
@@ -156,6 +159,7 @@ but get {}.".format(
     def _single_qubit_excitation_circuit(self, i, k, theta):
         """
         Implement circuit for single qubit excitation.
+
         k: creation
         """
         circuit_singles = Circuit()
@@ -164,9 +168,10 @@ but get {}.".format(
         circuit_singles += CNOT(i, k)
         return circuit_singles
 
-    def _double_qubit_excitation_circuit(self, i, j, k, l, theta):
+    def _double_qubit_excitation_circuit(self, i, j, k, l, theta):  # noqa: E741
         """
         Implement circuit for double qubit excitation.
+
         k, l: creation
         """
         circuit_doubles = Circuit()
@@ -186,9 +191,7 @@ but get {}.".format(
     def _implement(
         self, n_qubits=None, n_electrons=None, occ_orb=None, vir_orb=None, generalized=False, trotter_step=1
     ):
-        """
-        Implement qubit UCC circuit according to the reference paper.
-        """
+        """Implement qubit UCC circuit according to the reference paper."""
         occ_indices = []
         vir_indices = []
         n_orb = 0
@@ -204,7 +207,7 @@ should be even.'
         if n_electrons is not None:
             n_orb_occ = int(numpy.ceil(n_electrons / 2))
             n_orb_vir = n_orb - n_orb_occ
-            occ_indices = [i for i in range(n_orb_occ)]
+            occ_indices = list(range(n_orb_occ))
             vir_indices = [i + n_orb_occ for i in range(n_orb_vir)]
         warn_flag = False
         if occ_orb is not None:
@@ -274,7 +277,7 @@ contain no parameters."
         for trotter_idx in range(trotter_step):
             singles_counter = 0
             for (p, q) in itertools.product(vir_indices_spin, occ_indices_spin):
-                coeff_s = PR({f't_{trotter_idx}_q_s_{singles_counter}': 1})
+                coeff_s = ParameterResolver({f't_{trotter_idx}_q_s_{singles_counter}': 1})
                 q_pq = QubitExcitationOperator(((p, 1), (q, 0)), 1.0)
                 q_pq = q_pq - hermitian_conjugated(q_pq)
                 q_pq = q_pq.normal_ordered()
@@ -301,7 +304,7 @@ contain no parameters."
                     s = occ_indices_spin[s_idx]
                     if generalized and pq_counter > rs_counter:
                         continue
-                    coeff_d = PR({f't_{trotter_idx}_q_d_{doubles_counter}': 1})
+                    coeff_d = ParameterResolver({f't_{trotter_idx}_q_d_{doubles_counter}': 1})
                     q_pqrs = QubitExcitationOperator(((p, 1), (q, 1), (r, 0), (s, 0)), 1.0)
                     q_pqrs = q_pqrs - hermitian_conjugated(q_pqrs)
                     q_pqrs = q_pqrs.normal_ordered()

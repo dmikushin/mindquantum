@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+
 """
 This module serves as the base class for FermionOperator and QubitOperator.
-This module, we cite and refactor the code in Fermilib and OpenFermion
-licensed under Apache 2.0 license.
+
+This module, we cite and refactor the code in Fermilib and OpenFermion licensed under Apache 2.0 license.
 """
 import copy
 import numbers
@@ -24,12 +25,12 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from mindquantum.core.parameterresolver import ParameterResolver as PR
+from mindquantum.core.parameterresolver import ParameterResolver
 
 EQ_TOLERANCE = 1e-8
 
 _validate_coeff_type_num = (int, float, complex, np.int32, np.int64, np.float32, np.float64)
-_validate_coeff_type_var = (str, PR, dict)
+_validate_coeff_type_var = (str, ParameterResolver, dict)
 _validate_coeff_type = (_validate_coeff_type_num, _validate_coeff_type_var)
 
 
@@ -84,7 +85,7 @@ class _Operator(metaclass=ABCMeta):
     __hash__ = None
 
     def __init__(self, term=None, coefficient=1.0):
-        """initialize a empty class"""
+        """Initialize a empty class."""
         if not isinstance(coefficient, _validate_coeff_type):
             raise ValueError(
                 "Coefficient must be a numeric type or a string or a ParameterResolver, but get {}.".format(
@@ -97,23 +98,24 @@ class _Operator(metaclass=ABCMeta):
         self.terms_number = 0
         self.qubit_type = None
         if isinstance(coefficient, str):
-            self.coefficient = PR({coefficient: 1})
+            self.coefficient = ParameterResolver({coefficient: 1})
         elif isinstance(coefficient, dict):
-            self.coefficient = PR()
+            self.coefficient = ParameterResolver()
             for k, v in coefficient.items():
                 self.coefficient[k] = v
-        elif isinstance(coefficient, PR):
+        elif isinstance(coefficient, ParameterResolver):
             self.coefficient = coefficient
         elif isinstance(coefficient, numbers.Number):
-            self.coefficient = PR()
+            self.coefficient = ParameterResolver()
             self.coefficient.const = coefficient
         if term is None:
             self.terms = {}
 
     def subs(self, paras):
         """
-        replace the symbolical representation with the corresponding
-        value.Note the paras are dict type with {"sym1": c1, "sym2":c2}.
+        Replace the symbolical representation with the corresponding value.
+
+        Note the paras are dict type with {"sym1": c1, "sym2":c2}.
         """
         res = copy.deepcopy(self)
         for i in res.terms:
@@ -135,7 +137,7 @@ class _Operator(metaclass=ABCMeta):
         raise NotImplementedError
 
     def _parse_sequence(self, terms):
-        """parse sequence."""
+        """Parse a sequence."""
         if not terms:
             return ()
         if isinstance(terms[0], int):
@@ -167,7 +169,7 @@ class _Operator(metaclass=ABCMeta):
     def __imul__(self, multiplier):
         if isinstance(multiplier, _validate_coeff_type):
             if isinstance(multiplier, str):
-                multiplier = PR({multiplier: 1})
+                multiplier = ParameterResolver({multiplier: 1})
             for sub_term in self.terms:
                 self.terms[sub_term] *= multiplier
             return self
@@ -246,7 +248,7 @@ class _Operator(metaclass=ABCMeta):
                     self.terms[term] += operator.terms[term]
                 else:
                     self.terms[term] = operator.terms[term]
-                if not isinstance(self.terms[term], PR):
+                if not isinstance(self.terms[term], ParameterResolver):
                     if abs(self.terms[term]) < EQ_TOLERANCE:
                         self.terms.pop(term)
                 else:
@@ -276,7 +278,7 @@ class _Operator(metaclass=ABCMeta):
                     self.terms[term] -= operator.terms[term]
                 else:
                     self.terms[term] = -operator.terms[term]
-                if not isinstance(self.terms[term], PR):
+                if not isinstance(self.terms[term], ParameterResolver):
                     if abs(self.terms[term]) < EQ_TOLERANCE:
                         self.terms.pop(term)
                 else:
@@ -310,11 +312,11 @@ class _Operator(metaclass=ABCMeta):
         for term in set(tmp_self.terms).intersection(set(tmp_other.terms)):
             left = tmp_self.terms[term]
             right = tmp_other.terms[term]
-            if not isinstance(left, PR) and not isinstance(right, PR):
+            if not isinstance(left, ParameterResolver) and not isinstance(right, ParameterResolver):
                 if not abs(left - right) <= max(EQ_TOLERANCE, EQ_TOLERANCE * max(abs(left), abs(right))):
                     return False
                 return True
-            if isinstance(left, PR) and isinstance(right, PR):
+            if isinstance(left, ParameterResolver) and isinstance(right, ParameterResolver):
                 return left == right
             raise ValueError("Can not compare a parameterized operator with a non parameterized operator.")
         # check if there is any term only in one Operator, return false
@@ -327,8 +329,11 @@ class _Operator(metaclass=ABCMeta):
         return not self == other
 
     def compress(self, abs_tol=EQ_TOLERANCE):
-        """Eliminates the very small terms that close to zero.
-           Removes small imaginary and real parts.
+        """
+        Eliminate the very small terms that close to zero.
+
+        Removes small imaginary and real parts.
+
         Args:
             abs_tol(float): Absolute tolerance, must be at least 0.0
 
@@ -365,7 +370,7 @@ class _Operator(metaclass=ABCMeta):
                         coeff = coeff.real
                     elif abs(complex(coeff).real) <= abs_tol:
                         coeff = 1j * coeff.imag
-                    new_terms[term] = PR()
+                    new_terms[term] = ParameterResolver()
                     new_terms[term].const = coeff
             elif coeff.expression() != 0:
                 new_terms[term] = coeff
@@ -374,14 +379,14 @@ class _Operator(metaclass=ABCMeta):
 
     @property
     def constant(self):
-        """Returns the value of the constant term."""
+        """Return the value of the constant term."""
         if () in self.terms:
             return self.terms[()]
         return 0.0
 
     @constant.setter
     def constant(self, coefficient):
-        """Set the coefficient of the Identity term"""
+        """Set the coefficient of the Identity term."""
         self.terms[()] = coefficient
         return self
 
@@ -390,7 +395,7 @@ class _Operator(metaclass=ABCMeta):
 
     @property
     def size(self):
-        """Return the size of the hamiltonian terms"""
+        """Return the size of the hamiltonian terms."""
         return len(self.terms)
 
     def __iter__(self):

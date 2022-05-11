@@ -22,7 +22,9 @@ Contains classes representing:
 - TimeEvolution operator
 
 """
-from mindquantum.third_party.interaction_operator import InteractionOperator
+from mindquantum.third_party.interaction_operator import (  # noqa: F401
+    InteractionOperator,
+)
 
 from .fermion_operator import FermionOperator
 from .hamiltonian import Hamiltonian

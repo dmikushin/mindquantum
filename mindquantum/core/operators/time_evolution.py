@@ -59,6 +59,7 @@ class TimeEvolution:
     """
 
     def __init__(self, ops: QubitOperator, time=None):
+        """Initialize a TimeEvolution object."""
         from mindquantum.utils.type_value_check import _num_type
 
         if time is None:

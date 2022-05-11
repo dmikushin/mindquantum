@@ -39,15 +39,15 @@ def _get_graph_act_qubits_num(graph):
 
 def _get_graph_act_qubits(graph):
     """Get all acted qubits."""
-    nodes = set({})
+    nodes = set()
     for node in graph:
-        nodes |= set({i for i in node})
+        nodes |= set(node)
     nodes = list(nodes)
     return sorted(nodes)
 
 
 def _check_graph(graph):
-    """check graph"""
+    """Check graph."""
     _check_input_type('graph', list, graph)
     for edge in graph:
         _check_input_type('edge', tuple, edge)
@@ -58,8 +58,9 @@ def _check_graph(graph):
 
 class MaxCutAnsatz(Ansatz):
     r"""
-    The MaxCut ansatz. For more detail,
-    please refers to https://arxiv.org/pdf/1411.4028.pdf.
+    The MaxCut ansatz.
+
+    For more detail, please refers to https://arxiv.org/pdf/1411.4028.pdf.
 
     .. math::
 
@@ -108,6 +109,7 @@ class MaxCutAnsatz(Ansatz):
     """
 
     def __init__(self, graph, depth=1):
+        """Initialize a MaxCutAnsatz object."""
         _check_int_type('depth', depth)
         _check_value_should_not_less('depth', 1, depth)
         _check_graph(graph)
@@ -177,8 +179,9 @@ class MaxCutAnsatz(Ansatz):
 
     def get_cut_value(self, partition):
         """
-        Get the cut values for given partitions. The partition is a list that contains two lists,
-        each list contains the nodes of the given graph.
+        Get the cut values for given partitions.
+
+        The partition is a list that contains two lists, each list contains the nodes of the given graph.
 
         Args:
             partition (list): a partition of the graph consided.
@@ -196,7 +199,7 @@ class MaxCutAnsatz(Ansatz):
             for node in part:
                 all_node.add(node)
         if all_node != self.all_node:
-            raise ValueError(f"Invalid partition, partition nodes are different with given graph.")
+            raise ValueError("Invalid partition, partition nodes are different with given graph.")
         cut_value = 0
         for edge in self.graph:
             node_left, node_right = edge

@@ -46,6 +46,10 @@ if [[ ${created_venv:-0} -eq 1 || ${do_update_venv:-0} -eq 1 ]]; then
         pkgs+=(cmake)
     fi
 
+    if [ "${enable_tests:-0}" -eq 1 ]; then
+        pkgs+=(pytest pytest-cov pytest-mock mock)
+    fi
+
     if [ "${do_docs:-0}" -eq 1 ]; then
         pkgs+=(breathe sphinx sphinx_rtd_theme importlib-metadata myst-parser)
     fi
