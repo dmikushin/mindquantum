@@ -16,16 +16,11 @@
 
 """Circuit display utilities."""
 
+from .bloch_plt_drawer import BlochScene
 from .circuit_text_drawer import brick_model  # noqa: F401
 from .measure_res_drawer import measure_text_drawer  # noqa: F401
-from .qubit_bloch_drawer import (  # noqa: F401
-    decompose,
-    draw_on_jupyter,
-    draw_single_qubit_bloch,
-    draw_single_qubit_bloch_time_evolution,
-)
 
-__all__ = []
+__all__ = ['BlochScene']
 # __all__ = ['brick_model', 'measure_text_drawer']
 
 __all__.sort()

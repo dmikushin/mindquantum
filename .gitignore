@@ -28,3 +28,4 @@ docs/doxygen
 Testing
 # clangd local cache directory
 .cache
+ stat

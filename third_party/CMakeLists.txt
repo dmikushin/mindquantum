@@ -29,10 +29,6 @@ if(ENABLE_PROJECTQ)
   add_subdirectory(projectq)
 endif()
 
-if(ENABLE_QUEST)
-  add_subdirectory(quest)
-endif()
-
 # =============================================================================
 
 include(${CMAKE_CURRENT_LIST_DIR}/pybind11/pybind11.cmake)

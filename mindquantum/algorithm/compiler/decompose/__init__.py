@@ -14,13 +14,15 @@
 # limitations under the License.
 # ============================================================================
 
-"""Quantum algorithms."""
+"""Decompose rule for gate."""
 
-from . import compiler, library, nisq  # noqa: F401
-from .library import *  # noqa: F401,F403
-from .nisq import *  # noqa: F401,F403
+from . import x_related, xx_related, yy_related
+from .x_related import ccx_decompose  # noqa: F401
+from .xx_related import cxx_decompose, xx_decompose  # noqa: F401
+from .yy_related import cyy_decompose, yy_decompose  # noqa: F401
 
 __all__ = []
-__all__.extend(library.__all__)
-__all__.extend(nisq.__all__)
+__all__.extend(x_related.__all__)
+__all__.extend(xx_related.__all__)
+__all__.extend(yy_related.__all__)
 __all__.sort()

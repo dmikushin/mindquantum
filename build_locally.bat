@@ -40,7 +40,6 @@ set dry_run=0
 set enable_cxx=0
 set enable_gpu=0
 set enable_projectq=1
-set enable_quest=0
 set enable_tests=0
 set force_local_pkgs=0
 set n_jobs=-1
@@ -54,7 +53,7 @@ set source_dir=%BASEPATH%
 set build_dir=%BASEPATH%\build
 set python_venv_path=%BASEPATH%\venv
 
-set third_party_libraries=boost catch2 eigen3 fmt gmp nlohmann_json projectq pybind11 quest symengine tweedledum
+set third_party_libraries=boost catch2 eigen3 fmt gmp nlohmann_json projectq pybind11 symengine tweedledum
 set third_party_libraries_N=10
 
 set cmake_book[0]=OFF
@@ -448,12 +447,6 @@ if !enable_projectq! == 1 (
   set cmake_args=!cmake_args! -DENABLE_PROJECTQ:BOOL=OFF
 )
 
-if !enable_quest! == 1 (
-  set cmake_args=!cmake_args! -DENABLE_QUEST:BOOL=ON
-) else (
-  set cmake_args=!cmake_args! -DENABLE_QUEST:BOOL=OFF
-)
-
 if !enable_tests! == 1 set cmake_args=!cmake_args! -DBUILD_TESTING:BOOL=ON
 
 if !force_local_pkgs! == 1 (
@@ -624,9 +617,9 @@ exit /B 0
   echo   /Venv *path*        Path to Python virtual environment
   echo                       Defaults to: %python_venv_path%
   echo   /With*library*      Build the third-party *library* from source (*library* is case-insensitive)
-  echo                       (ignored if /LocalPkgs is passed, except for projectq and quest)
+  echo                       (ignored if /LocalPkgs is passed, except for projectq)
   rem echo   /Without*library*   Do not build the third-party library from source (*library* is case-insensitive)
-  rem echo                       (ignored if /LocalPkgs is passed, except for projectq and quest)
+  rem echo                       (ignored if /LocalPkgs is passed, except for projectq)
   echo
   echo CUDA related options:
   echo   /CudaArch *arch*    Comma-separated list of architectures to generate device code for.

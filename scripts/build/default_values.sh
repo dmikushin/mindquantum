@@ -31,7 +31,6 @@
 : "${enable_cxx=0}"
 : "${enable_gpu=0}"
 : "${enable_projectq=1}"
-: "${enable_quest=0}"
 : "${enable_tests=0}"
 : "${force_local_pkgs=0}"
 [[ -z ${local_pkgs@a} ]] && local_pkgs=()

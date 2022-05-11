@@ -417,7 +417,6 @@ class GenerateRequirementFile(setuptools.Command):
 # ==============================================================================
 
 ext_modules = [
-    CMakeExtension(pymod='mindquantum.libQuEST', target='QuEST', optional=True),
     CMakeExtension(pymod='mindquantum.mqbackend'),
     CMakeExtension(pymod='mindquantum.experimental._cxx_core', optional=True),
     CMakeExtension(pymod='mindquantum.experimental._cxx_cengines', optional=True),

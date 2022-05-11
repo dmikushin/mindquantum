@@ -56,7 +56,7 @@ function extra_help() {
     echo -e '\nExample calls:'
     echo "$PROGRAM -B build"
     echo "$PROGRAM -B build --gpu"
-    echo "$PROGRAM -B build --cxx --with-boost --without-quest --venv=/tmp/venv"
+    echo "$PROGRAM -B build --cxx --with-boost --without-gmp --venv=/tmp/venv"
 }
 
 # ==============================================================================
@@ -126,7 +126,6 @@ cmake_option_names[cmake_debug_mode]=ENABLE_CMAKE_DEBUG
 cmake_option_names[enable_cxx]=ENABLE_CXX_EXPERIMENTAL
 cmake_option_names[enable_gpu]=ENABLE_CUDA
 cmake_option_names[enable_projectq]=ENABLE_PROJECTQ
-cmake_option_names[enable_quest]=ENABLE_QUEST
 cmake_option_names[enable_tests]=BUILD_TESTING
 cmake_option_names[do_clean_3rdparty]=CLEAN_3RDPARTY_INSTALL_DIR
 

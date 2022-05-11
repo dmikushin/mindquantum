@@ -86,7 +86,7 @@ evolution operator, but get {}".format(
         if not isinstance(para, (dict, ParameterResolver)):
             raise TypeError(f'para requiers a number or a dict or a ParameterResolver, but get {type(para)}')
         para = ParameterResolver(para)
-
+    para = 2 * ParameterResolver()(para)
     out = []
     term = sorted(term)
     rxs = []
@@ -111,10 +111,7 @@ evolution operator, but get {}".format(
         for i in range(len(term) - 1):
             out.append(gates.X.on(term[i + 1][0], term[i][0]))
         out.append(gates.BarrierGate(False))
-        if isinstance(para, (dict, ParameterResolver)):
-            out.append(gates.RZ({i: 2 * j for i, j in para.items()}).on(term[-1][0]))
-        else:
-            out.append(gates.RZ(2 * para).on(term[-1][0]))
+        out.append(gates.RZ(para).on(term[-1][0]))
         for i in range(len(out) - 1)[::-1]:
             if i in rxs:
                 out.append(gates.RX(np.pi * 3.5).on(out[i].obj_qubits))

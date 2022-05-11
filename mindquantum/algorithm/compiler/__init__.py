@@ -13,14 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+"""MindQuantum compiler related modules."""
 
-"""Quantum algorithms."""
-
-from . import compiler, library, nisq  # noqa: F401
-from .library import *  # noqa: F401,F403
-from .nisq import *  # noqa: F401,F403
-
-__all__ = []
-__all__.extend(library.__all__)
-__all__.extend(nisq.__all__)
-__all__.sort()
+from . import decompose  # noqa: F401

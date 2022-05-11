@@ -175,7 +175,6 @@ cmake_args=(-DIN_PLACE_BUILD:BOOL=ON
             -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
             -DCMAKE_BUILD_TYPE:STRING="$build_type"
             -DENABLE_PROJECTQ:BOOL="${CMAKE_BOOL[$enable_projectq]}"
-            -DENABLE_QUEST:BOOL="${CMAKE_BOOL[$enable_quest]}"
             -DENABLE_CMAKE_DEBUG:BOOL="${CMAKE_BOOL[$cmake_debug_mode]}"
             -DENABLE_CUDA:BOOL="${CMAKE_BOOL[$enable_gpu]}"
             -DENABLE_CXX_EXPERIMENTAL:BOOL="${CMAKE_BOOL[$enable_cxx]}"

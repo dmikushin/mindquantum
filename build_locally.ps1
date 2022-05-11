@@ -75,7 +75,6 @@ $enable_ccache = 0
 $enable_cxx = 0
 $enable_gpu = 0
 $enable_projectq = 1
-$enable_quest = 0
 $enable_tests = 0
 $force_local_pkgs = 0
 $local_pkgs = @()
@@ -215,9 +214,9 @@ function help_message() {
     Write-Output '  -Venv <path>        Path to Python virtual environment'
     Write-Output ("                      Defaults to: {0}" -f $python_venv_path)
     Write-Output '  -With<library>      Build the third-party <library> from source (<library> is case-insensitive)'
-    Write-Output '                      (ignored if --local-pkgs is passed, except for projectq and quest)'
+    Write-Output '                      (ignored if --local-pkgs is passed, except for projectq)'
     Write-Output '  -Without<library>   Do not build the third-party library from source (<library> is case-insensitive)'
-    Write-Output '                      (ignored if --local-pkgs is passed, except for projectq and quest)'
+    Write-Output '                      (ignored if --local-pkgs is passed, except for projectq)'
     Write-Output 'CUDA related options:'
     Write-Output '  -CudaArch <arch>    Comma-separated list of architectures to generate device code for.'
     Write-Output '                      Only useful if -Gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.'
@@ -361,9 +360,6 @@ foreach($arg in $args) {
 
     if ($library -eq "projectq") {
         $enable_projectq = $enable_lib
-    }
-    elseif ($library -eq "quest") {
-        $enable_quest = $enable_lib
     }
     elseif ($enable_lib -eq 1) {
         $local_pkgs += $library
@@ -557,7 +553,6 @@ $cmake_args = @('-DIN_PLACE_BUILD:BOOL=ON'
                 '-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON'
                 "-DCMAKE_BUILD_TYPE:STRING={0}" -f $build_type
                 "-DENABLE_PROJECTQ:BOOL={0}" -f $CMAKE_BOOL[$enable_projectq]
-                "-DENABLE_QUEST:BOOL={0}" -f $CMAKE_BOOL[$enable_quest]
                 "-DENABLE_CMAKE_DEBUG:BOOL={0}" -f $CMAKE_BOOL[$cmake_debug_mode]
                 "-DENABLE_CUDA:BOOL={0}" -f $CMAKE_BOOL[$enable_gpu]
                 "-DENABLE_CXX_EXPERIMENTAL:BOOL={0}" -f $CMAKE_BOOL[$enable_cxx]

@@ -45,8 +45,6 @@ parse_with_libraries() {
 
     if [ "$1" == "projectq" ]; then
         enable_projectq=$2
-    elif [ "$1" == "quest" ]; then
-        enable_quest=$2
     elif [ "$2" -eq 1 ]; then
         local_pkgs+=("$1")
     else
@@ -84,9 +82,9 @@ help_message() {
     echo '  --venv=[dir]         Path to Python virtual environment'
     echo "                       Defaults to: $python_venv_path"
     echo '  --with-<library>     Build the third-party <library> from source'
-    echo '                       (ignored if --local-pkgs is passed, except for projectq and quest)'
+    echo '                       (ignored if --local-pkgs is passed, except for projectq)'
     echo '  --without-<library>  Do not build the third-party library from source'
-    echo '                       (ignored if --local-pkgs is passed, except for projectq and quest)'
+    echo '                       (ignored if --local-pkgs is passed, except for projectq)'
     echo ''
     echo 'CUDA related options:'
     echo '  --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.'
