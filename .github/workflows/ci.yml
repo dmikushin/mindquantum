@@ -88,11 +88,11 @@ jobs:
 
       - name: Configure
         run: >-
-          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
           --configure-only -c --clean-3rdparty --prefix="${{ github.workspace }}/install"
 
       - name: Build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+        run: ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
 
       - name: Install
         run: ./build_locally.sh --install  # NB: no need to pass the other parameters
@@ -219,11 +219,11 @@ jobs:
 
       - name: Configure
         run: >-
-          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
           --configure-only -c --clean-3rdparty --prefix="${{ github.workspace }}/install"
 
       - name: Build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+        run: ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
 
       - name: Install
         run: ./build_locally.sh --install  # NB: no need to pass the other parameters
@@ -305,11 +305,11 @@ jobs:
 
       - name: Configure
         run: >-
-          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
           --configure-only -c --clean-3rdparty --prefix="${{ github.workspace }}/install"
 
       - name: Build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+        run: ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
 
       - name: Install
         run: ./build_locally.sh --install  # NB: no need to pass the other parameters
@@ -384,12 +384,12 @@ jobs:
           CC: cl
           CXX: cl
         run: >-
-           ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Ninja -Test -CCache
+           ./build_locally.ps1 -Cxx -WithProjectq -DebugCmake -Ninja -Test -CCache
            -ConfigureOnly -C -Clean3rdParty -Prefix "${{ github.workspace }}/install"
            -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
 
       - name: Build
-        run: ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Ninja -Test -CCache
+        run: ./build_locally.ps1 -Cxx -WithProjectq -DebugCmake -Ninja -Test -CCache
 
       - name: Install
         run: ./build_locally.ps1 -Install
@@ -462,7 +462,7 @@ jobs:
   #       env:
   #         BOOST_ROOT: ${{ env.BOOST_PATH }}
   #       run: >-
-  #          ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Test
+  #          ./build_locally.ps1 -Cxx -WithProjectq -DebugCmake -Test
   #           -G "MinGW Makefiles" -ConfigureOnly -C -Clean3rdParty -Prefix "${{ github.workspace }}/install"
   #          -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
 
@@ -470,7 +470,7 @@ jobs:
   #       env:
   #         BOOST_ROOT: ${{ env.BOOST_PATH }}
   #       run: >-
-  #          ./build_locally.ps1 -Cxx -WithProjectq -WithoutQuest -DebugCmake -Test
+  #          ./build_locally.ps1 -Cxx -WithProjectq -DebugCmake -Test
 
   #     - name: Install
   #       run: ./build_locally.ps1 -Install
@@ -609,7 +609,7 @@ jobs:
           CC: ${{ matrix.CC }}
           CXX: ${{ matrix.CXX }}
         run: >-
-          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --ccache
+          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
           --configure-only -c --clean-3rdparty --prefix="$PWD/install"
           ${{ matrix.cmake_generator }}
 
@@ -732,7 +732,7 @@ jobs:
         shell: bash --login -eo pipefail -o igncr {0}
         run: |
           export PATH="$PATH:$PWD/ccache/bin"
-          ./build_locally.sh --cxx --with-projectq --without-quest --debug-cmake --test --ccache \
+          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache \
           --configure-only -c --clean-3rdparty --prefix=$PWD/install \
           ${{ matrix.cmake_generator }}
 
@@ -740,7 +740,7 @@ jobs:
         shell: bash --login -eo pipefail -o igncr {0}
         run: |
           export PATH="$PATH:$PWD/ccache/bin"
-          ./build_locally.sh --cxx --with-projectq --without-quest --debug-cmake --test --ccache
+          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
 
       - name: Install
         shell: bash --login -eo pipefail -o igncr {0}
@@ -831,11 +831,11 @@ jobs:
 
       - name: Configure
         run: >-
-          ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu --test --ccache
+          ./build_locally.sh --cxx --with-projectq --debug-cmake --gpu --test --ccache
           --configure-only -c --clean-3rdparty --prefix="${{ github.workspace }}/install"
 
       - name: Build
-        run: ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --gpu --test --ccache
+        run: ./build_locally.sh --cxx --with-projectq --debug-cmake --gpu --test --ccache
 
       - name: Install
         run: ./build_locally.sh --install
@@ -911,7 +911,7 @@ jobs:
   #         if [ -f /opt/intel/oneapi/tbb/latest/env/vars.sh ]; then
   #           source /opt/intel/oneapi/tbb/latest/env/vars.sh
   #         fi
-  #         ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --gpu \
+  #         ./build_locally.sh --cxx --with-projectq --debug-cmake --test --gpu \
   #         --configure-only -c --clean-3rdparty  --prefix="${{ github.workspace }}/install"
 
   #     - name: Build
@@ -920,7 +920,7 @@ jobs:
   #         if [ -f /opt/intel/oneapi/tbb/latest/env/vars.sh ]; then
   #           source /opt/intel/oneapi/tbb/latest/env/vars.sh
   #         fi
-  #         ./build_locally.sh --cxx --with-projectq --with-quest --debug-cmake --test --gpu
+  #         ./build_locally.sh --cxx --with-projectq --debug-cmake --test --gpu
 
   #     - name: Install
   #       run: ./build_locally.sh --install
