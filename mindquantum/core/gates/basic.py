@@ -272,7 +272,7 @@ class SelfHermitianGate(QuantumGate):
         return copy.deepcopy(self)
 
 
-class AntiHermitianGate(BasicGate):
+class AntiHermitianGate(QuantumGate):
     """Base class for anti-hermitian gates."""
 
     pass
@@ -343,7 +343,7 @@ class MatrixGate(QuantumGate):
         return super().__eq__(other) and np.allclose(self.matrix(), other.matrix())
 
 
-class NoneParameterGate(BasicGate):
+class NoneParameterGate(QuantumGate):
     """Base class for non-parametric gates."""
 
     def __call__(self, obj_qubits, ctrl_qubits=None):
