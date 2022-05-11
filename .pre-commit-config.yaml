@@ -15,7 +15,7 @@
 ---
 
 ci:
-  skip: [check-manifest, pylint]
+  skip: [check-manifest, pylint, cppcheck, cpplint]
 
 repos:
   - repo: meta
@@ -138,6 +138,7 @@ repos:
     hooks:
       - id: clang-format
         args: [-i]
+        additional_dependencies: ['clang-format']
       - id: clang-tidy
         stages: [manual]
         args: [-Bbuild, -B.pre-commit-build]
@@ -165,3 +166,4 @@ repos:
                --repository=mindquantum,
                --linelength=120,
                --recursive]
+        additional_dependencies: ['cpplint']
