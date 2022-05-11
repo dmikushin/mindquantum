@@ -17,47 +17,22 @@ rem limitations under the License.
 setlocal ENABLEDELAYEDEXPANSION ENABLEEXTENSIONS
 
 set BASEPATH=%~dp0
-set BASENAME=%~nx0
+set ROOTDIR=%BASEPATH%
+set SCRIPTDIR=%BASEPATH%\scripts\build
+set PROGRAM=%~nx0
 
 rem ============================================================================
 rem Default values
 
-set build_type=Release
-set cmake_debug_mode=0
-set cmake_make_silent=0
 set configure_only=0
-set cuda_arch=
 set do_clean=0
-set do_clean_3rdparty=0
 set do_clean_build_dir=0
 set do_clean_cache=0
-set do_clean_venv=0
-set do_configure=0
 set do_docs=0
 set do_install=0
-set do_update_venv=0
-set dry_run=0
-set enable_cxx=0
-set enable_gpu=0
-set enable_projectq=1
-set enable_tests=0
-set force_local_pkgs=0
-set n_jobs=-1
-set n_jobs_default=0
-set ninja=0
 set prefix=
 
-for /f  "tokens=2 delims==" %%d in ('wmic cpu get NumberOfLogicalProcessors /value ^| findstr "="') do @set /A n_jobs_default+=%%d >NUL
-
-set source_dir=%BASEPATH%
-set build_dir=%BASEPATH%\build
-set python_venv_path=%BASEPATH%\venv
-
-set third_party_libraries=boost catch2 eigen3 fmt gmp nlohmann_json projectq pybind11 symengine tweedledum
-set third_party_libraries_N=10
-
-set cmake_book[0]=OFF
-set cmake_book[1]=ON
+call %SCRIPTDIR%\default_values.bat
 
 rem ============================================================================
 
@@ -251,167 +226,34 @@ rem ============================================================================
     shift & goto :initial
   )
 
-:done_parsing
-
-rem ----------------------------------------------------------------------------
-rem Handle unparsed arguments
-
-:unparsed
-  if "%1" == "" goto :done_unparsed
   set unparsed_args=!unparsed_args! %1
-  shift
+  shift & goto :initial
 
-:done_unparsed
+:done_parsing
 
 rem ============================================================================
 rem Locate python or python3
 
-where python3
-if %ERRORLEVEL% == 0 (
-  set PYTHON=python3
-  goto :done_python
-)
-where python
-if %ERRORLEVEL% == 0 (
-  set PYTHON=python
-  goto :done_python
-)
-
-echo Unable to locate python or python3!
-goto :EOF
-
-:done_python
-
+call %SCRIPTDIR%\locate_python3.bat
+if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
 
 rem ============================================================================
 
-cd %BASEPATH%
+cd %ROOTDIR%
 
-if !do_clean_venv! == 1 (
-  echo Deleting virtualenv folder: !python_venv_path!
-  if exist !python_venv_path! call :call_cmd rd /Q /S !python_venv_path!
-)
+rem ----------------------------------------------------------------------------
 
 if !do_clean_build_dir! == 1 (
   echo Deleting build folder: !build_dir!
   if exist !build_dir! call :call_cmd rd /Q /S !build_dir!
 )
 
-set created_venv=0
-if NOT exist !python_venv_path! (
-  set created_venv=1
-  echo Creating Python virtualenv: !PYTHON! -m venv !python_venv_path!
-  call :call_cmd !PYTHON! -m venv !python_venv_path!
-  goto :activate_venv
-)
-
-if !do_update_venv! == 1 (
-  echo Updating Python virtualenv: !PYTHON! -m venv --upgrade !python_venv_path!
-  call :call_cmd !PYTHON! -m venv --upgrade !python_venv_path!
-)
-
-:activate_venv
-echo Activating Python virtual environment: !python_venv_path!
-call :call_cmd !python_venv_path!\Scripts\activate.bat
-
-rem ------------------------------------------------------------------------------
-rem Locate cmake or cmake3
-
-rem If from the virtual environment, it's always good
-set has_cmake=0
-set cmake_from_venv=0
-if exist !python_venv_path!\Scripts\cmake.exe (
-   set CMAKE=!python_venv_path!\Scripts\cmake.exe
-   set cmake_from_venv=1
-   goto: done_cmake
-) else (
-  if exist !python_venv_path!\bin\cmake.exe (
-     set CMAKE=!python_venv_path!\bin\cmake.exe
-     set cmake_from_venv=1
-     goto: done_cmake
-  )
-)
-
-rem -------------------------------------
-
-type nul > tmp
-fc tmp "CMakeLists.txt" /lb 30 | find "cmake_minimum_required" > tmp
-for /F "tokens=2 delims=()" %%i in ('type tmp') do echo %%i > tmp
-for /F "tokens=2 delims= " %%i in ('type tmp') do echo %%i > tmp
-for /F "tokens=1,2 delims=." %%i in ('type tmp') do (
-  set cmake_version_min=%%i.%%j
-  set cmake_major_min=%%i
-  set cmake_minor_min=%%j
-)
-del tmp
-
-where cmake >NUL
-if %ERRORLEVEL% == 0 (
-   set CMAKE=cmake
-   goto :has_cmake
-)
-where cmake3 >NUL
-if %ERRORLEVEL% == 0 (
-   set CMAKE=cmake3
-   goto :has_cmake
-)
-
-goto :install_cmake
-
-:has_cmake
-
-for /F "tokens=*" %%i in ('cmake --version') do (
-  set cmake_version_str=%%i
-  goto :done_get_cmake_version
-)
-
-:done_get_cmake_version
-
-for %%i in (!cmake_version_str!) do set cmake_version=%%i
-
-for /F "tokens=1,2 delims=." %%a in ("!cmake_version!") do (
-    set cmake_major=%%a
-    set cmake_minor=%%b
-)
-
-if !cmake_major_min! LEQ !cmake_major! (
-   if !cmake_minor_min! LEQ !cmake_minor! (
-      goto :done_cmake
-   )
-)
-
-:install_cmake
-
-echo Installing CMake inside the Python virtual environment
-call :call_cmd !PYTHON! -m pip install -U "cmake>=!cmake_version_min!"
-
-:done_cmake
-
-rem ------------------------------------------------------------------------------
-
-if !created_venv! == 1 goto :update_venv
-if !do_update_venv! == 1 goto :update_venv
-
-goto :done_update_venv
-
-:update_venv
-
-set pkgs=pip setuptools wheel build pybind11
-
-if !cmake_from_venv! == 1 set pkgs=!pkgs! cmake
-
-if !enable_tests! == 1 set pkgs=!pkgs! pytest pytest-cov pytest-mock mock
-
-if !do_docs! == 1 set pkgs=!pkgs! breathe sphinx sphinx_rtd_theme importlib-metadata myst-parser
-
-rem  TODO(dnguyen): add wheel delocation package for Windows once we figure this out
-
-echo Updating Python packages: !PYTHON! -m pip install -U !pkgs!
-call :call_cmd !PYTHON! -m pip install -U !pkgs!
-
-:done_update_venv
+rem NB: `created_venv` variable can be used to detect if a virtualenv was created or not
+call %SCRIPTDIR%\python_virtualenv_activate.bat
+if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
 
 if NOT !dry_run! == 1 (
+   rem Make sure the root directory is in the virtualenv PATH
    for /F %%i in ('!PYTHON! -c "import site; print(site.getsitepackages()[0])"') do set site_pkg_dir=%%i
    set pth_file=!site_pkg_dir!\mindquantum_local.pth
 
@@ -420,6 +262,17 @@ if NOT !dry_run! == 1 (
       echo %BASEPATH% > !pth_file!
    )
 )
+
+rem ------------------------------------------------------------------------------
+rem Locate cmake or cmake3
+
+call %SCRIPTDIR%\locate_cmake.bat
+if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
+
+rem ------------------------------------------------------------------------------
+
+call %SCRIPTDIR%\python_virtualenv_update.bat
+if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
 
 rem ----------------------------------------------------------------------------
 rem Setup arguments for build
@@ -545,10 +398,6 @@ set %~1=!%~1: =;!
 set %~1=!%~1:,=;!
 exit /B 0
 
-:call_cmd
-  if NOT !dry_run! == 1 ( %* ) else (echo %*)
-  EXIT /B 0
-
 :call_cmake
   if NOT !dry_run! == 1 (
     echo **********
@@ -569,29 +418,28 @@ exit /B 0
 
 :help_message
   echo Build MindQunantum locally (in-source build)
-  echo
+  echo:
   echo This is mainly relevant for developers that do not want to always
   echo have to reinstall the Python package
-  echo
+  echo:
   echo This script will create a Python virtualenv in the MindQuantum root
   echo directory and then build all the C++ Python modules and place the
   echo generated libraries in their right locations within the MindQuantum
   echo folder hierarchy so Python knows how to find them.
-  echo
+  echo:
   echo A pth-file will be created in the virtualenv site-packages directory
   echo so that the MindQuantum root folder will be added to the Python PATH
   echo without the need to modify PYTHONPATH.
-  echo
+  echo:
   echo Usage:
   echo   %BASENAME% [options]
-  echo
+  echo:
   echo Options:
-  echo   /h,/he lp           Show this help message and exit
-  echo   /n                  Dry run; only print commands but do not execute them
-  echo
+  echo   /H,/Help            Show this help message and exit
+  echo   /N                  Dry run; only print commands but do not execute them
   echo   /B,/Build [dir]     Specify build directory
   echo                       Defaults to: %build_dir%
-  echo   /c,/Clean           Run make clean before building
+  echo   /C,/Clean           Run make clean before building
   echo   /Clean3rdParty      Clean 3rd party installation directory
   echo   /CleanAll           Clean everything before building.
   echo                       Equivalent to --clean-venv --clean-builddir
@@ -599,14 +447,14 @@ exit /B 0
   echo   /CleanCache         Re-run CMake with a clean CMake cache
   echo   /CleanVenv          Delete Python virtualenv before building
   echo   /ConfigureOnly      Stop after the CMake configure and generation steps (ie. before building MindQuantum)
-  echo   /cxx                (experimental) Enable MindQuantum C++ support
+  echo   /Cxx                (experimental) Enable MindQuantum C++ support
   echo   /Debug              Build in debug mode
   echo   /DebugCMake         Enable debugging mode for CMake configuration step
   echo   /Doc, /Docs         Setup the Python virtualenv for building the documentation and ask CMake to build the
   echo                       documentation
   echo   /Gpu                Enable GPU support
-  echo   /Install            Build the ´install´ target
-  echo   /j,/Jobs [N]        Number of parallel jobs for building
+  echo   /Install            Build the 'install' target
+  echo   /J,/Jobs [N]        Number of parallel jobs for building
   echo                       Defaults to: !n_jobs_default!
   echo   /LocalPkgs          Compile third-party dependencies locally
   echo   /Ninja              Use the Ninja CMake generator
@@ -620,14 +468,13 @@ exit /B 0
   echo                       (ignored if /LocalPkgs is passed, except for projectq)
   rem echo   /Without*library*   Do not build the third-party library from source (*library* is case-insensitive)
   rem echo                       (ignored if /LocalPkgs is passed, except for projectq)
-  echo
+  echo:
   echo CUDA related options:
   echo   /CudaArch *arch*    Comma-separated list of architectures to generate device code for.
   echo                       Only useful if /Gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.
-  echo
-  echo NB: at the first unknown option, the argument parsing stops and all options from there onwards are passed onto
-  echo     CMake
-  echo
+  echo:
+  echo NB: any unknown arguments will be passed onto the CMake during the configuration step.
+  echo:
   echo Example calls:
   echo %BASENAME% /B build
   echo %BASENAME% /B build /gpu

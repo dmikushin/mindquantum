@@ -21,7 +21,7 @@ PROGRAM=$(basename "${BASH_SOURCE[0]:-$0}")
 # Default values for this particular script
 
 delocate_wheel=1
-build_isolation=0
+build_isolation=1
 output_path="${BASEPATH}/output"
 platform_name=''
 
@@ -54,9 +54,9 @@ function extra_help() {
     echo '  -p,--plat-name=[dir] Platform name to use for wheel delocation'
     echo '                       (only effective if --delocate is used)'
     echo -e '\nExample calls:'
-    echo "$PROGRAM -B build"
-    echo "$PROGRAM -B build --gpu"
-    echo "$PROGRAM -B build --cxx --with-boost --without-gmp --venv=/tmp/venv"
+    echo "$PROGRAM"
+    echo "$PROGRAM --gpu"
+    echo "$PROGRAM --cxx --with-boost --without-gmp --venv=/tmp/venv"
 }
 
 # ==============================================================================
@@ -72,7 +72,7 @@ function parse_extra_args() {
                          delocate_wheel=0
                          ;;
         no-isolation )   no_arg;
-                         build_isolation=1
+                         build_isolation=0
                          ;;
         o | output )     needs_arg;
                          output_path="$OPTARG"
@@ -104,12 +104,6 @@ cd "${ROOTDIR}"
 
 # NB: `created_venv` variable can be used to detect if a virtualenv was created or not
 . "$ROOTDIR/scripts/build/python_virtualenv_activate.sh"
-
-# ------------------------------------------------------------------------------
-# Locate cmake or cmake3
-
-# NB: `cmake_from_venv` variable is set by this script (and is used by python_virtualenv_update.sh)
-. "$ROOTDIR/scripts/build/locate_cmake.sh"
 
 # ------------------------------------------------------------------------------
 # Update Python virtualenv (if requested/necessary)
@@ -147,10 +141,6 @@ if [ -n "$cmake_generator" ]; then
     args+=(-G "${cmake_generator}")
 fi
 
-if [[ $n_jobs -eq -1 && ! $cmake_generator == "Ninja"  ]]; then
-    n_jobs=$n_jobs_default
-fi
-
 if [ $n_jobs -ne -1 ]; then
     args+=(build --parallel="$n_jobs")
 fi
@@ -179,7 +169,7 @@ for arg in "${args[@]}"; do
 done
 
 args=("-w")
-if [ $build_isolation -eq 1 ]; then
+if [ $build_isolation -eq 0 ]; then
     args+=("--no-isolation")
 fi
 
@@ -206,6 +196,6 @@ fi
 
 call_cmd mkdir -pv "${output_path}"
 
-call_cmd mv -v dist/* "${output_path}"
+call_cmd mv -v "$ROOTDIR/dist/*" "${output_path}"
 
 echo "------Successfully created mindquantum package------"

@@ -20,17 +20,20 @@ PROGRAM=$(basename "${BASH_SOURCE[0]:-$0}")
 # ==============================================================================
 
 configure_only=0
-do_configure=0
 do_clean=0
 do_clean_build_dir=0
 do_clean_cache=0
+do_configure=0
 do_docs=0
 do_install=0
 prefix=''
 
 . "$ROOTDIR/scripts/build/default_values.sh"
 
-# ------------------------------------------------------------------------------
+# Load common bash helper functions
+. "$ROOTDIR/scripts/build/common_functions.sh"
+
+# -----------------------------------------------------------------------------
 
 function help_header() {
     echo 'Build MindQunantum locally (in-source build)'
@@ -124,9 +127,6 @@ function parse_extra_args() {
 # Locate python or python3
 . "$ROOTDIR/scripts/build/locate_python3.sh"
 
-# Load common bash helper functions
-. "$ROOTDIR/scripts/build/common_functions.sh"
-
 # ==============================================================================
 
 set -e
@@ -181,6 +181,7 @@ cmake_args=(-DIN_PLACE_BUILD:BOOL=ON
             -DBUILD_TESTING:BOOL="${CMAKE_BOOL[$enable_tests]}"
             -DCLEAN_3RDPARTY_INSTALL_DIR:BOOL="${CMAKE_BOOL[$do_clean_3rdparty]}"
             -DUSE_VERBOSE_MAKEFILE:BOOL="${CMAKE_BOOL[! $cmake_make_silent]}")
+make_args=()
 
 if [[ -n "$cmake_generator" ]]; then
     cmake_args+=(-G "${cmake_generator}")
@@ -217,6 +218,7 @@ fi
 
 if [ $n_jobs -ne -1 ]; then
     cmake_args+=(-DJOBS:STRING="$n_jobs")
+    make_args+=(-j "$n_jobs")
 fi
 
 # ------------------------------------------------------------------------------
@@ -238,11 +240,6 @@ fi
 
 if [ $configure_only -eq 1 ]; then
     exit 0
-fi
-
-make_args=()
-if [ $n_jobs -ne -1 ]; then
-    make_args+=(-j "$n_jobs")
 fi
 
 target=all

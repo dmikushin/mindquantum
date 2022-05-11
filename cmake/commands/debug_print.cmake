@@ -27,7 +27,9 @@ function(debug_print mode)
   if(ENABLE_CMAKE_DEBUG
      OR MINDQUANTUM_DEBUG
      OR mindquantum_DEBUG)
-    foreach(_msg ${ARGN})
+    math(EXPR _argc "${ARGC} - 1")
+    foreach(_idx RANGE 1 ${_argc} 1)
+      set(_msg "${ARGV${_idx}}")
       message(${mode} "${_msg}")
     endforeach()
   endif()

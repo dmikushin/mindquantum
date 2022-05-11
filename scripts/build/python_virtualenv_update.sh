@@ -34,7 +34,7 @@ fi
 # ==============================================================================
 
 if [[ ${created_venv:-0} -eq 1 || ${do_update_venv:-0} -eq 1 ]]; then
-    pkgs=(pip setuptools wheel build pybind11)
+    pkgs=(pip setuptools wheel build pybind11 setuptools-scm[toml])
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         pkgs+=(auditwheel)
@@ -61,3 +61,5 @@ if [[ ${created_venv:-0} -eq 1 || ${do_update_venv:-0} -eq 1 ]]; then
     echo "Updating Python packages: $PYTHON -m pip install -U ${pkgs[*]}"
     call_cmd "$PYTHON" -m pip install -U "${pkgs[@]}"
 fi
+
+# ==============================================================================
