@@ -86,7 +86,7 @@ evolution operator, but get {}".format(
         if not isinstance(para, (dict, ParameterResolver)):
             raise TypeError(f'para requiers a number or a dict or a ParameterResolver, but get {type(para)}')
         para = ParameterResolver(para)
-    para = 2 * ParameterResolver()(para)
+    para = 2 * ParameterResolver(para)
     out = []
     term = sorted(term)
     rxs = []

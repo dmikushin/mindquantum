@@ -67,7 +67,7 @@ if(USE_OPENMP)
 endif()
 
 if(USE_PARALLEL_STL)
-  find_package(TBB REQUIRED tbb)
+  find_package(TBB COMPONENTS tbb)
   if(TBB_FOUND)
     target_compile_options(TBB::tbb INTERFACE "$<$<COMPILE_LANGUAGE:DPCXX>:-tbb>")
     list(APPEND PARALLEL_LIBS TBB::tbb)

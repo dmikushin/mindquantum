@@ -27,5 +27,5 @@ def test_time_evolution():
     """
     h = QubitOperator('Z0 Z1', 'p') + QubitOperator('X0', 'q')
     circ = TimeEvolution(h).circuit
-    circ_exp = Circuit([G.X.on(1, 0), G.RZ({'p': 2}).on(1), G.X.on(1, 0), G.RX({'q': 2}).on(0)])
+    circ_exp = Circuit([G.X.on(1, 0), G.RZ({'p': 2}).on(1), G.X.on(1, 0), G.RX({'q': 4}).on(0)])
     assert circ.__repr__() == circ_exp.__repr__()
