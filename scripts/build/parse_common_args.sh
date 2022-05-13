@@ -64,8 +64,14 @@ help_message() {
     echo '  -h,--help            Show this help message and exit'
     echo '  -n                   Dry run; only print commands but do not execute them'
     echo ''
+    echo '  -B,--build [dir]     Specify build directory'
+    echo "                       Defaults to: $build_dir"
     echo '  --ccache             If ccache or sccache are found within the PATH, use them with CMake'
     echo '  --clean-3rdparty     Clean 3rd party installation directory'
+    echo '  --clean-all          Clean everything before building.'
+    echo '                       Equivalent to --clean-venv --clean-builddir'
+    echo '  --clean-builddir     Delete build directory before building'
+    echo '  --clean-cache        Re-run CMake with a clean CMake cache'
     echo '  --clean-venv         Delete Python virtualenv before building'
     echo '  --cxx                (experimental) Enable MindQuantum C++ support'
     echo '  --debug              Build in debug mode'
@@ -101,8 +107,9 @@ help_message() {
 
 # ==============================================================================
 
-has_extra_args=0
-getopts_args='hcnvj:-:'
+: "${has_extra_args=0}"
+has_build_dir=0
+getopts_args='B:hnvj:-:'
 
 if [ -n "$getopts_args_extra" ]; then
     has_extra_args=1
@@ -135,11 +142,26 @@ while getopts "${getopts_args}" OPT; do
         h | help )       no_arg;
                          help_message >&2
                          exit 1 ;;
+        B | build)       needs_arg;
+                         # shellcheck disable=SC2034
+                         has_build_dir=1
+                         build_dir="$OPTARG"
+                         ;;
         ccache )         no_arg;
                          enable_ccache=1
                          ;;
         clean-3rdparty ) no_arg;
                          do_clean_3rdparty=1
+                         ;;
+        clean-all )      no_arg;
+                         do_clean_venv=1
+                         do_clean_build_dir=1
+                         ;;
+        clean-builddir ) no_arg;
+                         do_clean_build_dir=1
+                         ;;
+        clean-cache )    no_arg;
+                         do_clean_cache=1
                          ;;
         clean-venv )     no_arg;
                          do_clean_venv=1
@@ -198,7 +220,7 @@ while getopts "${getopts_args}" OPT; do
                          ;;
          * )             success=0
                          if [ $has_extra_args -eq 1 ]; then
-                             parse_extra_args "$OPT"
+                             parse_extra_args "$OPT" "$OPTARG"
                              success="$?"
                          fi
                          if [ $success -ne 0 ]; then

@@ -24,6 +24,8 @@
 : "${cmake_make_silent=0}"
 : "${cuda_arch=}"
 : "${do_clean_3rdparty=0}"
+: "${do_clean_build_dir=0}"
+: "${do_clean_cache=0}"
 : "${do_clean_venv=0}"
 : "${do_update_venv=0}"
 : "${dry_run=0}"

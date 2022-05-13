@@ -166,6 +166,7 @@ class CMakeBuildExt(build_ext):
     user_options = build_ext.user_options + [
         ('no-arch-native', None, 'Do not use the -march=native flag when compiling'),
         ('clean-build', None, 'Build in a clean build environment'),
+        ('build-dir=', None, 'Specify a location for the build directory'),
         ('install-light', None, 'Install a "light" version of MindQuantum (ie. no development libraries)'),
     ]
 
@@ -176,7 +177,16 @@ class CMakeBuildExt(build_ext):
         build_ext.initialize_options(self)
         self.no_arch_native = None
         self.clean_build = None
+        self.build_dir = None
         self.install_light = None
+
+    def finalize_options(self):
+        """Finalize all options."""
+        super().finalize_options()
+        self.no_arch_native = self.no_arch_native or False
+        self.clean_build = self.clean_build or False
+        self.build_dir = self.build_dir or None
+        self.install_light = self.install_light or False
 
     def build_extensions(self):
         """Build a C/C++ extension using CMake."""
@@ -198,7 +208,7 @@ class CMakeBuildExt(build_ext):
 
         self.configure_extensions()
         build_ext.build_extensions(self)
-        if not self.install_light():
+        if not self.install_light:
             self.cmake_install()
 
     def configure_extensions(self):
@@ -213,7 +223,6 @@ class CMakeBuildExt(build_ext):
             '-DBUILD_TESTING:BOOL=OFF',
             '-DIN_PLACE_BUILD:BOOL=OFF',
             '-DIS_PYTHON_BUILD:BOOL=ON',
-            '-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON',
             f'-DVERSION_INFO="{self.distribution.get_version()}"',
             f'-DMQ_PYTHON_PACKAGE_NAME:STRING={self.distribution.get_name()}',
             # NB: make sure that the install path is absolute!
@@ -345,6 +354,8 @@ class CMakeBuildExt(build_ext):
         return outputs
 
     def _get_temp_dir(self, src_dir):
+        if self.build_dir:
+            return self.build_dir
         return Path(self.build_temp, Path(src_dir).name)
 
 
@@ -421,9 +432,9 @@ class GenerateRequirementFile(setuptools.Command):
 
 ext_modules = [
     CMakeExtension(pymod='mindquantum.mqbackend'),
-    CMakeExtension(pymod='mindquantum.experimental._cxx_core', optional=True),
-    CMakeExtension(pymod='mindquantum.experimental._cxx_cengines', optional=True),
-    CMakeExtension(pymod='mindquantum.experimental._cxx_ops', optional=True),
+    CMakeExtension(pymod='mindquantum.experimental._mindquantum_cxx', optional=True),
+    CMakeExtension(pymod='mindquantum.experimental._mindquantum_cxx_core', optional=True),
+    CMakeExtension(pymod='mindquantum.experimental._mindquantum_cxx_cengines', optional=True),
 ]
 
 

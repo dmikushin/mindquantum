@@ -49,6 +49,7 @@ function extra_help() {
     echo 'Extra options:'
     echo '  --delocate           Delocate the binary wheels after build is finished'
     echo '                       (enabled by default; pass --no-delocate to disable)'
+    echo '  --no-delocate        Disable delocating the binary wheels after build is finished'
     echo '  --no-isolation       Pass --no-isolation to python3 -m build'
     echo '  -o,--output=[dir]    Output directory for built wheels'
     echo '  -p,--plat-name=[dir] Platform name to use for wheel delocation'
@@ -64,7 +65,7 @@ function extra_help() {
 getopts_args_extra='o:p:'
 
 function parse_extra_args() {
-    case "$OPT" in
+    case "$1" in
         delocate )       no_arg;
                          delocate_wheel=1
                          ;;
@@ -75,12 +76,12 @@ function parse_extra_args() {
                          build_isolation=0
                          ;;
         o | output )     needs_arg;
-                         output_path="$OPTARG"
+                         output_path="$2"
                          ;;
         p | plat-name )  needs_arg;
-                         platform_name="$OPTARG"
+                         platform_name="$2"
                          ;;
-        ??* )            die "Illegal option --OPT: $OPT"
+        ??* )            die "Illegal option --OPT: $1"
                          ;;
     esac
 }
@@ -149,6 +150,10 @@ if [[ "$build_type" == 'Debug' ]]; then
     args+=(build --debug)
 fi
 
+if [ $has_build_dir -eq 1 ]; then
+    args+=(build_ext --build-dir "$build_dir")
+fi
+
 # --------------------------------------
 
 if [ $enable_ccache -eq 1 ]; then
@@ -176,6 +181,18 @@ fi
 # ------------------------------------------------------------------------------
 # Build the wheels
 
+if [ $has_build_dir -eq 1 ]; then
+    if [ $do_clean_build_dir -eq 1 ]; then
+        echo "Deleting build folder: $build_dir"
+        call_cmd rm -rf "$build_dir"
+    elif [ $do_clean_cache -eq 1 ]; then
+        echo "Removing CMake cache at: $build_dir/CMakeCache.txt"
+        call_cmd rm -f "$build_dir/CMakeCache.txt"
+        echo "Removing CMake files at: $build_dir/CMakeFiles"
+        call_cmd  rm -rf "$build_dir/CMakeFiles"
+    fi
+fi
+
 if [ $delocate_wheel -eq 1 ]; then
     env_vars=(MQ_DELOCATE_WHEEL=1)
 
@@ -196,6 +213,6 @@ fi
 
 call_cmd mkdir -pv "${output_path}"
 
-call_cmd mv -v "$ROOTDIR/dist/*" "${output_path}"
+call_cmd mv -v "$ROOTDIR/dist/"* "${output_path}"
 
 echo "------Successfully created mindquantum package------"

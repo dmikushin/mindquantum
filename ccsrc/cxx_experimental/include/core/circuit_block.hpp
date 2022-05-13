@@ -62,7 +62,7 @@ concept hot_start_t = requires(func_t func, device_t device, circuit_t circuit, 
 }  // namespace concepts
 #endif  // MQ_HAS_CONCEPTS
 
-//! ProjectQ qubit ID
+//! External qubit ID
 class QubitID {
  public:
     using cbit_t = tweedledum::Cbit;
@@ -70,7 +70,7 @@ class QubitID {
 
     //! Constructor
     /*!
-     * \param id ProjectQ qubit ID
+     * \param id External qubit ID
      */
     constexpr QubitID(qubit_id_t id) : id_(id) {
     }
@@ -147,12 +147,12 @@ class CircuitBlock {
     using placement_t = tweedledum::Placement;
     using mapping_t = tweedledum::Mapping;
     using circuit_t = tweedledum::Circuit;
-    using pq_id_t = QubitID;
+    using ext_id_t = QubitID;
     using td_qid_t = qubit_t;
     using td_cid_t = cbit_t;
-    using id_map_pq_to_int_t = std::map<pq_id_t, std::tuple<td_qid_t, std::optional<td_cid_t>>, std::less<>>;
-    using id_map_qint_to_pq_t = std::map<td_qid_t, pq_id_t, std::less<>>;
-    using id_map_cint_to_pq_t = std::map<td_cid_t, pq_id_t, std::less<>>;
+    using id_map_ext_to_int_t = std::map<ext_id_t, std::tuple<td_qid_t, std::optional<td_cid_t>>, std::less<>>;
+    using id_map_qint_to_ext_t = std::map<td_qid_t, ext_id_t, std::less<>>;
+    using id_map_cint_to_ext_t = std::map<td_cid_t, ext_id_t, std::less<>>;
 
     static constexpr struct chained_t {
     } chain_ctor{};
@@ -175,7 +175,7 @@ class CircuitBlock {
      * \param parent Parent circuit block
      * \param exclude_ids Qubit IDs from parent block to ignore when constructing the new block
      */
-    CircuitBlock(const CircuitBlock& parent, const std::vector<pq_id_t>& exclude_ids, chained_t);
+    CircuitBlock(const CircuitBlock& parent, const std::vector<ext_id_t>& exclude_ids, chained_t);
 
     // -----------------------------------------------
 
@@ -189,20 +189,20 @@ class CircuitBlock {
 
     //! Check whether a qubit with corresponding ID is known
     /*!
-     * \param qubit_id ProjectQ qubit ID
+     * \param qubit_id External qubit ID
      * \return True if an internal ID is associated with \c qubit_id
      */
-    bool has_qubit(pq_id_t qubit_id) const;
+    bool has_qubit(ext_id_t qubit_id) const;
 
     //! Check whether a cbit with corresponding ID is known
     /*!
-     * \param qubit_id ProjectQ qubit ID
+     * \param qubit_id External qubit ID
      * \return True if an internal ID is associated with \c qubit_id
      */
-    bool has_cbit(pq_id_t qubit_id) const;
+    bool has_cbit(ext_id_t qubit_id) const;
 
-    //! Simple accessor for the underlying ProjectQ IDs
-    std::vector<pq_id_t> pq_ids() const;
+    //! Simple accessor for the underlying External IDs
+    std::vector<ext_id_t> ext_ids() const;
 
     //! Simple accessor for the underlying internal IDs (both qubits and cbits)
     std::vector<td_qid_t> td_ids() const;
@@ -211,60 +211,60 @@ class CircuitBlock {
 
     //! Add a qubit to the circuit
     /*!
-     * \param qubit_id (ProjectQ) qubit ID to add
+     * \param qubit_id (External) qubit ID to add
      * \return True if qubit could be added, false otherwise
      */
-    bool add_qubit(pq_id_t qubit_id);
+    bool add_qubit(ext_id_t qubit_id);
 
     // -----------------------------------------------
 
-    //! Convert internal qubit IDs to ProjectQ IDs
+    //! Convert internal qubit IDs to External IDs
     /*!
      * \param ref Internal ID (Tweedledum qubit)
-     * \return Corresponding ProjectQ ID
-     * \throw std::out_of_range if no ProjectQ ID is known \c ref
+     * \return Corresponding External ID
+     * \throw std::out_of_range if no External ID is known \c ref
      */
     qubit_id_t translate_id(const td_qid_t& ref) const;
 
-    //! Convert internal cbit IDs to ProjectQ IDs
+    //! Convert internal cbit IDs to External IDs
     /*!
      * \param ref Internal ID (Tweedledum cbit)
-     * \return Corresponding ProjectQ ID
-     * \throw std::out_of_range if no ProjectQ ID is known \c ref
+     * \return Corresponding External ID
+     * \throw std::out_of_range if no External ID is known \c ref
      */
     qubit_id_t translate_id(const td_cid_t& ref) const;
 
-    //! Convert internal qubit IDs to ProjectQ IDs (Tweedledum type as return value)
+    //! Convert internal qubit IDs to External IDs (Tweedledum type as return value)
     /*!
      * \param ref Internal ID (Tweedledum wire reference)
-     * \return Corresponding ProjectQ ID (as Tweedledum wire reference)
-     * \throw std::out_of_range if no ProjectQ ID is known \c ref
+     * \return Corresponding External ID (as Tweedledum wire reference)
+     * \throw std::out_of_range if no External ID is known \c ref
      */
     td_qid_t translate_id_td(const td_qid_t& ref) const;
 
-    //! Convert internal cbit IDs to ProjectQ IDs (Tweedledum type as return value)
+    //! Convert internal cbit IDs to External IDs (Tweedledum type as return value)
     /*!
      * \param ref Internal ID (Tweedledum wire reference)
-     * \return Corresponding ProjectQ ID (as Tweedledum wire reference)
-     * \throw std::out_of_range if no ProjectQ ID is known \c ref
+     * \return Corresponding External ID (as Tweedledum wire reference)
+     * \throw std::out_of_range if no External ID is known \c ref
      */
     td_cid_t translate_id_td(const td_cid_t& ref) const;
 
-    //! Convert internal ProjectQ IDs to qubit IDs
+    //! Convert internal External IDs to qubit IDs
     /*!
-     * \param qubit_id ProjectQ qubit ID
+     * \param qubit_id External qubit ID
      * \return Corresponding internal ID
      * \throw std::out_of_range if no internal ID is known for \c qubit_id
      */
-    td_qid_t translate_id(const pq_id_t& qubit_id) const;
+    td_qid_t translate_id(const ext_id_t& qubit_id) const;
 
     // -----------------------------------------------
 
     //! Add an operation to the underlying circuit
     /*!
      * \param optor Operator to apply
-     * \param control_qubits List of ProjectQ qubit IDs representing controls
-     * \param target_qubits List of ProjectQ qubit IDs representing targets
+     * \param control_qubits List of External qubit IDs representing controls
+     * \param target_qubits List of External qubit IDs representing targets
      */
     template <typename OpT>
     inst_ref_t apply_operator(OpT&& optor, const qureg_t& control_qubits, const qureg_t& target_qubits);
@@ -272,14 +272,14 @@ class CircuitBlock {
     //! Add an operation to the underlying circuit
     /*!
      * \param optor Operator to apply
-     * \param control_qubits List of ProjectQ qubit IDs representing controls
-     * \param target_qubits List of ProjectQ qubit IDs representing targets
+     * \param control_qubits List of External qubit IDs representing controls
+     * \param target_qubits List of External qubit IDs representing targets
      */
     inst_ref_t apply_operator(const instruction_t& optor, const qureg_t& control_qubits, const qureg_t& target_qubits);
 
     //! Apply a measurement on a qubit
     /*!
-     * \param id ProjectQ qubit ID
+     * \param id External qubit ID
      */
     inst_ref_t apply_measurement(qubit_id_t id);
 
@@ -330,15 +330,15 @@ class CircuitBlock {
     friend class ::UnitTestAccessor;
 #endif  // UNIT_TESTS
 
-    std::vector<qubit_t> translate_pq_ids_(const qureg_t& control_qubits, const qureg_t& target_qubits);
+    std::vector<qubit_t> translate_ext_ids_(const qureg_t& control_qubits, const qureg_t& target_qubits);
     void update_mappings_(const std::vector<qubit_t>& old_to_new);
 
     const device_t* device_;
     circuit_t circuit_;
 
-    id_map_pq_to_int_t pq_to_td_;
-    id_map_qint_to_pq_t qtd_to_pq_;
-    id_map_cint_to_pq_t ctd_to_pq_;
+    id_map_ext_to_int_t ext_to_td_;
+    id_map_qint_to_ext_t qtd_to_ext_;
+    id_map_cint_to_ext_t ctd_to_ext_;
 
     std::optional<mapping_t> mapping_;
 };

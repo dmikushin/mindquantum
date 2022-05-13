@@ -21,8 +21,6 @@ PROGRAM=$(basename "${BASH_SOURCE[0]:-$0}")
 
 configure_only=0
 do_clean=0
-do_clean_build_dir=0
-do_clean_cache=0
 do_configure=0
 do_docs=0
 do_install=0
@@ -53,16 +51,10 @@ function help_header() {
 
 function extra_help() {
     echo 'Extra options:'
-    echo '  -B,--build [dir]     Specify build directory'
-    echo "                       Defaults to: $build_dir"
     echo '  --clean              Run make clean before building'
-    echo '  --clean-all          Clean everything before building.'
-    echo '                       Equivalent to --clean-venv --clean-builddir'
-    echo '  --clean-builddir     Delete build directory before building'
-    echo '  --clean-cache        Re-run CMake with a clean CMake cache'
     echo '  -c,--configure       Force running the CMake configure step'
     echo '  --configure-only     Stop after the CMake configure and generation steps (ie. before building MindQuantum)'
-    echo '  --doc                Setup the Python virtualenv for building the documentation and ask CMake to build the'
+    echo '  --doc,--docs         Setup the Python virtualenv for building the documentation and ask CMake to build the'
     echo '                       documentation'
     echo '  --install            Build the ´install´ target'
     echo '  --prefix             Specify installation prefix'
@@ -78,25 +70,12 @@ function extra_help() {
 
 # --------------------------------------
 
-getopts_args_extra='B:'
+getopts_args_extra='c'
 
 function parse_extra_args() {
-    case "$OPT" in
-        B | build)       needs_arg;
-                         build_dir="$OPTARG"
-                         ;;
+    case "$1" in
         clean )          no_arg;
                          do_clean=1
-                         ;;
-        clean-all )      no_arg;
-                         do_clean_venv=1
-                         do_clean_build_dir=1
-                         ;;
-        clean-builddir ) no_arg;
-                         do_clean_build_dir=1
-                         ;;
-        clean-cache )    no_arg;
-                         do_clean_cache=1
                          ;;
         c | configure )  no_arg;
                          do_configure=1
@@ -112,9 +91,9 @@ function parse_extra_args() {
                          do_install=1
                          ;;
         prefix)          needs_arg;
-                         prefix="$OPTARG"
+                         prefix="$2"
                          ;;
-        ??* )            die "Illegal option --OPT: $OPT"
+        ??* )            die "Illegal option --OPT: $1"
                          ;;
     esac
 }
@@ -172,6 +151,7 @@ fi
 CMAKE_BOOL=(OFF ON)
 
 cmake_args=(-DIN_PLACE_BUILD:BOOL=ON
+            -DIS_PYTHON_BUILD:BOOL=OFF
             -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
             -DCMAKE_BUILD_TYPE:STRING="$build_type"
             -DENABLE_PROJECTQ:BOOL="${CMAKE_BOOL[$enable_projectq]}"

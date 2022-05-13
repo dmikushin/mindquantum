@@ -54,7 +54,7 @@ bool CircuitManager::has_mapping() const {
     return blocks_.front().has_mapping();
 }
 
-bool CircuitManager::has_qubit(pq_id_t qubit_id) const {
+bool CircuitManager::has_qubit(ext_id_t qubit_id) const {
     return blocks_.back().has_qubit(qubit_id);
 }
 
@@ -66,11 +66,11 @@ qubit_id_t CircuitManager::translate_id(const td_qid_t& ref) const {
 // =============================================================================
 
 namespace mindquantum {
-bool CircuitManager::add_qubit(pq_id_t pq_qubit_id) {
-    return blocks_.back().add_qubit(pq_qubit_id);
+bool CircuitManager::add_qubit(ext_id_t ext_qubit_id) {
+    return blocks_.back().add_qubit(ext_qubit_id);
 }
 
-void CircuitManager::delete_qubits(const std::vector<pq_id_t>& ids_to_delete) {
+void CircuitManager::delete_qubits(const std::vector<ext_id_t>& ids_to_delete) {
     auto& block = blocks_.back();
     if (std::size(block) == 0) {
         /* The last block is still empty -> replace it!
@@ -85,8 +85,8 @@ void CircuitManager::delete_qubits(const std::vector<pq_id_t>& ids_to_delete) {
          */
 
         // 1
-        auto ids = blocks_.back().pq_ids();
-        std::vector<pq_id_t> ids_to_keep;
+        auto ids = blocks_.back().ext_ids();
+        std::vector<ext_id_t> ids_to_keep;
         std::for_each(std::begin(ids), std::end(ids), [&ids_to_keep, &ids_to_delete](const auto& qubit) {
             for (const auto& to_delete : ids_to_delete) {
                 if (qubit == to_delete) {
@@ -105,8 +105,8 @@ void CircuitManager::delete_qubits(const std::vector<pq_id_t>& ids_to_delete) {
             std::for_each(std::begin(ids_to_keep), std::end(ids_to_keep),
                           [&block = blocks_.back()](const auto& qubit) { block.add_qubit(qubit); });
         } else {
-            ids = blocks_.back().pq_ids();
-            std::vector<pq_id_t> exclude_ids;
+            ids = blocks_.back().ext_ids();
+            std::vector<ext_id_t> exclude_ids;
             std::for_each(std::begin(ids), std::end(ids), [&exclude_ids, &ids_to_keep](const auto& qubit) {
                 for (const auto& to_keep : ids_to_keep) {
                     if (qubit == to_keep) {
@@ -139,12 +139,12 @@ auto CircuitManager::apply_measurement(qubit_id_t id) -> inst_ref_t {
 
 // =============================================================================
 namespace mindquantum {
-details::ProjectQView CircuitManager::as_projectq(committed_t) const {
-    return details::ProjectQView(*this);
+details::ExternalView CircuitManager::as_projectq(committed_t) const {
+    return details::ExternalView(*this);
 }
 
-details::ProjectQBlockView CircuitManager::as_projectq(uncommitted_t) const {
-    return details::ProjectQBlockView(blocks_.back());
+details::ExternalBlockView CircuitManager::as_projectq(uncommitted_t) const {
+    return details::ExternalBlockView(blocks_.back());
 }
 
 details::PhysicalView CircuitManager::as_physical(committed_t) const {

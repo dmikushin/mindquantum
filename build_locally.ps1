@@ -55,8 +55,6 @@ $PROGRAM = Split-Path $MyInvocation.MyCommand.Path -Leaf
 
 $configure_only = 0
 $do_clean = 0
-$do_clean_build_dir = 0
-$do_clean_cache = 0
 $do_configure = 0
 $do_docs = 0
 $do_install = 0
@@ -86,14 +84,8 @@ function Help-Header {
 
 function Extra-Help {
     Write-Output 'Extra options:'
-    Write-Output '  -B,-Build [dir]     Specify build directory'
-    Write-Output ("                      Defaults to: {0}" -f $build_dir)
     Write-Output '  -CCache             If ccache or sccache are found within the PATH, use them with CMake'
     Write-Output '  -Clean              Run make clean before building'
-    Write-Output '  -CleanAll           Clean everything before building.'
-    Write-Output '                      Equivalent to -CleanVenv -CleanBuildDir'
-    Write-Output '  -CleanBuildDir      Delete build directory before building'
-    Write-Output '  -CleanCache         Re-run CMake with a clean CMake cache'
     Write-Output '  -C,-Configure       Force running the CMake configure step'
     Write-Output '  -ConfigureOnly      Stop after the CMake configure and generation steps (ie. before building MindQuantum)'
     Write-Output '  -Doc, -Docs         Setup the Python virtualenv for building the documentation and ask CMake to build the'
@@ -119,16 +111,6 @@ function Extra-Help {
 if ($Clean.IsPresent) {
     $do_clean = $true
 }
-if ($CleanAll.IsPresent) {
-    $do_clean_venv = $true
-    $do_clean_build_dir = $true
-}
-if ($CleanBuildDir.IsPresent) {
-    $do_clean_build_dir = $true
-}
-if ($CleanCache.IsPresent) {
-    $do_clean_cache = $true
-}
 
 if ($C.IsPresent -or $Configure.IsPresent) {
     $do_configure = $true
@@ -143,10 +125,6 @@ if ($Doc.IsPresent) {
 
 if ($Install.IsPresent) {
     $do_install = $true
-}
-
-if ([bool]$Build) {
-    $build_dir = "$Build"
 }
 
 if ([bool]$Prefix) {
@@ -215,6 +193,7 @@ if ($dry_run -ne 1) {
 $CMAKE_BOOL = @('OFF', 'ON')
 
 $cmake_args = @('-DIN_PLACE_BUILD:BOOL=ON'
+                '-DIS_PYTHON_BUILD:BOOL=OFF'
                 '-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON'
                 "-DCMAKE_BUILD_TYPE:STRING={0}" -f $build_type
                 "-DENABLE_PROJECTQ:BOOL={0}" -f $CMAKE_BOOL[$enable_projectq]

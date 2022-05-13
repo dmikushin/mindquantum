@@ -18,6 +18,8 @@ $BASEPATH = Split-Path $MyInvocation.MyCommand.Path -Parent
 
 # ------------------------------------------------------------------------------
 
+$has_build_dir = $false
+
 . "$BASEPATH\default_values.ps1"
 
 . "$BASEPATH\common_functions.ps1"
@@ -43,8 +45,14 @@ function Help-Message() {
     Write-Output '  -H,-Help            Show this help message and exit'
     Write-Output '  -N,$DryRun          Dry run; only print commands but do not execute them'
     Write-Output ''
+    Write-Output '  -B,-Build [dir]     Specify build directory'
+    Write-Output ("                      Defaults to: {0}" -f $build_dir)
     Write-Output '  -CCache             If ccache or sccache are found within the PATH, use them with CMake'
     Write-Output '  -Clean3rdParty      Clean 3rd party installation directory'
+    Write-Output '  -CleanAll           Clean everything before building.'
+    Write-Output '                      Equivalent to -CleanVenv -CleanBuildDir'
+    Write-Output '  -CleanBuildDir      Delete build directory before building'
+    Write-Output '  -CleanCache         Re-run CMake with a clean CMake cache'
     Write-Output '  -CleanVenv          Delete Python virtualenv before building'
     Write-Output '  -Cxx                (experimental) Enable MindQuantum C++ support'
     Write-Output '  -Debug              Build in debug mode'
@@ -91,6 +99,16 @@ if ($CCache.IsPresent) {
 if ($Clean3rdParty.IsPresent) {
     $do_clean_3rdparty = $true
 }
+if ($CleanAll.IsPresent) {
+    $do_clean_venv = $true
+    $do_clean_build_dir = $true
+}
+if ($CleanBuildDir.IsPresent) {
+    $do_clean_build_dir = $true
+}
+if ($CleanCache.IsPresent) {
+    $do_clean_cache = $true
+}
 if ($CleanVenv.IsPresent) {
     $do_clean_venv = $true
 }
@@ -125,6 +143,11 @@ if ($UpdateVenv.IsPresent) {
 
 if ($Verbose.IsPresent -Or $Debug.IsPresent) {
     $DebugPreference = 'Continue'
+}
+
+if ([bool]$Build) {
+    $has_build_dir = $true
+    $build_dir = "$Build"
 }
 
 if ([bool]$CudaArch) {

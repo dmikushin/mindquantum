@@ -12,8 +12,8 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#ifndef PROJECTQ_VIEW_HPP
-#define PROJECTQ_VIEW_HPP
+#ifndef EXTERNAL_VIEW_HPP
+#define EXTERNAL_VIEW_HPP
 
 #include "core/config.hpp"
 
@@ -55,7 +55,7 @@ struct ForeachImpl<true> {
 
 // ------------------------------------------------------------------------
 
-class ProjectQView {
+class ExternalView {
  public:
     using manager_t = CircuitManager;
     using block_t = CircuitBlock;
@@ -63,7 +63,7 @@ class ProjectQView {
     using qubit_t = tweedledum::Qubit;
     using instruction_t = tweedledum::Instruction;
 
-    explicit ProjectQView(const manager_t& manager) : manager_{manager} {
+    explicit ExternalView(const manager_t& manager) : manager_{manager} {
     }
 
     template <typename Fn>
@@ -100,14 +100,14 @@ class ProjectQView {
     const manager_t& manager_;
 };
 
-class ProjectQBlockView {
+class ExternalBlockView {
  public:
     using block_t = CircuitBlock;
     using instruction_t = tweedledum::Instruction;
     using cbit_t = tweedledum::Cbit;
     using qubit_t = tweedledum::Qubit;
 
-    explicit ProjectQBlockView(const block_t& block) : block_{block} {
+    explicit ExternalBlockView(const block_t& block) : block_{block} {
     }
 
     template <typename Fn>
@@ -148,4 +148,4 @@ class ProjectQBlockView {
 };
 }  // namespace mindquantum::details
 
-#endif /* PROJECTQ_VIEW_HPP */
+#endif /* EXTERNAL_VIEW_HPP */

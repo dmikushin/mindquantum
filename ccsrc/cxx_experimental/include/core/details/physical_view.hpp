@@ -19,7 +19,7 @@
 
 #include "core/circuit_block.hpp"
 #include "core/circuit_manager.hpp"
-#include "projectq_view.hpp"
+#include "core/details/external_view.hpp"
 
 namespace mindquantum::details {
 class PhysicalView {
@@ -35,7 +35,7 @@ class PhysicalView {
         if (manager_.has_mapping()) {
             manager_.foreach_block([fn](const block_t& block) { block.foreach_instruction(fn); });
         } else {
-            ProjectQView(manager_).foreach_instruction(fn);
+            ExternalView(manager_).foreach_instruction(fn);
         }
     }
 
@@ -44,7 +44,7 @@ class PhysicalView {
         if (manager_.has_mapping()) {
             manager_.foreach_r_block([fn](const block_t& block) { block.foreach_r_instruction(fn); });
         } else {
-            ProjectQView(manager_).foreach_r_instruction(fn);
+            ExternalView(manager_).foreach_r_instruction(fn);
         }
     }
 

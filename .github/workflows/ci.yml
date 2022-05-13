@@ -22,8 +22,11 @@ jobs:
           - '3.10'
         include:
           - test_install: false
+          - test_bdist_wheel: false
           - python: 3.9
             test_install: true
+          - python: 3.8
+            test_bdist_wheel: true
     env:
       CMAKE_VERSION: 3.22.3
     name: "Python ${{ matrix.python }} • ${{ matrix.runs-on }} • x64"
@@ -149,6 +152,13 @@ jobs:
           hash -r
           cmake -S other -B other/build -Dmindquantum_DEBUG=ON  -Dmindquantum_ROOT="${{ github.workspace }}/install"
           cmake --build other/build --target all -v
+
+      # ------------------------------------------------------------------------
+
+      - name: Test (setup.py) installation
+        if: matrix.test_bdist_wheel
+        run: |
+          ./build.sh --cxx --with-projectq --debug-cmake --test --build="${{ github.workspace }}/build" --no-delocate
 
   # ============================================================================
 

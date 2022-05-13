@@ -277,7 +277,7 @@ if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
 rem ----------------------------------------------------------------------------
 rem Setup arguments for build
 
-set cmake_args="-DIN_PLACE_BUILD:BOOL=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON"
+set cmake_args="-DIN_PLACE_BUILD:BOOL=ON -DIS_PYTHON_BUILD:BOOL=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON"
 
 set cmake_args=!cmake_args! -DENABLE_BUILD_TYPE:STRING=!build_type!
 
@@ -442,7 +442,7 @@ exit /B 0
   echo   /C,/Clean           Run make clean before building
   echo   /Clean3rdParty      Clean 3rd party installation directory
   echo   /CleanAll           Clean everything before building.
-  echo                       Equivalent to --clean-venv --clean-builddir
+  echo                       Equivalent to /CleanVenv /CleanBuilddir
   echo   /CleanBuildDir      Delete build directory before building
   echo   /CleanCache         Re-run CMake with a clean CMake cache
   echo   /CleanVenv          Delete Python virtualenv before building

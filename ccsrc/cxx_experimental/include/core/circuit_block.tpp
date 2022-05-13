@@ -38,7 +38,7 @@ namespace mindquantum
      auto CircuitBlock::apply_operator(OpT&& optor, const qureg_t& control_qubits, const qureg_t& target_qubits)
          -> inst_ref_t
      {
-          return circuit_.apply_operator(std::forward<OpT>(optor), translate_pq_ids_(control_qubits, target_qubits));
+          return circuit_.apply_operator(std::forward<OpT>(optor), translate_ext_ids_(control_qubits, target_qubits));
      }
 }  // namespace mindquantum
 

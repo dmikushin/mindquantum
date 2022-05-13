@@ -26,6 +26,7 @@ set PROGRAM=%~nx0
 rem ============================================================================
 rem Default values for this particular script
 
+set has_build_dir=0
 set delocate_wheel=1
 set build_isolation=1
 set output_path=%ROOTDIR%\output
@@ -65,6 +66,7 @@ rem ============================================================================
       echo %PROGRAM%: option requires an argument -- '/B,/Build'
       goto :EOF
     )
+    set has_build_dir=1
     set build_dir=!value!
     shift & shift & goto :initial
   )
@@ -294,8 +296,25 @@ if NOT !n_jobs! == -1 set args=!args! -C--global-option=build -C--global-option=
 
 if "!build_type!" == "Debug" set args=!args! -C--global-option=build -C--global-option=--debug
 
+if !has_build_dir! == 1 set args=!args! -C--global-option=build_ext -C--global-option=--build-dir -C--global-option=!build_dir!
+
 rem ============================================================================
 rem Build the wheels
+
+if !has_build_dir! == 1 (
+  if !do_clean_build_dir! == 1 (
+    echo Deleting build folder: !build_dir!
+    if exist !build_dir! call :call_cmd rd /Q /S !build_dir!
+  )
+  else (
+    if !do_clean_cache! == 1 (
+      echo Removing CMake cache at: !build_dir!\CMakeCache.txt
+      if exist !build_dir!\CMakeCache.txt call :call_cmd del /Q "!build_dir!\CMakeCache.txt"
+      echo Removing CMake files at: !build_dir!/CMakeFiles
+      if exist !build_dir!/CMakeFiles call :call_cmd rd /Q /S "!build_dir!\CMakeFiles"
+    )
+  )
+)
 
 set MQ_DELOCATE_WHEEL=!delocate_wheel!
 set MQ_DELOCATE_WHEEL_PLAT=
@@ -332,8 +351,14 @@ rem ============================================================================
   echo:
   echo Options:
   echo   /H,/help            Show this help message and exit
-  echo   /H                  Dry run; only print commands but do not execute them
+  echo   /N                  Dry run; only print commands but do not execute them
+  echo
+  echo   /B,/Build [dir]     Specify build directory
+  echo                       Defaults to: %build_dir%
   echo   /Clean3rdParty      Clean 3rd party installation directory
+  echo   /CleanAll           Clean everything before building.
+  echo                       Equivalent to /CleanVenv /CleanBuilddir
+  echo   /CleanBuildDir      Delete build directory before building
   echo   /CleanCache         Re-run CMake with a clean CMake cache
   echo   /CleanVenv          Delete Python virtualenv before building
   echo   /Cxx                (experimental) Enable MindQuantum C++ support
@@ -345,6 +370,7 @@ rem ============================================================================
   echo                       Defaults to: !n_jobs_default!
   echo   /LocalPkgs          Compile third-party dependencies locally
   echo   /Ninja              Use the Ninja CMake generator
+  echo   /NoDelocate         Disable delocating the binary wheels after build is finished
   echo   /NoIsolation        Pass --no-isolation to python3 -m build
   echo   /O, /Output [dir]   Output directory for built wheels
   echo   /PlatName           Platform name to use for wheel delocation

@@ -40,8 +40,8 @@ class UnitTestAccessor;
 namespace mindquantum {
 namespace details {
 class ViewBase;
-class ProjectQView;
-class ProjectQBlockView;
+class ExternalView;
+class ExternalBlockView;
 class PhysicalView;
 }  // namespace details
 
@@ -53,7 +53,7 @@ static constexpr struct uncommitted_t {
 //! Class keeping track of the mapping between various Qubit/Cbit ID types
 /*!
  * There are mainly three sets of qubit IDs that we need to keep track of:
- *   - ProjectQ IDs: assigned to qubits by ProjectQ
+ *   - External IDs: assigned to qubits by External
  *   - Tweedledum IDs: ID of the wire in the underlying tweedledum network
  *   - Physical IDs: ID of the wire on the physical hardware
  *
@@ -79,7 +79,7 @@ class CircuitManager {
     using placement_t = CircuitBlock::placement_t;
     using mapping_t = CircuitBlock::mapping_t;
     using device_t = CircuitBlock::device_t;
-    using pq_id_t = CircuitBlock::pq_id_t;
+    using ext_id_t = CircuitBlock::ext_id_t;
     using td_qid_t = qubit_t;
     using td_cid_t = tweedledum::Cbit;
     using phys_id_t = qubit_t;
@@ -115,9 +115,9 @@ class CircuitManager {
     /*!
      * \note Check is performed on the last (uncommitted) block.
      */
-    bool has_qubit(pq_id_t qubit_id) const;
+    bool has_qubit(ext_id_t qubit_id) const;
 
-    //! Convert internal (uncommitted) qubit IDs to ProjectQ IDs
+    //! Convert internal (uncommitted) qubit IDs to External IDs
     /*!
      * \param ref Internal ID (Tweedledum wire reference)
      */
@@ -127,24 +127,24 @@ class CircuitManager {
 
     //! Add a qubit to the circuit
     /*!
-     * \param qubit_id (ProjectQ) qubit ID to add
+     * \param qubit_id (External) qubit ID to add
      * \return True if qubit could be added, false otherwise
      */
-    bool add_qubit(pq_id_t qubit_id);
+    bool add_qubit(ext_id_t qubit_id);
 
     //! Remove some qubits from the circuit
     /*!
-     * \param qubits List of ProjectQ qubit IDs of the qubits to remove
+     * \param qubits List of External qubit IDs of the qubits to remove
      */
-    void delete_qubits(const std::vector<pq_id_t>& qubits);
+    void delete_qubits(const std::vector<ext_id_t>& qubits);
 
     // ---------------------------
 
     //! Add an operation to the underlying network
     /*!
      * \param optor Operator to apply
-     * \param control_qubits List of ProjectQ qubit IDs representing controls
-     * \param target_qubits List of ProjectQ qubit IDs representing targets
+     * \param control_qubits List of External qubit IDs representing controls
+     * \param target_qubits List of External qubit IDs representing targets
      */
     template <typename OpT>
     inst_ref_t apply_operator(OpT&& optor, const qureg_t& control_qubits, const qureg_t& target_qubits);
@@ -152,14 +152,14 @@ class CircuitManager {
     //! Add an operation to the underlying network
     /*!
      * \param optor Operator to apply
-     * \param control_qubits List of ProjectQ qubit IDs representing controls
-     * \param target_qubits List of ProjectQ qubit IDs representing targets
+     * \param control_qubits List of External qubit IDs representing controls
+     * \param target_qubits List of External qubit IDs representing targets
      */
     inst_ref_t apply_operator(const instruction_t& optor, const qureg_t& control_qubits, const qureg_t& target_qubits);
 
     //! Apply a measurement on a qubit
     /*!
-     * \param id ProjectQ qubit ID
+     * \param id External qubit ID
      */
     inst_ref_t apply_measurement(qubit_id_t id);
 
@@ -230,15 +230,15 @@ class CircuitManager {
     template <typename Fn>
     void transform(Fn&& fn);
 
-    //! Return a view of the (committed) circuit with ProjectQ IDs
-    details::ProjectQView as_projectq(committed_t) const;
-    //! Return a view of the (uncommitted) circuit with ProjectQ IDs
-    details::ProjectQBlockView as_projectq(uncommitted_t) const;
+    //! Return a view of the (committed) circuit with External IDs
+    details::ExternalView as_projectq(committed_t) const;
+    //! Return a view of the (uncommitted) circuit with External IDs
+    details::ExternalBlockView as_projectq(uncommitted_t) const;
 
     //! Return a view of the (committed) circuit with physical/internal IDs
     /*!
-     * \note In case no mapping was performed, \c PhysicalView will behave like a \c ProjectQView (ie. using
-     *      ProjectQ IDs)
+     * \note In case no mapping was performed, \c PhysicalView will behave like a \c ExternalView (ie. using
+     *      External IDs)
      */
     details::PhysicalView as_physical(committed_t) const;
 
@@ -252,7 +252,7 @@ class CircuitManager {
 }  // namespace mindquantum
 
 #include "circuit_manager.tpp"
+#include "details/external_view.hpp"
 #include "details/physical_view.hpp"
-#include "details/projectq_view.hpp"
 
 #endif /* CIRCUIT_MANAGER_HPP */

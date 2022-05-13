@@ -37,7 +37,7 @@ using mindquantum::uncommitted;
 
 // =============================================================================
 
-TEST_CASE("ProjectQView/Instructions", "[projectq_view][core]") {
+TEST_CASE("ExternalView/Instructions", "[projectq_view][core]") {
     using instruction_t = CircuitManager::instruction_t;
     using qubit_t = CircuitManager::qubit_t;
     using qubit_array_t = std::vector<qubit_t>;
@@ -113,7 +113,7 @@ TEST_CASE("ProjectQView/Instructions", "[projectq_view][core]") {
 
 // =============================================================================
 
-TEST_CASE("ProjectQBlockView/Instructions", "[projectq_view][core]") {
+TEST_CASE("ExternalBlockView/Instructions", "[projectq_view][core]") {
     using instruction_t = CircuitManager::instruction_t;
     using qubit_t = CircuitManager::qubit_t;
     using qubit_array_t = std::vector<qubit_t>;

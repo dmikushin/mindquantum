@@ -13,8 +13,12 @@
 # limitations under the License.
 
 Param(
+    [Alias("B")][ValidateNotNullOrEmpty()][string]$Build,
     [switch]$CCache,
     [switch]$Clean3rdParty,
+    [switch]$CleanAll,
+    [switch]$CleanBuildDir,
+    [switch]$CleanCache,
     [switch]$CleanVenv,
     [ValidateNotNullOrEmpty()][string]$CudaArch,
     [switch]$Cxx,
@@ -177,6 +181,10 @@ if ($build_type -eq 'Debug') {
     $build_args += 'build', "--debug"
 }
 
+if ($has_build_dir) {
+    $build_args += 'build_ext', '--build-dir', "$build_dir"
+}
+
 # --------------------------------------
 
 if ($enable_ccache)  {
@@ -203,6 +211,19 @@ if (-Not $build_isolation) {
 
 # ------------------------------------------------------------------------------
 # Build the wheels
+
+if ($has_build_dir) {
+    if ($do_clean_build_dir) {
+        Write-Output "Deleting build folder: $build_dir"
+        Call-Cmd Remove-Item -Force -Recurse "$build_dir" -ErrorAction SilentlyContinue
+    }
+    elseif ($do_clean_cache) {
+        Write-Output "Removing CMake cache at: $build_dir/CMakeCache.txt"
+        Call-Cmd Remove-Item -Force "$build_dir/CMakeCache.txt" -ErrorAction SilentlyContinue
+        Write-Output "Removing CMake files at: $build_dir/CMakeFiles"
+        Call-Cmd Remove-Item -Force -Recurse "$build_dir/CMakeFiles" -ErrorAction SilentlyContinue
+    }
+}
 
 if ($delocate_wheel) {
     $Env:MQ_DELOCATE_WHEEL = 1
@@ -252,11 +273,24 @@ knows how to find them.
 A pth-file will be created in the virtualenv site-packages directory so that the MindQuantum root folder will be added
 to the Python PATH without the need to modify PYTHONPATH.
 
+.PARAMETER Build
+Specify build directory. Defaults to: Path\To\Script\build
+
 .PARAMETER CCache
 If ccache or sccache are found within the PATH, use them with CMake
 
 .PARAMETER Clean3rdParty
 Clean 3rd party installation directory
+
+.PARAMETER CleanAll
+Clean everything before building.
+Equivalent to -CleanVenv -CleanBuildDir
+
+.PARAMETER CleanBuildDir
+Delete build directory before building
+
+.PARAMETER CleanCache
+Re-run CMake with a clean CMake cache
 
 .PARAMETER CleanVenv
 Delete Python virtualenv before building

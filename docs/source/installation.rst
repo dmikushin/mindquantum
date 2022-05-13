@@ -193,7 +193,7 @@ into:
     within the build directory.
 
 ``<prefix>/share/cmake/mindquantum/``
-    All CMake installation configuration files. This includes the ``mindquawntumConfig.cmake`` file and other helper
+    All CMake installation configuration files. This includes the ``mindquantumConfig.cmake`` file and other helper
     files.
 
 Then, in order to use MindQuantum in some other CMake project, you simply need to add the following statement:

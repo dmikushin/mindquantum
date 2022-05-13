@@ -51,12 +51,12 @@ class UnitTestAccessor {
         return block.circuit_;
     }
 
-    static auto& pq_to_td(block_t& block) {
-        return block.pq_to_td_;
+    static auto& ext_to_td(block_t& block) {
+        return block.ext_to_td_;
     }
 
     static auto& td_to_pq(block_t& block) {
-        return block.qtd_to_pq_;
+        return block.qtd_to_ext_;
     }
 
     static auto& mapping(block_t& block) {
@@ -128,17 +128,17 @@ TEST_CASE("CircuitBlock/Add qubits", "[circuit_block][core]") {
         REQUIRE(block.add_qubit(qubit0));
         REQUIRE(!block.add_qubit(qubit0));
 
-        const auto& pq_to_td = get::pq_to_td(block);
-        CHECK(std::size(pq_to_td) == 1);
-        CHECK(pq_to_td.count(qubit0) == 1);
+        const auto& ext_to_td = get::ext_to_td(block);
+        CHECK(std::size(ext_to_td) == 1);
+        CHECK(ext_to_td.count(qubit0) == 1);
 
         const auto& td_to_pq = get::td_to_pq(block);
         CHECK(std::size(td_to_pq) == 1);
         CHECK(std::begin(td_to_pq)->second == qubit0);
 
         {
-            const auto& pq_ids = block.pq_ids();
-            CHECK(pq_ids == decltype(pq_ids){qubit0});
+            const auto& ext_ids = block.ext_ids();
+            CHECK(ext_ids == decltype(ext_ids){qubit0});
 
             const auto& td_ids = block.td_ids();
             CHECK(td_ids == decltype(td_ids){td::Qubit(0)});
@@ -154,17 +154,17 @@ TEST_CASE("CircuitBlock/Add qubits", "[circuit_block][core]") {
         const auto qubit1 = 11;
         REQUIRE(block.add_qubit(qubit1));
 
-        CHECK(std::size(pq_to_td) == 2);
-        CHECK(pq_to_td.count(qubit0) == 1);
-        CHECK(pq_to_td.count(qubit1) == 1);
+        CHECK(std::size(ext_to_td) == 2);
+        CHECK(ext_to_td.count(qubit0) == 1);
+        CHECK(ext_to_td.count(qubit1) == 1);
 
         CHECK(std::size(td_to_pq) == 2);
         CHECK(std::all_of(std::begin(td_to_pq), std::end(td_to_pq),
                           [qubit0, qubit1](const auto& el) { return el.second == qubit0 || el.second == qubit1; }));
 
         {
-            const auto& pq_ids = block.pq_ids();
-            CHECK(pq_ids == decltype(pq_ids){qubit0, qubit1});
+            const auto& ext_ids = block.ext_ids();
+            CHECK(ext_ids == decltype(ext_ids){qubit0, qubit1});
 
             const auto& td_ids = block.td_ids();
             CHECK(td_ids == decltype(td_ids){qubit_t(0), qubit_t(1)});
@@ -229,11 +229,11 @@ TEST_CASE("CircuitBlock/ID conversion", "[circuit_block][core]") {
     REQUIRE(block.has_qubit(qubit1));
     REQUIRE(block.has_qubit(qubit2));
 
-    SECTION("ProjectQ IDs") {
-        const auto pq_ids = block.pq_ids();
-        using v_t = decltype(pq_ids)::value_type;
+    SECTION("External IDs") {
+        const auto ext_ids = block.ext_ids();
+        using v_t = decltype(ext_ids)::value_type;
         std::set<v_t> ref{qubit0, qubit1, qubit2};
-        REQUIRE(std::set<v_t>(std::begin(pq_ids), std::end(pq_ids)) == ref);
+        REQUIRE(std::set<v_t>(std::begin(ext_ids), std::end(ext_ids)) == ref);
     }
 
     SECTION("Tweedledum IDs") {
@@ -258,7 +258,7 @@ TEST_CASE("CircuitBlock/Translate IDs", "[circuit_block][core]") {
     REQUIRE(block.add_qubit(qubit2));
     REQUIRE(block.add_qubit(qubit3));
 
-    const auto pq_ids = block.pq_ids();
+    const auto ext_ids = block.ext_ids();
     const auto td_ids = block.td_ids();
 
     SECTION("TD -> PQ") {
@@ -281,7 +281,7 @@ TEST_CASE("CircuitBlock/Translate IDs", "[circuit_block][core]") {
 
     SECTION("PQ -> TD") {
         std::set<unsigned int> qubit_ids;
-        for (const auto& qubit_id : pq_ids) {
+        for (const auto& qubit_id : ext_ids) {
             qubit_ids.emplace(static_cast<unsigned int>(block.translate_id(qubit_id)));
         }
 
@@ -498,7 +498,7 @@ TEST_CASE("CircuitBlock/Mapping", "[circuit_block][core]") {
 
     mindquantum::CircuitBlock block;
 
-    const auto get_td_id = [&](auto pq_id) { return std::get<0>(get::pq_to_td(block).at(pq_id)); };
+    const auto get_td_id = [&](auto ext_id) { return std::get<0>(get::ext_to_td(block).at(ext_id)); };
 
     const auto qubit0(10);
     const auto qubit1(11);
