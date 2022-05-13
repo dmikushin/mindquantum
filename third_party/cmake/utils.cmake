@@ -958,8 +958,6 @@ function(mindquantum_add_pkg pkg_name)
     list(APPEND _find_package_args COMPONENTS ${_components})
   endif()
 
-  # TODO(dnguyen): Cleanup of the 3rd party directory does not work if the branch below is taken...
-
   # NB: this branch will only be taken if not the first CMake configure call (or if manually set)
   if(${pkg_name}_DIR)
     set(_args
@@ -973,6 +971,17 @@ function(mindquantum_add_pkg pkg_name)
     __find_package(${_args} SEARCH_NAME "config")
 
     if(${pkg_name}_FOUND)
+      if(CLEAN_3RDPARTY_INSTALL_DIR)
+        file(GLOB _installations ${_mq_local_prefix}/${pkg_name}_${PKG_VER}_*)
+        message(STATUS "Deleting old installation directories (if any):")
+        foreach(_dir ${_installations})
+          if(NOT "${_dir}" STREQUAL "${${pkg_name}_DIRPATH}")
+            message(STATUS "  - ${_dir}")
+            file(REMOVE_RECURSE "${_dir}")
+          endif()
+        endforeach()
+      endif()
+
       if(${pkg_name}_DIR)
         message(STATUS "Package CMake config dir: ${${pkg_name}_DIR}")
       endif()
