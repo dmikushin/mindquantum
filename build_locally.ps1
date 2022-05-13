@@ -112,7 +112,7 @@ function Extra-Help {
 
 # ------------------------------------------------------------------------------
 
-. "$ROOTDIR\scripts\build\parse_common_args.ps1"
+. "$ROOTDIR\scripts\build\parse_common_args.ps1" @args
 
 # ------------------------------------------------------------------------------
 

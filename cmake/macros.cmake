@@ -243,8 +243,11 @@ function(apply_patches working_directory)
         COMMAND "${Patch_EXECUTABLE}" -p1
         INPUT_FILE "${_lf_patch_file}"
         WORKING_DIRECTORY "${working_directory}"
+        OUTPUT_VARIABLE _stdout
+        ERROR_VARIABLE _stderr RESULTS_VARIABLE _results_out
         RESULT_VARIABLE _result ${_execute_patch_args})
       if(NOT _result EQUAL "0")
+        debug_print(SEND_ERROR "STDOUT:\n${_stdout}" "STDERR:\n${_stderr}" "RESULTS OUT:\n${_results_out}")
         message(FATAL_ERROR "Failed patch: ${_lf_patch_file}")
       endif()
       file(TOUCH ${_patch_lock_file})
