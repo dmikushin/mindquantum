@@ -208,7 +208,8 @@ function(apply_patches working_directory)
     # NB: All these shenanigans with file(CONFIGURE ...) are just to make sure that we get a file with LF line
     # endings...
     get_filename_component(_patch_file_name ${_patch_file} NAME)
-    set(_lf_patch_file ${PROJECT_BINARY_DIR}/_mq_patch/${_patch_file_name})
+    set(_lf_patch_file ${PROJECT_BINARY_DIR}/_mq_patch/lf_${_patch_file_name})
+    set(_crlf_patch_file ${PROJECT_BINARY_DIR}/_mq_patch/crlf_${_patch_file_name})
     file(READ "${_patch_file}" _content)
     # NB: escape patches that have @XXX@ since those would be replaced by the call to file(CONFIGURE)
     set(_at @)
@@ -222,35 +223,57 @@ function(apply_patches working_directory)
       string(REPLACE "<" "@_less@" _content "${_content}")
       string(REPLACE ">" "@_greater@" _content "${_content}")
     endif()
-    set(NEWLINE_STYLE LF)
-    if(PATCH_USE_NATIVE_ENCODING AND WIN32)
-      set(NEWLINE_STYLE CRLF)
-    endif()
 
     file(
       CONFIGURE
       OUTPUT "${_lf_patch_file}"
       CONTENT "${_content}"
       @ONLY
-      NEWLINE_STYLE ${NEWLINE_STYLE})
+      NEWLINE_STYLE LF)
+    file(
+      CONFIGURE
+      OUTPUT "${_crlf_patch_file}"
+      CONTENT "${_content}"
+      @ONLY
+      NEWLINE_STYLE CRLF)
 
-    file(MD5 "${_lf_patch_file}" _md5)
-    set(_patch_lock_file "${working_directory}/mq_applied_patch_${_md5}")
+    file(MD5 "${_lf_patch_file}" _lf_md5)
+    file(MD5 "${_crlf_patch_file}" _crlf_md5)
+    set(_lf_patch_lock_file "${working_directory}/mq_applied_patch_${_lf_md5}")
+    set(_crlf_patch_lock_file "${working_directory}/mq_applied_patch_${_crlf_md5}")
 
-    if(NOT EXISTS "${_patch_lock_file}")
+    if(NOT EXISTS "${_lf_patch_lock_file}" AND NOT EXISTS "${_crlf_patch_lock_file}")
       message(STATUS "Applying patch ${_patch_file}")
+      # First try LF patch
       execute_process(
         COMMAND "${Patch_EXECUTABLE}" -p1
         INPUT_FILE "${_lf_patch_file}"
         WORKING_DIRECTORY "${working_directory}"
-        OUTPUT_VARIABLE _stdout
-        ERROR_VARIABLE _stderr RESULTS_VARIABLE _results_out
+        OUTPUT_VARIABLE _lf_stdout
+        ERROR_VARIABLE _lf_stderr RESULTS_VARIABLE _lf_results_out
         RESULT_VARIABLE _result ${_execute_patch_args})
       if(NOT _result EQUAL "0")
-        debug_print(SEND_ERROR "STDOUT:\n${_stdout}" "STDERR:\n${_stderr}" "RESULTS OUT:\n${_results_out}")
-        message(FATAL_ERROR "Failed patch: ${_lf_patch_file}")
+        # If not successful, try CRLF patch
+        debug_print(STATUS "  -> trying CRLF patch since LF patch failed")
+        execute_process(
+          COMMAND "${Patch_EXECUTABLE}" -p1
+          INPUT_FILE "${_crlf_patch_file}"
+          WORKING_DIRECTORY "${working_directory}"
+          OUTPUT_VARIABLE _crlf_stdout
+          ERROR_VARIABLE _crlf_stderr RESULTS_VARIABLE _crlf_results_out
+          RESULT_VARIABLE _result ${_execute_patch_args})
+        if(NOT _result EQUAL "0")
+          debug_print(SEND_ERROR "STDOUT(LF):\n${_lf_stdout}" "STDERR(LF):\n${_lf_stderr}"
+                      "RESULTS OUT (LF):\n${_lf_results_out}")
+          debug_print(SEND_ERROR "STDOUT(CRLF):\n${_crlf_stdout}" "STDERR(CRLF):\n${_crlf_stderr}"
+                      "RESULTS OUT (CRLF):\n${_crlf_results_out}")
+          message(FATAL_ERROR "Failed patches: ${_lf_patch_file} and ${_crlf_patch_file}")
+        else()
+          file(TOUCH ${_crlf_patch_lock_file})
+        endif()
+      else()
+        file(TOUCH ${_lf_patch_lock_file})
       endif()
-      file(TOUCH ${_patch_lock_file})
     else()
       message(STATUS "Skipping patch ${_patch_file} since already applied.")
     endif()

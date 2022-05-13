@@ -388,7 +388,7 @@ jobs:
         run: >-
            ./build_locally.ps1 -Cxx -WithProjectq -DebugCmake -Ninja -Test -CCache
            -ConfigureOnly -C -Clean3rdParty -Prefix "${{ github.workspace }}/install"
-           -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
+           -DUSE_PARALLEL_STL=OFF
 
       - name: Build
         run: ./build_locally.ps1 -Cxx -WithProjectq -DebugCmake -Ninja -Test -CCache
@@ -466,7 +466,7 @@ jobs:
   #       run: >-
   #          ./build_locally.ps1 -Cxx -WithProjectq -DebugCmake -Test
   #           -G "MinGW Makefiles" -ConfigureOnly -C -Clean3rdParty -Prefix "${{ github.workspace }}/install"
-  #          -DUSE_PARALLEL_STL=OFF -DPATCH_USE_NATIVE_ENCODING=ON
+  #          -DUSE_PARALLEL_STL=OFF
 
   #     - name: Build
   #       env:

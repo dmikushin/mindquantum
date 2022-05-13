@@ -166,15 +166,17 @@ class CMakeBuildExt(build_ext):
     user_options = build_ext.user_options + [
         ('no-arch-native', None, 'Do not use the -march=native flag when compiling'),
         ('clean-build', None, 'Build in a clean build environment'),
+        ('install-light', None, 'Install a "light" version of MindQuantum (ie. no development libraries)'),
     ]
 
-    boolean_options = build_ext.boolean_options + ['no-arch-native', 'clean-build']
+    boolean_options = build_ext.boolean_options + ['no-arch-native', 'clean-build', 'install-light']
 
     def initialize_options(self):
         """Initialize all options of this custom command."""
         build_ext.initialize_options(self)
         self.no_arch_native = None
         self.clean_build = None
+        self.install_light = None
 
     def build_extensions(self):
         """Build a C/C++ extension using CMake."""
@@ -196,7 +198,8 @@ class CMakeBuildExt(build_ext):
 
         self.configure_extensions()
         build_ext.build_extensions(self)
-        self.cmake_install()
+        if not self.install_light():
+            self.cmake_install()
 
     def configure_extensions(self):
         """Run a CMake configuration and generation step for one extension."""
