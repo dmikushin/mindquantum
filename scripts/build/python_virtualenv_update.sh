@@ -70,7 +70,7 @@ if [[ ${created_venv:-0} -eq 1 || ${do_update_venv:-0} -eq 1 ]]; then
     fi
 
     echo "Updating Python packages: $PYTHON -m pip install -U ${pkgs[*]}"
-    call_cmd "$PYTHON" -m pip install -U "${pkgs[@]}"
+    call_cmd "$PYTHON" -m pip install -U --prefer-binary "${pkgs[@]}"
 fi
 
 # ==============================================================================

@@ -43,15 +43,21 @@ fi
 
 # ------------------------------------------------------------------------------
 
+venv_args=( "$python_venv_path" )
+if [[ "$VENV_USE_SYSTEM_PACKAGES" == "1" ]]; then
+    venv_args+=( --system-site-packages )
+fi
+
 created_venv=0
 if [ ! -d "$python_venv_path" ]; then
     # shellcheck disable=SC2034
     created_venv=1
-    echo "Creating Python virtualenv: $PYTHON -m venv $python_venv_path"
-    call_cmd "$PYTHON" -m venv "$python_venv_path"
+    echo "Creating Python virtualenv: $PYTHON -m venv ${venv_args[*]}"
+    call_cmd "$PYTHON" -m venv "${venv_args[@]}"
 elif [ $do_update_venv -eq 1 ]; then
-    echo "Updating Python virtualenv: $PYTHON -m venv --upgrade $python_venv_path"
-    call_cmd "$PYTHON" -m venv --upgrade "$python_venv_path"
+    venv_args+=(  --upgrade )
+    echo "Updating Python virtualenv: $PYTHON -m venv ${venv_args[*]}"
+    call_cmd "$PYTHON" -m venv "${venv_args[@]}"
 fi
 
 echo "Activating Python virtual environment: $python_venv_path"

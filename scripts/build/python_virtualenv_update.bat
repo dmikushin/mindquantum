@@ -62,7 +62,7 @@ if NOT "!python_extra_pkgs!" == "" set pkgs=!pkgs! !python_extra_pkgs!
 rem  TODO(dnguyen): add wheel delocation package for Windows once we figure this out
 
 echo Updating Python packages: !PYTHON! -m pip install -U !pkgs!
-call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m pip install -U !pkgs!
+call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m pip install -U --prefer-binary !pkgs!
 goto :EOF
 
 rem ============================================================================

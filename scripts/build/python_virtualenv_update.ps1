@@ -71,7 +71,7 @@ if ($created_venv -or $do_update_venv) {
     # TODO(dnguyen): add wheel delocation package for Windows once we figure this out
 
     Write-Output ("Updating Python packages: $PYTHON -m pip install -U "  + ($pkgs -Join ' '))
-    Call-Cmd "$PYTHON" -m pip install -U @pkgs
+    Call-Cmd "$PYTHON" -m pip install -U --prefer-binary @pkgs
 }
 
 # ==============================================================================
