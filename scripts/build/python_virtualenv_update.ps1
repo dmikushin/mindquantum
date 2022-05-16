@@ -28,27 +28,39 @@ if ($PYTHON -eq $null) {
     die '(internal error): PYTHON variable not defined!'
 }
 
+if ($ROOTDIR -eq $null) {
+    die '(internal error): ROOTDIR variable not defined!'
+}
+
 # ==============================================================================
 
 if ($created_venv -or $do_update_venv) {
     $pkgs = @("pip", "setuptools", "wheel", "build", "pybind11", "setuptools-scm[toml]")
 
-    if($IsLinuxEnv) {
+    if ($IsLinuxEnv) {
         $pkgs += "auditwheel"
     }
-    elseif($IsMacOSEnv) {
+    elseif ($IsMacOSEnv) {
         $pkgs += "delocate"
     }
 
-    if($cmake_from_venv) {
+    if ($cmake_from_venv) {
         $pkgs += "cmake"
     }
 
-    if($enable_tests) {
-        $pkgs += "pytest", "pytest-cov", "pytest-mock"
+    if ($enable_tests) {
+        $tmp_file = (New-TemporaryFile).Name
+
+        pushd "$ROOTDIR"
+        Invoke-Expression -Command "$PYTHON setup.py gen_reqfile --include-extras=tests --output `"$tmp_file`""
+        popd
+
+        $tmp = Get-Content -Path "$tmp_file" | Select-String -Pattern '^\s*$' -NotMatch
+        $pkgs += $tmp -Split '\n'
+        Remove-Item -Force "$tmp_file" -ErrorAction SilentlyContinue
     }
 
-    if($do_docs) {
+    if ($do_docs) {
         $pkgs += "breathe", "sphinx", "sphinx_rtd_theme", "importlib-metadata", "myst-parser"
     }
 
@@ -59,7 +71,7 @@ if ($created_venv -or $do_update_venv) {
     # TODO(dnguyen): add wheel delocation package for Windows once we figure this out
 
     Write-Output ("Updating Python packages: $PYTHON -m pip install -U "  + ($pkgs -Join ' '))
-    Call-Cmd $PYTHON -m pip install -U @pkgs
+    Call-Cmd "$PYTHON" -m pip install -U @pkgs
 }
 
 # ==============================================================================

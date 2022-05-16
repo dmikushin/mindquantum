@@ -387,6 +387,7 @@ class GenerateRequirementFile(setuptools.Command):
     user_options = [
         ('include-all-extras', None, 'Include all extras_require into the list'),
         ('include-extras=', None, 'Include some of extras_requires into the list (comma separated)'),
+        ('output=', 'o', 'Include some of extras_requires into the list (comma separated)'),
     ]
 
     boolean_options = ['include-all-extras']
@@ -395,10 +396,16 @@ class GenerateRequirementFile(setuptools.Command):
         """Initialize this command's options."""
         self.include_extras = None
         self.include_all_extras = None
+        self.output = None
         self.extra_pkgs = []
 
     def finalize_options(self):
         """Finalize this command's options."""
+        if not self.output:
+            self.output = Path(__file__).parent.resolve() / 'requirements.txt'
+        else:
+            self.output = Path(self.output)
+
         if self.include_extras:
             include_extras = self.include_extras.split(',')
         else:
@@ -416,7 +423,7 @@ class GenerateRequirementFile(setuptools.Command):
 
     def run(self):
         """Execute this command."""
-        with fdopen('requirements.txt', 'w') as req_file:
+        with fdopen(str(self.output), 'w') as req_file:
             try:
                 for pkg in self.distribution.install_requires:
                     req_file.write(f'{pkg}\n')

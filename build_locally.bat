@@ -44,11 +44,10 @@ rem ============================================================================
   if /I "%1" == "/Help" set result=true
   if "%result%" == "true" (
     call :help_message
-    goto :EOF
+    goto :END
   )
 
-  if /I "%1" == "/n" set result=true
-  if "%result%" == "true" (
+  if /I "%1" == "/N" (
     set dry_run=1
     shift & goto :initial
   )
@@ -61,7 +60,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_build
       echo %BASENAME%: option requires an argument -- '/B,/Build'
-      goto :EOF
+      goto :END
     )
     set build_dir=!value!
     shift & shift & goto :initial
@@ -106,7 +105,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_cuda_arch
       echo %BASENAME%: option requires an argument -- '/CudaArch'
-      goto :EOF
+      goto :END
     )
     call :ToCMakeList value
     set cuda_arch=!value!
@@ -153,7 +152,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_build
       echo %BASENAME%: option requires an argument -- '/B,/Build'
-      goto :EOF
+      goto :END
     )
     set n_jobs=!value!
     shift & shift & goto :initial
@@ -175,7 +174,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_prefix
       echo %BASENAME%: option requires an argument -- '/Prefix'
-      goto :EOF
+      goto :END
     )
     set prefix=!value!
     shift & shift & goto :initial
@@ -188,7 +187,7 @@ rem ============================================================================
 
   if /I "%1" == "/ShowLibraries" (
     call :print_show_libraries
-    goto :EOF
+    goto :END
   )
 
   if /I "%1" == "/Test" (
@@ -207,7 +206,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_venv
       echo %BASENAME%: option requires an argument -- '/Venv'
-      goto :EOF
+      goto :END
     )
     set python_venv_path=!value!
     shift & shift & goto :initial
@@ -350,7 +349,7 @@ call :call_cmake -S !source_dir! -B !build_dir! !cmake_args! !unparsed_args!
 
 :done_configure
 
-if !configure_only! == 1 goto :EOF
+if !configure_only! == 1 goto :END
 
 if !do_clean! == 1 call :call_cmake --build "!build_dir!" --target clean
 
@@ -358,7 +357,12 @@ if !do_docs! == 1 call :call_cmake --build "!build_dir!" --config !build_type! -
 
 call :call_cmake --build "!build_dir!" --config !build_type! !target_args! !make_args!
 
-goto :EOF
+if DEFINED cmake_args set cmake_args=
+if DEFINED unparsed_args set unparsed_args=
+if DEFINED target_args set target_args=
+if DEFINED make_args set make_args=
+
+goto :END
 
 rem ============================================================================
 
@@ -483,3 +487,7 @@ exit /B 0
   EXIT /B 0
 
 rem ============================================================================
+
+:END
+
+call %SCRIPTDIR%\unset_values.bat

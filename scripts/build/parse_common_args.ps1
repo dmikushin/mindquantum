@@ -137,6 +137,10 @@ if ($Quiet.IsPresent) {
     $cmake_make_silent = $true
 }
 
+if ($Test.IsPresent) {
+    $enable_tests = $true
+}
+
 if ($UpdateVenv.IsPresent) {
     $do_update_venv = $true
 }

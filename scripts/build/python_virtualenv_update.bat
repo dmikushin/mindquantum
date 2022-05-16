@@ -26,6 +26,11 @@ if "!PYTHON!" == "" (
    exit /B 1
 )
 
+if "!ROOTDIR!" == "" (
+   echo "(internal error): ROOTDIR variable not defined!"
+   exit /B 1
+)
+
 rem ============================================================================
 
 if !created_venv! == 1 goto :update_venv
@@ -39,7 +44,16 @@ set pkgs=pip setuptools wheel build pybind11 setuptools-scm[toml]
 
 if !cmake_from_venv! == 1 set pkgs=!pkgs! cmake
 
-if !enable_tests! == 1 set pkgs=!pkgs! pytest pytest-cov pytest-mock mock
+if !enable_tests! == 1 (
+  call :mktemp tmp_file "%temp%"
+
+  pushd "!ROOTDIR!"
+  "!PYTHON!" setup.py gen_reqfile --include-extras test --output "!tmp_file!"
+  popd
+
+  for /F %%i in ('findstr /v "^[ ]*$" "!tmp_file!"') do set pkgs=!pkgs! %%i
+  del /F !tmp_file!
+)
 
 if !do_docs! == 1 set pkgs=!pkgs! breathe sphinx sphinx_rtd_theme importlib-metadata myst-parser
 
@@ -49,5 +63,14 @@ rem  TODO(dnguyen): add wheel delocation package for Windows once we figure this
 
 echo Updating Python packages: !PYTHON! -m pip install -U !pkgs!
 call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m pip install -U !pkgs!
+goto :EOF
 
 rem ============================================================================
+
+:mktemp
+  @rem in the next line (optional): create the "%~2" folder if does not exist
+  md "%~2" 2>NUL
+  set "_uniqueFileName=%~2\bat~%RANDOM%.tmp"
+  if exist "%_uniqueFileName%" goto :uniqGet
+  set "%~1=%_uniqueFileName%"
+  exit /B 0

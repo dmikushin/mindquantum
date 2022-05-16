@@ -48,7 +48,7 @@ rem ============================================================================
   if /I "%1" == "/Help" set result=true
   if "%result%" == "true" (
     call :help_message
-    goto :EOF
+    goto :END
   )
 
   if /I "%1" == "/N" (
@@ -64,7 +64,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_build
       echo %PROGRAM%: option requires an argument -- '/B,/Build'
-      goto :EOF
+      goto :END
     )
     set has_build_dir=1
     set build_dir=!value!
@@ -110,7 +110,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_cuda_arch
       echo %PROGRAM%: option requires an argument -- '/CudaArch'
-      goto :EOF
+      goto :END
     )
     call :ToCMakeList value
     set cuda_arch=!value!
@@ -159,7 +159,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_build
       echo %PROGRAM%: option requires an argument -- '/B,/Build'
-      goto :EOF
+      goto :END
     )
     set n_jobs=!value!
     shift & shift & goto :initial
@@ -186,7 +186,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_prefix
       echo %PROGRAM%: option requires an argument -- '/Prefix'
-      goto :EOF
+      goto :END
     )
     set prefix=!value!
     shift & shift & goto :initial
@@ -199,7 +199,7 @@ rem ============================================================================
 
   if /I "%1" == "/ShowLibraries" (
     call :print_show_libraries
-    goto :EOF
+    goto :END
   )
 
   if /I "%1" == "/Test" (
@@ -218,7 +218,7 @@ rem ============================================================================
     if "!value:~0,1!" == "/" (
       :arg_venv
       echo %PROGRAM%: option requires an argument -- '/Venv'
-      goto :EOF
+      goto :END
     )
     set python_venv_path=!value!
     shift & shift & goto :initial
@@ -322,6 +322,12 @@ if NOT "!platform_name!" == "" set MQ_DELOCATE_WHEEL_PLAT=!platform_name!
 
 call %SCRIPTDIR%\dos\call_cmd.bat !PYTHON! -m build !args! !unparsed_args!
 
+if DEFINED args set args=
+if DEFINED unparsed_args set unparsed_args=
+
+if DEFINED MQ_DELOCATE_WHEEL set MQ_DELOCATE_WHEEL=
+if DEFINED MQ_DELOCATE_WHEEL_PLAT set MQ_DELOCATE_WHEEL_PLAT=
+
 rem -----------------------------------------------------------------------------
 rem Move the wheels to the output directory
 
@@ -333,7 +339,7 @@ call %SCRIPTDIR%\dos\call_cmd.bat move /Y %ROOTDIR%\dist\* %output_path%
 
 echo ------Successfully created mindquantum package------
 
-goto :EOF
+goto :END
 
 rem ============================================================================
 
@@ -394,3 +400,7 @@ rem ============================================================================
   EXIT /B 0
 
 rem ============================================================================
+
+:END
+
+call %SCRIPTDIR%\unset_values.bat

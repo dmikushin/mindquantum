@@ -38,9 +38,10 @@ exit /B 1
 :done_python
 
 for /F %%i in ('where !PYTHON!') do (
-   set PYTHON=%%i
+   set PYTHON_ABS=%%i
    goto :done_where
 )
 :done_where
 
-call %BASEPATH%\dos\debug_print.bat "Using Python from !PYTHON!"
+call %BASEPATH%\dos\debug_print.bat "Using Python from !PYTHON_ABS!"
+set PYTHON_ABS=

@@ -60,8 +60,10 @@ function needs_arg() {
 call_cmd() {
    if [ $dry_run -ne 1 ]; then
        "$@"
+       return $?
    else
        echo "$@"
+       return 0
    fi
  }
 
@@ -74,6 +76,7 @@ call_cmake() {
         echo "**********"
     fi
     call_cmd "$CMAKE" "$@"
+    return $?
 }
 
 # ==============================================================================
