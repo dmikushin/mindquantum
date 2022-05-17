@@ -59,10 +59,17 @@ if !do_docs! == 1 set pkgs=!pkgs! breathe sphinx sphinx_rtd_theme importlib-meta
 
 if NOT "!python_extra_pkgs!" == "" set pkgs=!pkgs! !python_extra_pkgs!
 
+set pip_args=--prefer-binary
+if !do_update_venv! == 1 set pip_args=!pip_args! -U
+
 rem  TODO(dnguyen): add wheel delocation package for Windows once we figure this out
 
-echo Updating Python packages: !PYTHON! -m pip install -U !pkgs!
-call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m pip install -U --prefer-binary !pkgs!
+echo Updating Python packages: !PYTHON! -m pip install !pip_args! !pkgs!
+call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m pip install !pip_args! !pkgs!
+
+set pip_args=
+set pkgs=
+
 goto :EOF
 
 rem ============================================================================

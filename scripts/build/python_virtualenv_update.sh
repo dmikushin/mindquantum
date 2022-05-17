@@ -69,8 +69,13 @@ if [[ ${created_venv:-0} -eq 1 || ${do_update_venv:-0} -eq 1 ]]; then
         pkgs+=("${python_extra_pkgs[@]}")
     fi
 
-    echo "Updating Python packages: $PYTHON -m pip install -U ${pkgs[*]}"
-    call_cmd "$PYTHON" -m pip install -U --prefer-binary "${pkgs[@]}"
+    pip_args=(--prefer-binary)
+    if [[ ${do_update_venv:-0} -eq 1 ]]; then
+        pip_args+=( -U )
+    fi
+
+    echo "Updating Python packages: $PYTHON -m pip install ${pip_args[*]} ${pkgs[*]}"
+    call_cmd "$PYTHON" -m pip install "${pip_args[@]}" "${pkgs[@]}"
 fi
 
 # ==============================================================================

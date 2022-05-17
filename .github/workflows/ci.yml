@@ -81,7 +81,7 @@ jobs:
           # yamllint disable-line rule:line-length
           key: >-
             ${{ matrix.runs-on }}-python-${{ matrix.python }}-python-venv
-            -${{ hashFiles('build_locally.sh', 'scripts/**') }}-${{ secrets.cache_ver }}
+            -${{ hashFiles('build_locally.sh', 'scripts/build/**.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: env.ACT != 'true'
@@ -219,7 +219,7 @@ jobs:
         with:
           path: venv
           key: >-
-            gcc-${{ matrix.gcc }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}
+            gcc-${{ matrix.gcc }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/build/**.sh') }}
             -${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
@@ -305,7 +305,7 @@ jobs:
         with:
           path: venv
           key: >-
-            clang-${{ matrix.clang }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}
+            clang-${{ matrix.clang }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/build/**.sh') }}
             -${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
@@ -382,7 +382,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: msvc-python-venv-${{ hashFiles('build_locally.ps1') }}-${{ secrets.cache_ver }}
+          key: msvc-python-venv-${{ hashFiles('build_locally.ps1', 'scripts/build/**.ps1') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: env.ACT != 'true'
@@ -442,7 +442,8 @@ jobs:
   #       uses: actions/cache@v3
   #       with:
   #         path: venv
-  #         key: mingw64-python-venv-${{ hashFiles('build_locally.ps1') }}-${{ secrets.cache_ver }}
+  #         key: >-
+  #           mingw64-python-venv-${{ hashFiles('build_locally.ps1', 'scripts/build/**.ps1') }}-${{ secrets.cache_ver }}
 
   #     - name: Cache compiled third-party libraries
   #       if: env.ACT != 'true'
@@ -613,7 +614,7 @@ jobs:
         with:
           path: venv
           key: >-
-            msys2-${{ matrix.msystem }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}
+            msys2-${{ matrix.msystem }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/build/**.sh') }}
             -${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
@@ -737,7 +738,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv
-          key: cygwin-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}-${{ secrets.cache_ver }}
+          key: cygwin-python-venv-${{ hashFiles('build_locally.sh', 'scripts/build/**.sh') }}-${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
         if: env.ACT != 'true'
@@ -839,7 +840,7 @@ jobs:
         with:
           path: venv
           key: >-
-            nvhpc-${{ matrix.nvhpc }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}
+            nvhpc-${{ matrix.nvhpc }}-python-venv-${{ hashFiles('build_locally.sh', 'scripts/build/**.sh') }}
             -${{ secrets.cache_ver }}
 
       - name: Cache compiled third-party libraries
@@ -914,7 +915,7 @@ jobs:
   #       uses: actions/cache@v3
   #       with:
   #         path: venv
-  #         key: intel-python-venv-${{ hashFiles('build_locally.sh', 'scripts/**') }}-${{ secrets.cache_ver }}
+  #         key: intel-python-venv-${{ hashFiles('build_locally.sh', 'scripts/build/**.sh') }}-${{ secrets.cache_ver }}
 
   #     - name: Cache compiled third-party libraries
   #       if: env.ACT != 'true'

@@ -103,6 +103,6 @@ if !cmake_major_min! LEQ !cmake_major! (
 :install_cmake
 
 echo Installing CMake inside the Python virtual environment
-call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m pip install -U "cmake>=!cmake_version_min!"
+call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m pip install "cmake>=!cmake_version_min!"
 
 :done_cmake

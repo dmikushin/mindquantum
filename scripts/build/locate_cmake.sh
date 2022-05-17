@@ -56,12 +56,7 @@ fi
 
 # ==============================================================================
 
-if command -v dos2unix >/dev/null 2>&1; then
-    dos2unix -n "$ROOTDIR/CMakeLists.txt" "$ROOTDIR/tmp.txt"
-    cmake_version_min=$(grep -oP 'cmake_minimum_required\(VERSION\s+\K[0-9\.]+' "$ROOTDIR/tmp.txt")
-else
-    cmake_version_min=$(grep -oP 'cmake_minimum_required\(VERSION\s+\K[0-9\.]+' "$ROOTDIR/CMakeLists.txt")
-fi
+cmake_version_min=$(tr -d '\r' < "$ROOTDIR/CMakeLists.txt" | grep -oP 'cmake_minimum_required\(VERSION\s+\K[0-9\.]+')
 
 if [ $has_cmake -ne 1 ]; then
     if command -v cmake > /dev/null 2>&1; then
@@ -81,7 +76,7 @@ fi
 
 if [ $has_cmake -eq 0 ]; then
     echo "Installing CMake inside the Python virtual environment"
-    call_cmd "$PYTHON" -m pip install -U "cmake>=$cmake_version_min"
+    call_cmd "$PYTHON" -m pip install "cmake>=$cmake_version_min"
     CMAKE="$python_venv_path/bin/cmake"
 fi
 

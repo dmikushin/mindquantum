@@ -7,7 +7,7 @@ AlignEscapedNewlines: Right
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-AlwaysBreakTemplateDeclarations: Yes
+AlwaysBreakTemplateDeclarations: true
 BraceWrapping:
   AfterClass: false
   AfterControlStatement: false

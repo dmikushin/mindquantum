@@ -19,6 +19,9 @@ BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}" )" &> /dev/null && pwd 
 
 # ------------------------------------------------------------------------------
 
+# shellcheck source=SCRIPTDIR/default_values.sh
+. "$BASEPATH/default_values.sh"
+
 # shellcheck source=SCRIPTDIR/common_functions.sh
 . "$BASEPATH/common_functions.sh"
 
@@ -52,13 +55,13 @@ created_venv=0
 if [ ! -d "$python_venv_path" ]; then
     # shellcheck disable=SC2034
     created_venv=1
-    echo "Creating Python virtualenv: $PYTHON -m venv ${venv_args[*]}"
-    call_cmd "$PYTHON" -m venv "${venv_args[@]}"
+    echo -n 'Creating Python virtualenv: '
 elif [ $do_update_venv -eq 1 ]; then
     venv_args+=(  --upgrade )
-    echo "Updating Python virtualenv: $PYTHON -m venv ${venv_args[*]}"
-    call_cmd "$PYTHON" -m venv "${venv_args[@]}"
+    echo -n 'Updating Python virtualenv: '
 fi
+echo "$PYTHON -m venv ${venv_args[*]}"
+call_cmd "$PYTHON" -m venv "${venv_args[@]}"
 
 echo "Activating Python virtual environment: $python_venv_path"
 if [ -f "$python_venv_path/bin/activate" ]; then

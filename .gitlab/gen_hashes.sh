@@ -14,6 +14,8 @@ overall_hash=$(echo "$build_script_hash $third_party_hash" | md5sum | cut -f1 -d
 # ==============================================================================
 
 cat << EOF > "$BASEPATH/hashes.yml"
+---
+
 variables:
   BUILD_SCRIPT_HASH: ${build_script_hash}
   THIRD_PARTY_HASH: ${third_party_hash}

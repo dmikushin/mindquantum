@@ -41,16 +41,23 @@ if ($do_clean_venv) {
 
 # ------------------------------------------------------------------------------
 
+$venv_args = @( "$python_venv_path" )
+if ("$Env:VENV_USE_SYSTEM_PACKAGES" == '1') {
+    $venv_args += '--system-site-packages'
+}
+
 $created_venv = $false
 if (-Not (Test-Path -Path "$python_venv_path" -PathType Container)) {
     $created_venv = $true
-    Write-Output "Creating Python virtualenv: $PYTHON -m venv $python_venv_path"
-    Call-Cmd $PYTHON -m venv "$python_venv_path"
+    $header = 'Creating Python virtualenv: '
 }
 elseif ($do_update_venv) {
-    Write-Output "Updating Python virtualenv: $PYTHON -m venv --upgrade $python_venv_path"
-    Call-Cmd $PYTHON -m venv --upgrade "$python_venv_path"
+    $venv_args += '--upgrade'
+    $header = 'Updating Python virtualenv: '
 }
+
+Write-Output "$header: $PYTHON -m venv $venv_args"
+Call-Cmd $PYTHON -m venv @venv_args
 
 if($IsWinEnv) {
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force

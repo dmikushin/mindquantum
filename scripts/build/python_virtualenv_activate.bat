@@ -39,17 +39,22 @@ if !do_clean_venv! == 1 (
 
 rem ----------------------------------------------------------------------------
 
+
+set venv_args=!python_venv_path!
+if %VENV_USE_SYSTEM_PACKAGES% == 1 set venv_args=!venv_args! --system-site-packages
+
 set created_venv=0
 if NOT EXIST !python_venv_path! (
   set created_venv=1
-  echo Creating Python virtualenv: !PYTHON! -m venv !python_venv_path!
-  call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m venv !python_venv_path!
+  echo Creating Python virtualenv: !PYTHON! -m venv !venv_args!
+  call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m venv !venv_args!
   goto :activate_venv
 )
 
 if !do_update_venv! == 1 (
-  echo Updating Python virtualenv: !PYTHON! -m venv --upgrade !python_venv_path!
-  call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m venv --upgrade !python_venv_path!
+  set venv_args=!venv_args! --upgrade
+  echo Updating Python virtualenv: !PYTHON! -m venv !venv_args!
+  call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m venv !venv_args!
 )
 
 :activate_venv
