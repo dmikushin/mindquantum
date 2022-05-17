@@ -55,13 +55,13 @@ created_venv=0
 if [ ! -d "$python_venv_path" ]; then
     # shellcheck disable=SC2034
     created_venv=1
-    echo -n 'Creating Python virtualenv: '
+    echo "Creating Python virtualenv: $PYTHON -m venv ${venv_args[*]}"
+    call_cmd "$PYTHON" -m venv "${venv_args[@]}"
 elif [ $do_update_venv -eq 1 ]; then
     venv_args+=(  --upgrade )
-    echo -n 'Updating Python virtualenv: '
+    echo "Updating Python virtualenv: $PYTHON -m venv ${venv_args[*]}"
+    call_cmd "$PYTHON" -m venv "${venv_args[@]}"
 fi
-echo "$PYTHON -m venv ${venv_args[*]}"
-call_cmd "$PYTHON" -m venv "${venv_args[@]}"
 
 echo "Activating Python virtual environment: $python_venv_path"
 if [ -f "$python_venv_path/bin/activate" ]; then
