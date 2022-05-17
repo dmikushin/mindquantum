@@ -20,6 +20,7 @@ Param(
     [switch]$CleanBuildDir,
     [switch]$CleanCache,
     [switch]$CleanVenv,
+    [ValidateNotNullOrEmpty()][string]$Config,
     [ValidateNotNullOrEmpty()][string]$CudaArch,
     [switch]$Cxx,
     [switch]$Debug,
@@ -28,12 +29,11 @@ Param(
     [Alias("N")][switch]$DryRun,
     [ValidateNotNullOrEmpty()][string]$G,
     [switch]$Gpu,
-    [switch]$H,
-    [switch]$Help,
+    [Alias("H")][switch]$Help,
     [Alias("J")][ValidateRange("Positive")][int]$Jobs,
     [switch]$Ninja,
+    [switch]$NoBuildIsolation,
     [switch]$NoDelocate,
-    [switch]$NoIsolation,
     [Alias("O")][ValidateNotNullOrEmpty()][string]$Output,
     [ValidateNotNullOrEmpty()][string]$PlatName,
     [switch]$Quiet,
@@ -52,7 +52,7 @@ $PROGRAM = Split-Path $MyInvocation.MyCommand.Path -Leaf
 # Default values
 
 $delocate_wheel = $true
-$build_isolation = $true
+$no_build_isolation = $false
 $output_path = "$ROOTDIR\output"
 $platform_name = ''
 
@@ -97,23 +97,23 @@ function Extra-Help {
 # ------------------------------------------------------------------------------
 
 if ($Delocate.IsPresent) {
-    $delocate_wheel = $true
+    Set-Value 'delocate_wheel'
 }
 
 if ($NoDelocate.IsPresent) {
-    $delocate_wheel = $false
+    Set-Value 'delocate_wheel' $false
 }
 
-if ($NoIsolation.IsPresent) {
-    $build_isolation = $false
+if ($NoBuildIsolation.IsPresent) {
+    Set-Value 'no_build_isolation'
 }
 
 if ([bool]$Output) {
-    $output_path = "$Output"
+    Set-Value 'output_path' "$Output"
 }
 
 if ([bool]$PlatName) {
-    $platform_name = "$PlatName"
+    Set-Value 'platform_name' "$PlatName"
 }
 
 # ==============================================================================
@@ -205,7 +205,7 @@ foreach($arg in $build_args) {
 }
 
 $build_args = @('-w')
-if (-Not $build_isolation) {
+if ($no_build_isolation) {
     $build_args += "--no-isolation"
 }
 
@@ -295,6 +295,9 @@ Re-run CMake with a clean CMake cache
 .PARAMETER CleanVenv
 Delete Python virtualenv before building
 
+.PARAMTER Config
+Path to INI configuration file with default values for the parameters
+
 .PARAMETER Cxx
 (experimental) Enable MindQuantum C++ support
 
@@ -325,7 +328,7 @@ Compile third-party dependencies locally
 .PARAMETER NoDelocate
 Do not delocate the binary wheels after build is finished (pass -Delocate to enable)
 
-.PARAMETER NoIsolation
+.PARAMETER NoBuildIsolation
 Pass --no-isolation to python3 -m build
 
 .PARAMETER Output

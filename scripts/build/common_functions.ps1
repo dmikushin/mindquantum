@@ -22,6 +22,58 @@ $BASEPATH = Split-Path $MyInvocation.MyCommand.Path -Parent
 
 # ==============================================================================
 
+function Assign-Value([switch]$Script, [switch]$OnlyOutput) {
+    $name = $args[0]
+    $value = $args[1]
+
+    if ($Script) {
+        $eval_str = "`$script:$name = "
+    }
+    else {
+        $eval_str = "`$$name = "
+    }
+
+    if ($value -is [string]) {
+        $eval_str += "`"$value`""
+    }
+    elseif ($value -is [array]) {
+        $eval_str += "@({0})" -f (($value | ForEach-Object {"`"$_`""}) -Join ",")
+    }
+    elseif ($value -is [bool]) {
+        if ($value) {
+            $eval_str += "`$true"
+        }
+        else {
+            $eval_str += "`$false"
+        }
+    }
+    else {
+        $eval_str += "$value"
+    }
+
+    if ($OnlyOutput) {
+        return $eval_str
+    }
+    else {
+        Write-Debug "$eval_str"
+        Invoke-Expression -Command "$eval_str"
+    }
+}
+
+function Set-Value {
+    $name = $args[0]
+    if ($args.Length -gt 1) {
+        $value = $args[1]
+    }
+    else {
+        $value = $true
+    }
+    Assign-Value -Script $name $value
+    Assign-Value -Script "_${name}_was_set" $true
+}
+
+# ------------------------------------------------------------------------------
+
 function die {
     Write-Error "$args"
     exit 2

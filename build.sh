@@ -21,7 +21,7 @@ PROGRAM=$(basename "${BASH_SOURCE[0]:-$0}")
 # Default values for this particular script
 
 delocate_wheel=1
-build_isolation=1
+no_build_isolation=0
 output_path="${BASEPATH}/output"
 platform_name=''
 
@@ -67,19 +67,19 @@ getopts_args_extra='o:p:'
 function parse_extra_args() {
     case "$1" in
         delocate )       no_arg;
-                         delocate_wheel=1
+                         set_var delocate_wheel
                          ;;
         no-delocate )    no_arg;
-                         delocate_wheel=0
+                         set_var delocate_wheel 0
                          ;;
         no-isolation )   no_arg;
-                         build_isolation=0
+                         set_var no_build_isolation
                          ;;
         o | output )     needs_arg;
-                         output_path="$2"
+                         set_var output_path "$2"
                          ;;
         p | plat-name )  needs_arg;
-                         platform_name="$2"
+                         set_var platform_name "$2"
                          ;;
         ??* )            die "Illegal option --OPT: $1"
                          ;;
@@ -174,7 +174,7 @@ for arg in "${args[@]}"; do
 done
 
 args=("-w")
-if [ $build_isolation -eq 0 ]; then
+if [ $no_build_isolation -eq 1 ]; then
     args+=("--no-isolation")
 fi
 

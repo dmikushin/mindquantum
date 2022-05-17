@@ -38,6 +38,20 @@ function print_warning() {
 
 # ------------------------------------------------------------------------------
 
+function set_var() {
+    local name value
+
+    name=$1
+    shift
+    if [ $# -gt 0 ]; then
+        value=$1
+    else
+        value=1
+    fi
+    eval "$name=$value"
+    eval "_${name}_was_set=1"
+}
+
 function die() {
     # complain to STDERR and exit with error
     echo "$*" >&2; exit 2;

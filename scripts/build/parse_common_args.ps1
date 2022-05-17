@@ -18,6 +18,8 @@ $BASEPATH = Split-Path $MyInvocation.MyCommand.Path -Parent
 
 # ------------------------------------------------------------------------------
 
+if( $config_file -eq $null) { $config_file = "$ROOTDIR\build.conf" }
+
 $has_build_dir = $false
 
 . "$BASEPATH\default_values.ps1"
@@ -54,6 +56,9 @@ function Help-Message() {
     Write-Output '  -CleanBuildDir      Delete build directory before building'
     Write-Output '  -CleanCache         Re-run CMake with a clean CMake cache'
     Write-Output '  -CleanVenv          Delete Python virtualenv before building'
+    Write-Output '  -Config             Path to INI configuration file with default values for the parameters'
+    Write-Output ("                      Defaults to: {0}" -f $config_file)
+    Write-Output '                      NB: command line arguments always take precedence over configuration file values'
     Write-Output '  -Cxx                (experimental) Enable MindQuantum C++ support'
     Write-Output '  -Debug              Build in debug mode'
     Write-Output '  -DebugCMake         Enable debugging mode for CMake configuration step'
@@ -88,83 +93,109 @@ function Help-Message() {
 
 # ==============================================================================
 
+if ($Help.IsPresent) {
+    Help-Message
+    exit 1
+}
+
+if($ShowLibraries.IsPresent) {
+    Print-Show-Libraries
+    exit 0
+}
+
+# ==============================================================================
+
+# NB: need to set this first...
+if ($Verbose.IsPresent -Or $Debug.IsPresent) {
+    $DebugPreference = 'Continue'
+    Assign-Value -Script '_verbose_was_set' $true
+}
+
 if ($DryRun.IsPresent) {
-    $dry_run = $true
+    Set-Value 'dry_run'
 }
 
 if ($CCache.IsPresent) {
-    $enable_ccache = $true
+    Set-Value 'enable_ccache'
 }
 
 if ($Clean3rdParty.IsPresent) {
-    $do_clean_3rdparty = $true
+    Set-Value 'do_clean_3rdparty'
 }
 if ($CleanAll.IsPresent) {
-    $do_clean_venv = $true
-    $do_clean_build_dir = $true
+    Set-Value 'do_clean_venv'
+    Set-Value 'do_clean_build_dir'
 }
 if ($CleanBuildDir.IsPresent) {
-    $do_clean_build_dir = $true
+    Set-Value 'do_clean_build_dir'
 }
 if ($CleanCache.IsPresent) {
-    $do_clean_cache = $true
+    Set-Value 'do_clean_cache'
 }
 if ($CleanVenv.IsPresent) {
-    $do_clean_venv = $true
+    Set-Value 'do_clean_venv'
 }
 
 if ($Cxx.IsPresent) {
-    $enable_cxx = $true
+    Set-Value 'enable_cxx'
 }
 
 if ($Debug.IsPresent) {
-    $build_type = 'Debug'
+    Set-Value 'build_type' 'Debug'
 }
 
 if ($DebugCMake.IsPresent) {
-    $cmake_debug_mode = $true
+    Set-Value 'cmake_debug_mode'
 }
 
 if ($Gpu.IsPresent) {
-    $enable_gpu = $true
+    Set-Value 'enable_gpu'
 }
 
 if ($LocalPkgs.IsPresent) {
-    $force_local_pkgs = $true
+    Set-Value 'force_local_pkgs'
 }
 
 if ($Quiet.IsPresent) {
-    $cmake_make_silent = $true
+    Set-Value 'cmake_make_silent'
 }
 
 if ($Test.IsPresent) {
-    $enable_tests = $true
+    Set-Value 'enable_tests'
 }
 
 if ($UpdateVenv.IsPresent) {
-    $do_update_venv = $true
-}
-
-if ($Verbose.IsPresent -Or $Debug.IsPresent) {
-    $DebugPreference = 'Continue'
+    Set-Value 'do_update_venv'
 }
 
 if ([bool]$Build) {
     $has_build_dir = $true
-    $build_dir = "$Build"
+    Set-Value 'build_dir' "$Build"
+}
+
+if ([bool]$Config) {
+    Set-Value 'config_file' "$Config"
 }
 
 if ([bool]$CudaArch) {
-    $cuda_arch = $CudaArch.Replace(' ', ';').Replace(',', ';')
+    Set-Value 'cuda_arch' $CudaArch.Replace(' ', ';').Replace(',', ';')
 }
 
 if ($Jobs -ne 0) {
-    $n_jobs = $Jobs
+    Set-Value 'n_jobs' $Jobs
 }
 
 if ([bool]$Venv) {
-    $python_venv_path = "$Venv"
+    Set-Value 'python_venv_path' "$Venv"
 }
+
+if ($Ninja.IsPresent) {
+    Set-Value 'cmake_generator' 'Ninja'
+}
+elseif ($n_jobs -eq -1){
+    $n_jobs = $n_jobs_default
+}
+
 
 $unparsed_args = @()
 
@@ -179,6 +210,7 @@ foreach($arg in $args) {
     }
     else {
         $unparsed_args += $arg
+        continue
     }
 
     if (-Not [bool](($third_party_libraries -eq $library) -join " ")) {
@@ -187,13 +219,15 @@ foreach($arg in $args) {
     }
 
     if ($library -eq "projectq") {
-        $enable_projectq = $enable_lib
+        Set-Value 'enable_projectq' $enable_lib
     }
     elseif ($enable_lib) {
         $local_pkgs += $library
+        Assign-Value -Script '_local_pkgs_was_set' $true
     }
     else {
         $local_pkgs = $local_pkgs -ne $library
+        Assign-Value -Script '_local_pkgs_was_set' $true
     }
 }
 
@@ -201,23 +235,26 @@ $local_pkgs = ($local_pkgs -join ',')
 
 # ==============================================================================
 
-if ($H.IsPresent -or $Help.IsPresent) {
-    Help-Message
-    exit 1
+if (Test-Path -Path "$config_file") {
+    Write-Output "Reading INI/Unix conf configuration file: $config_file"
+    . "$ROOTDIR\scripts\parse_ini.ps1"
+    $ini_values = Parse-IniFile "$config_file"
+
+    # NB: right now we are ignoring the section names... but that might change at some point
+    foreach ($section in $ini_values.GetEnumerator()) {
+        foreach ($section_value in $section.Value.GetEnumerator()) {
+            $eval_str = "if (`$_$($section_value.Name)_was_set -eq `$null) { "
+            $eval_str += Assign-Value -OnlyOutput $section_value.Name $section_value.Value
+            $eval_str += " }"
+            Write-Debug "$eval_str"
+            Invoke-Expression -Command "$eval_str"
+        }
+    }
 }
 
-if($ShowLibraries.IsPresent) {
-    Print-Show-Libraries
-    exit 0
-}
-
-# ==============================================================================
-
-if ($Ninja.IsPresent) {
-    $cmake_generator = 'Ninja'
-}
-elseif ($n_jobs -eq -1){
-    $n_jobs = $n_jobs_default
+# NB: in case it was set to true in the configuration file
+if ($Verbose) {
+    $DebugPreference = 'Continue'
 }
 
 # ==============================================================================

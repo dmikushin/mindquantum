@@ -22,6 +22,7 @@ Param(
     [switch]$CleanBuildDir,
     [switch]$CleanCache,
     [switch]$CleanVenv,
+    [ValidateNotNullOrEmpty()][string]$Config,
     [Alias("C")][switch]$Configure,
     [switch]$ConfigureOnly,
     [ValidateNotNullOrEmpty()][string]$CudaArch,
@@ -32,8 +33,7 @@ Param(
     [Alias("Docs")][switch]$Doc,
     [ValidateNotNullOrEmpty()][string]$G,
     [switch]$Gpu,
-    [switch]$H,
-    [switch]$Help,
+    [Alias("H")][switch]$Help,
     [switch]$Install,
     [Alias("J")][ValidateRange("Positive")][int]$Jobs,
     [switch]$Ninja,
@@ -109,26 +109,26 @@ function Extra-Help {
 # ------------------------------------------------------------------------------
 
 if ($Clean.IsPresent) {
-    $do_clean = $true
+    Set-Value 'do_clean'
 }
 
 if ($C.IsPresent -or $Configure.IsPresent) {
-    $do_configure = $true
+    Set-Value 'do_configure'
 }
 if ($ConfigureOnly.IsPresent) {
-    $configure_only = $true
+    Set-Value 'configure_only'
 }
 
 if ($Doc.IsPresent) {
-    $do_docs = $true
+    Set-Value 'do_docs'
 }
 
 if ($Install.IsPresent) {
-    $do_install = $true
+    Set-Value 'do_install'
 }
 
 if ([bool]$Prefix) {
-    $prefix_dir = "$Prefix"
+    Set-Value 'prefix_dir' "$Prefix"
 }
 
 # ==============================================================================
@@ -334,6 +334,9 @@ Delete Python virtualenv before building
 
 .PARAMETER Configure
 Force running the CMake configure step
+
+.PARAMTER Config
+Path to INI configuration file with default values for the parameters
 
 .PARAMETER ConfigureOnly
 Stop after the CMake configure and generation steps (ie. before building MindQuantum)

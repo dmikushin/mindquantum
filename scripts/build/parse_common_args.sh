@@ -21,6 +21,8 @@ PROGRAM=$(basename "$0")
 
 # ==============================================================================
 
+: "${config_file=$ROOTDIR/build.conf}"
+
 # shellcheck source=SCRIPTDIR/default_values.sh
 . "$BASEPATH/default_values.sh"
 
@@ -44,12 +46,14 @@ parse_with_libraries() {
     fi
 
     if [ "$1" == "projectq" ]; then
-        enable_projectq=$2
+        set_var enable_projectq "$2"
     elif [ "$2" -eq 1 ]; then
         local_pkgs+=("$1")
+        eval "_local_pkgs_was_set=1"
     else
         for index in "${!local_pkgs[@]}" ; do [[ ${local_pkgs[$index]} == "$1" ]] && unset -v 'local_pkgs[$index]' ; done
         local_pkgs=("${local_pkgs[@]}")
+        eval "_local_pkgs_was_set=1"
     fi
 }
 
@@ -64,7 +68,7 @@ help_message() {
     echo '  -h,--help            Show this help message and exit'
     echo '  -n                   Dry run; only print commands but do not execute them'
     echo ''
-    echo '  -B,--build [dir]     Specify build directory'
+    echo '  -B,--build=[dir]     Specify build directory'
     echo "                       Defaults to: $build_dir"
     echo '  --ccache             If ccache or sccache are found within the PATH, use them with CMake'
     echo '  --clean-3rdparty     Clean 3rd party installation directory'
@@ -73,6 +77,9 @@ help_message() {
     echo '  --clean-builddir     Delete build directory before building'
     echo '  --clean-cache        Re-run CMake with a clean CMake cache'
     echo '  --clean-venv         Delete Python virtualenv before building'
+    echo '  --config=[dir]       Path to INI configuration file with default values for the parameters'
+    echo "                       Defaults to: $config_file"
+    echo '                       NB: command line arguments always take precedence over configuration file values'
     echo '  --cxx                (experimental) Enable MindQuantum C++ support'
     echo '  --debug              Build in debug mode'
     echo '  --debug-cmake        Enable debugging mode for CMake configuration step'
@@ -145,72 +152,75 @@ while getopts "${getopts_args}" OPT; do
         B | build)       needs_arg;
                          # shellcheck disable=SC2034
                          has_build_dir=1
-                         build_dir="$OPTARG"
+                         set_var build_dir "$OPTARG"
                          ;;
         ccache )         no_arg;
-                         enable_ccache=1
+                         set_var enable_ccache
+                         ;;
+        config )         no_arg;
+                         set_var config_file "$OPTARG"
                          ;;
         clean-3rdparty ) no_arg;
-                         do_clean_3rdparty=1
+                         set_var do_clean_3rdparty
                          ;;
         clean-all )      no_arg;
-                         do_clean_venv=1
-                         do_clean_build_dir=1
+                         set_var do_clean_venv
+                         set_var do_clean_build_dir
                          ;;
         clean-builddir ) no_arg;
-                         do_clean_build_dir=1
+                         set_var do_clean_build_dir
                          ;;
-        clean-cache )    no_arg;
-                         do_clean_cache=1
+        clean-cache )    no_arg
+                         set_var do_clean_cache
                          ;;
         clean-venv )     no_arg;
-                         do_clean_venv=1
+                         set_var do_clean_venv
                          ;;
         cuda-arch )      needs_arg;
-                         cuda_arch=$(echo "$OPTARG" | tr ',' ';')
+                         set_var cuda_arch "$(echo "$OPTARG" | tr ',' ';')"
                          ;;
         cxx )            no_arg;
-                         enable_cxx=1
+                         set_var enable_cxx
                          ;;
         debug )          no_arg;
-                         build_type='Debug'
+                         set_var build_type 'Debug'
                          ;;
         debug-cmake )    no_arg;
-                         cmake_debug_mode=1
+                         set_var cmake_debug_mode
                          ;;
         gpu )            no_arg;
-                         enable_gpu=1
+                         set_var enable_gpu
                          ;;
         j | jobs )       needs_arg;
-                         n_jobs="$OPTARG"
+                         set_var n_jobs "$OPTARG"
                          ;;
         local-pkgs )     no_arg;
-                         force_local_pkgs=1
+                         set_var force_local_pkgs
                          ;;
         n )              no_arg;
-                         dry_run=1
+                         set_var dry_run
                          ;;
         ninja )          no_arg;
-                         cmake_generator='Ninja'
+                         set_var cmake_generator 'Ninja'
                          ;;
         quiet )          no_arg;
-                         cmake_make_silent=1
+                         set_var cmake_make_silent
                          ;;
         show-libraries ) no_arg;
                          print_show_libraries
                          exit 1
                          ;;
         test )           no_arg;
-                         enable_tests=1
+                         set_var enable_tests
                          ;;
         update-venv )    no_arg;
-                         do_update_venv=1
+                         set_var do_update_venv
                          ;;
         v | verbose )    no_arg;
-                         verbose=1
+                         set_var verbose
                          ;;
         venv )           needs_arg;
-                         python_venv_path="$OPTARG"
+                         set_var python_venv_path "$OPTARG"
                          ;;
         with )           no_arg;
                          parse_with_libraries "$library" $enable_lib
@@ -232,6 +242,16 @@ done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list
 
 # ==============================================================================
+
+if [ -f "$config_file" ]; then
+    echo "Reading INI/Unix conf configuration file: $config_file"
+    . "$ROOTDIR/scripts/parse_ini.sh"
+    # NB: right now we are ignoring the section names... but that might change at some point
+    ini_values=$(parse_ini_file "$config_file")
+    debug_print "Values read from INI configuration file:"
+    debug_print "$ini_values"
+    eval "$ini_values"
+fi
 
 if [[ $n_jobs -eq -1 && ! $cmake_generator == "Ninja"  ]]; then
     n_jobs=$n_jobs_default

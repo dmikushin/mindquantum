@@ -29,3 +29,4 @@ Testing
 # clangd local cache directory
 .cache
  stat
+/build.conf

@@ -75,23 +75,23 @@ getopts_args_extra='c'
 function parse_extra_args() {
     case "$1" in
         clean )          no_arg;
-                         do_clean=1
+                         set_var do_clean
                          ;;
         c | configure )  no_arg;
-                         do_configure=1
+                         set_var do_configure
                          ;;
         configure-only ) no_arg;
-                         configure_only=1
+                         set_var configure_only
                          ;;
         docs )           ;&
         doc )            no_arg;
-                         do_docs=1
+                         set_var do_docs
                          ;;
         install)         no_arg;
-                         do_install=1
+                         set_var do_install
                          ;;
         prefix)          needs_arg;
-                         prefix="$2"
+                         set_var prefix "$2"
                          ;;
         ??* )            die "Illegal option --OPT: $1"
                          ;;
