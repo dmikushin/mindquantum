@@ -51,14 +51,19 @@ if [[ ${created_venv:-0} -eq 1 || ${do_update_venv:-0} -eq 1 ]]; then
     fi
 
     if [ "${enable_tests:-0}" -eq 1 ]; then
-        tmp_file=$(mktemp req_mq_XXX)
+        if [[ -n "$VENV_PYTHON_TEST_PKGS" ]]; then
+            read -ra test_pkgs <<< "$VENV_PYTHON_TEST_PKGS"
+            pkgs+=( "${test_pkgs[@]}" )
+        else
+            tmp_file=$(mktemp req_mq_XXX)
 
-        pushd "$ROOTDIR" > /dev/null || exit 1
-        "$PYTHON" setup.py gen_reqfile --include-extras=tests --output "$tmp_file"
-        popd > /dev/null || exit 1
+            pushd "$ROOTDIR" > /dev/null || exit 1
+            "$PYTHON" setup.py gen_reqfile --include-extras=tests --output "$tmp_file"
+            popd > /dev/null || exit 1
 
-        mapfile -t -O "${#pkgs[@]}" pkgs <<< "$(grep '\S' "$tmp_file")"
-        rm -f "$tmp_file"
+            mapfile -t -O "${#pkgs[@]}" pkgs <<< "$(grep '\S' "$tmp_file")"
+            rm -f "$tmp_file"
+        fi
     fi
 
     if [ "${do_docs:-0}" -eq 1 ]; then

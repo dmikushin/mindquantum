@@ -49,15 +49,20 @@ if ($created_venv -or $do_update_venv) {
     }
 
     if ($enable_tests) {
-        $tmp_file = (New-TemporaryFile).Name
+        if ("$Env:VENV_PYTHON_TEST_PKGS" -ne "") {
+            $pkgs += ( "$Env:VENV_PYTHON_TEST_PKGS" -Split ' ' )
+        }
+        else {
+            $tmp_file = (New-TemporaryFile).Name
 
-        pushd "$ROOTDIR"
-        Invoke-Expression -Command "$PYTHON setup.py gen_reqfile --include-extras=tests --output `"$tmp_file`""
-        popd
+            pushd "$ROOTDIR"
+            Invoke-Expression -Command "$PYTHON setup.py gen_reqfile --include-extras=tests --output `"$tmp_file`""
+            popd
 
-        $tmp = Get-Content -Path "$tmp_file" | Select-String -Pattern '^\s*$' -NotMatch
-        $pkgs += $tmp -Split '\n'
-        Remove-Item -Force "$tmp_file" -ErrorAction SilentlyContinue
+            $tmp = Get-Content -Path "$tmp_file" | Select-String -Pattern '^\s*$' -NotMatch
+            $pkgs += $tmp -Split '\n'
+            Remove-Item -Force "$tmp_file" -ErrorAction SilentlyContinue
+        }
     }
 
     if ($do_docs) {

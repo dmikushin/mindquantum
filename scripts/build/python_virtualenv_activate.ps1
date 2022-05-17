@@ -42,7 +42,7 @@ if ($do_clean_venv) {
 # ------------------------------------------------------------------------------
 
 $venv_args = @( "$python_venv_path" )
-if ("$Env:VENV_USE_SYSTEM_PACKAGES" == '1') {
+if ("$Env:VENV_USE_SYSTEM_PACKAGES" -eq '1') {
     $venv_args += '--system-site-packages'
 }
 

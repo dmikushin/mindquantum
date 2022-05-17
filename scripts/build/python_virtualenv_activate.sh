@@ -66,6 +66,9 @@ fi
 echo "Activating Python virtual environment: $python_venv_path"
 if [ -f "$python_venv_path/bin/activate" ]; then
     call_cmd source "$python_venv_path/bin/activate"
+    debug_print "PATH=$PATH"
+    hash -r
+    debug_print "PYTHON = $(which "$PYTHON")"
 elif [ -f "$python_venv_path/Scripts/activate" ]; then
     call_cmd source "$python_venv_path/Scripts/activate"
     # If on Windows, potentially need to fix the PATH format
@@ -73,6 +76,11 @@ elif [ -f "$python_venv_path/Scripts/activate" ]; then
         new_path=$(cygpath --unix "$PATH")
         export PATH="$new_path"
     fi
+    debug_print "PATH=$PATH"
+    hash -r
+    debug_print "PYTHON = $(which "$PYTHON")"
+elif [ $dry_run -eq 1 ]; then
+    call_cmd source "$python_venv_path/bin/activate"
 else
     die 'Unable to activate Python virtual environment!'
 fi

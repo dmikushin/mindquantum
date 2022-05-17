@@ -508,9 +508,6 @@ jobs:
               mingw-w64-x86_64-gmp
               mingw-w64-x86_64-python
               mingw-w64-x86_64-python-pip
-              mingw-w64-x86_64-python-numpy
-              mingw-w64-x86_64-python-scipy
-              mingw-w64-x86_64-openblas
             cmake_generator: -- -G "MSYS Makefiles"
             CC: gcc
             CXX: g++
@@ -527,8 +524,6 @@ jobs:
               mingw-w64-clang-x86_64-gmp
               mingw-w64-clang-x86_64-python
               mingw-w64-clang-x86_64-python-pip
-              mingw-w64-clang-x86_64-python-numpy
-              mingw-w64-clang-x86_64-openblas
             cmake_generator: -- -G "MSYS Makefiles"
             CC: clang
             CXX: clang++
@@ -544,9 +539,6 @@ jobs:
               mingw-w64-ucrt-x86_64-gmp
               mingw-w64-ucrt-x86_64-python
               mingw-w64-ucrt-x86_64-python-pip
-              mingw-w64-ucrt-x86_64-python-numpy
-              mingw-w64-ucrt-x86_64-python-scipy
-              mingw-w64-ucrt-x86_64-openblas
             cmake_generator: -- -G "MSYS Makefiles"
             CC: gcc
             CXX: g++
@@ -629,9 +621,9 @@ jobs:
         env:
           CC: ${{ matrix.CC }}
           CXX: ${{ matrix.CXX }}
-          VENV_USE_SYSTEM_PACKAGES: 1
+          VENV_PYTHON_TEST_PKGS: pytest pytest-cov pytest-mock mock
         run: >-
-          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
+          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache -v
           --configure-only -c --clean-3rdparty --prefix="$PWD/install"
           ${{ matrix.cmake_generator }}
 
@@ -691,7 +683,7 @@ jobs:
             gawk sed libtool gettext wget curl grep dos2unix
             gzip bzip2 tar xz
             binutils gcc-core gcc-g++
-            libgmp-devel libzstd-devel liblapack-devel libopenblas
+            libgmp-devel libzstd-devel
             python3 python3-devel python3-pip python3-virtualenv
 
       - name: Get Date
@@ -750,10 +742,11 @@ jobs:
       - name: Configure
         env:
           PATH: C:\cygwin\bin
+          VENV_PYTHON_TEST_PKGS: pytest pytest-cov pytest-mock mock
         shell: bash --login -eo pipefail -o igncr {0}
         run: |
           export PATH="$PATH:$PWD/ccache/bin"
-          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache \
+          ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache -v \
           --configure-only -c --clean-3rdparty --prefix=$PWD/install \
           ${{ matrix.cmake_generator }}
 
