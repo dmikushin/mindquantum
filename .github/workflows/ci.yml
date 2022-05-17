@@ -21,10 +21,12 @@ jobs:
           - 3.9
           - '3.10'
         include:
+          - VENV_PYTHON_TEST_PKGS: pytest pytest-cov pytest-mock mock
           - test_install: false
           - test_bdist_wheel: false
           - python: 3.9
             test_install: true
+            VENV_PYTHON_TEST_PKGS:
           - python: 3.8
             test_bdist_wheel: true
     env:
@@ -92,6 +94,8 @@ jobs:
           key: ${{ matrix.runs-on }}-python-${{ matrix.python }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
       - name: Configure
+        env:
+          VENV_PYTHON_TEST_PKGS: ${{ matrix.VENV_PYTHON_TEST_PKGS }}
         run: >-
           ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
           --configure-only -c --clean-3rdparty --prefix="${{ github.workspace }}/install"
@@ -230,6 +234,8 @@ jobs:
           key: gcc-${{ matrix.gcc }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
       - name: Configure
+        env:
+          VENV_PYTHON_TEST_PKGS: pytest pytest-cov pytest-mock mock
         run: >-
           ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
           --configure-only -c --clean-3rdparty --prefix="${{ github.workspace }}/install"
@@ -316,6 +322,8 @@ jobs:
           key: clang-${{ matrix.clang }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
       - name: Configure
+        env:
+          VENV_PYTHON_TEST_PKGS: pytest pytest-cov pytest-mock mock
         run: >-
           ./build_locally.sh --cxx --with-projectq --debug-cmake --test --ccache
           --configure-only -c --clean-3rdparty --prefix="${{ github.workspace }}/install"
@@ -844,6 +852,8 @@ jobs:
           key: nvhpc-${{ matrix.nvhpc }}-third-party-libs-${{ hashFiles('third_party/**') }}-${{ secrets.cache_ver }}
 
       - name: Configure
+        env:
+          VENV_PYTHON_TEST_PKGS: pytest pytest-cov pytest-mock mock
         run: >-
           ./build_locally.sh --cxx --with-projectq --debug-cmake --gpu --test --ccache
           --configure-only -c --clean-3rdparty --prefix="${{ github.workspace }}/install"
