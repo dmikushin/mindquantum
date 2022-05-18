@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# shellcheck disable=SC2154
+
 BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}" )" &> /dev/null && pwd )
 ROOTDIR="$BASEPATH"
 PROGRAM=$(basename "${BASH_SOURCE[0]:-$0}")
@@ -26,6 +28,7 @@ output_path="${BASEPATH}/output"
 platform_name=''
 
 # Override some of the default values
+# shellcheck disable=SC2034
 enable_cxx=1
 
 . "$ROOTDIR/scripts/build/default_values.sh"
@@ -132,7 +135,7 @@ for var in "${!cmake_option_names[@]}"; do
     fi
 done
 
-if [ $cmake_make_silent -eq 0 ]; then
+if [ "$cmake_make_silent" -eq 0 ]; then
     args+=(--set USE_VERBOSE_MAKEFILE)
 else
     args+=(--unset USE_VERBOSE_MAKEFILE)
@@ -142,7 +145,7 @@ if [ -n "$cmake_generator" ]; then
     args+=(-G "${cmake_generator}")
 fi
 
-if [ $n_jobs -ne -1 ]; then
+if [ "$n_jobs" -ne -1 ]; then
     args+=(build --parallel="$n_jobs")
 fi
 
@@ -150,17 +153,17 @@ if [[ "$build_type" == 'Debug' ]]; then
     args+=(build --debug)
 fi
 
-if [ $has_build_dir -eq 1 ]; then
+if [ "$has_build_dir" -eq 1 ]; then
     args+=(build_ext --build-dir "$build_dir")
 fi
 
 # --------------------------------------
 
-if [ $enable_ccache -eq 1 ]; then
+if [ "$enable_ccache" -eq 1 ]; then
     print_warning "--ccache is unsupported (thus ignored) with $PROGRAM!"
 fi
 
-if [[ $enable_gpu -eq 1 && -n "$cuda_arch" ]]; then
+if [[ "$enable_gpu" -eq 1 && -n "$cuda_arch" ]]; then
     print_warning "--cuda-arch is unsupported (thus ignored) with $PROGRAM!"
 fi
 
@@ -181,11 +184,11 @@ fi
 # ------------------------------------------------------------------------------
 # Build the wheels
 
-if [ $has_build_dir -eq 1 ]; then
-    if [ $do_clean_build_dir -eq 1 ]; then
+if [ "$has_build_dir" -eq 1 ]; then
+    if [ "$do_clean_build_dir" -eq 1 ]; then
         echo "Deleting build folder: $build_dir"
         call_cmd rm -rf "$build_dir"
-    elif [ $do_clean_cache -eq 1 ]; then
+    elif [ "$do_clean_cache" -eq 1 ]; then
         echo "Removing CMake cache at: $build_dir/CMakeCache.txt"
         call_cmd rm -f "$build_dir/CMakeCache.txt"
         echo "Removing CMake files at: $build_dir/CMakeFiles"
@@ -193,7 +196,7 @@ if [ $has_build_dir -eq 1 ]; then
     fi
 fi
 
-if [ $delocate_wheel -eq 1 ]; then
+if [ "$delocate_wheel" -eq 1 ]; then
     env_vars=(MQ_DELOCATE_WHEEL=1)
 
     if [ -n "$platform_name" ]; then

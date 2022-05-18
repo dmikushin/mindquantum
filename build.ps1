@@ -59,9 +59,8 @@ $platform_name = ''
 # Override some of the default values
 $enable_cxx = $true
 
-. "$ROOTDIR\scripts\build\default_values.ps1"
-
-. "$ROOTDIR\scripts\build\common_functions.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\default_values.ps1')
+. (Join-Path $ROOTDIR 'scripts\build\common_functions.ps1')
 
 # ------------------------------------------------------------------------------
 
@@ -92,7 +91,7 @@ function Extra-Help {
 
 # ------------------------------------------------------------------------------
 
-. "$ROOTDIR\scripts\build\parse_common_args.ps1" @args
+. (Join-Path $ROOTDIR 'scripts\build\parse_common_args.ps1') @args
 
 # ------------------------------------------------------------------------------
 
@@ -119,7 +118,7 @@ if ([bool]$PlatName) {
 # ==============================================================================
 # Locate python or python3
 
-. "$ROOTDIR\scripts\build\locate_python3.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\locate_python3.ps1')
 
 # ==============================================================================
 
@@ -130,12 +129,12 @@ cd "$ROOTDIR"
 # ------------------------------------------------------------------------------
 
 # NB: `created_venv` variable can be used to detect if a virtualenv was created or not
-. "$ROOTDIR\scripts\build\python_virtualenv_activate.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\python_virtualenv_activate.ps1')
 
 # ------------------------------------------------------------------------------
 # Update Python virtualenv (if requested/necessary)
 
-. "$ROOTDIR\scripts\build\python_virtualenv_update.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\python_virtualenv_update.ps1')
 
 # ------------------------------------------------------------------------------
 # Setup arguments for build

@@ -13,18 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# shellcheck disable=SC2154
+
 BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}" )" &> /dev/null && pwd )
 ROOTDIR="$BASEPATH"
 PROGRAM=$(basename "${BASH_SOURCE[0]:-$0}")
 
 # ==============================================================================
-
-configure_only=0
-do_clean=0
-do_configure=0
-do_docs=0
-do_install=0
-prefix=''
 
 . "$ROOTDIR/scripts/build/default_values.sh"
 
@@ -91,7 +86,7 @@ function parse_extra_args() {
                          set_var do_install
                          ;;
         prefix)          needs_arg;
-                         set_var prefix "$2"
+                         set_var prefix_dir "$2"
                          ;;
         ??* )            die "Illegal option --OPT: $1"
                          ;;
@@ -115,7 +110,7 @@ cd "${ROOTDIR}"
 # ------------------------------------------------------------------------------
 # Create a virtual environment for building the wheel
 
-if [ $do_clean_build_dir -eq 1 ]; then
+if [ "$do_clean_build_dir" -eq 1 ]; then
     echo "Deleting build folder: $build_dir"
     call_cmd rm -rf "$build_dir"
 fi
@@ -123,7 +118,7 @@ fi
 # NB: `created_venv` variable can be used to detect if a virtualenv was created or not
 . "$ROOTDIR/scripts/build/python_virtualenv_activate.sh"
 
-if [ $dry_run -ne 1 ]; then
+if [ "$dry_run" -ne 1 ]; then
     # Make sure the root directory is in the virtualenv PATH
     site_pkg_dir=$("$PYTHON" -c 'import site; print(site.getsitepackages()[0])')
     pth_file="$site_pkg_dir/mindquantum_local.pth"
@@ -167,11 +162,11 @@ if [[ -n "$cmake_generator" ]]; then
     cmake_args+=(-G "${cmake_generator}")
 fi
 
-if [[ -n "$prefix" ]]; then
-    cmake_args+=(-DCMAKE_INSTALL_PREFIX:FILEPATH="${prefix}")
+if [[ -n "$prefix_dir" ]]; then
+    cmake_args+=(-DCMAKE_INSTALL_PREFIX:FILEPATH="${prefix_dir}")
 fi
 
-if [ $enable_ccache -eq 1 ]; then
+if [ "$enable_ccache" -eq 1 ]; then
     ccache_exec=
     if command -v ccache > /dev/null 2>&1; then
         ccache_exec=ccache
@@ -185,18 +180,18 @@ if [ $enable_ccache -eq 1 ]; then
     fi
 fi
 
-if [[ $enable_gpu -eq 1 && -n "$cuda_arch" ]]; then
+if [[ "$enable_gpu" -eq 1 && -n "$cuda_arch" ]]; then
     cmake_args+=(-DCMAKE_CUDA_ARCHITECTURES:STRING="$cuda_arch")
 fi
 
 local_pkgs_str=$(join_by , "${local_pkgs[@]}")
-if [[ $force_local_pkgs -eq 1 ]]; then
+if [[ "$force_local_pkgs" -eq 1 ]]; then
     cmake_args+=(-DMQ_FORCE_LOCAL_PKGS=all)
 elif [ -n "$local_pkgs_str" ]; then
     cmake_args+=(-DMQ_FORCE_LOCAL_PKGS="$local_pkgs_str")
 fi
 
-if [ $n_jobs -ne -1 ]; then
+if [ "$n_jobs" -ne -1 ]; then
     cmake_args+=(-DJOBS:STRING="$n_jobs")
     make_args+=(-j "$n_jobs")
 fi
@@ -204,9 +199,9 @@ fi
 # ------------------------------------------------------------------------------
 # Build
 
-if [[ ! -d "$build_dir" || $do_clean_build_dir -eq 1 ]]; then
+if [[ ! -d "$build_dir" || "$do_clean_build_dir" -eq 1 ]]; then
     do_configure=1
-elif [ $do_clean_cache -eq 1 ]; then
+elif [ "$do_clean_cache" -eq 1 ]; then
     do_configure=1
     echo "Removing CMake cache at: $build_dir/CMakeCache.txt"
     call_cmd rm -f "$build_dir/CMakeCache.txt"
@@ -214,24 +209,24 @@ elif [ $do_clean_cache -eq 1 ]; then
     call_cmd  rm -rf "$build_dir/CMakeFiles"
 fi
 
-if [ $do_configure -eq 1 ]; then
+if [ "$do_configure" -eq 1 ]; then
     call_cmake -S "$source_dir" -B "$build_dir" "${cmake_args[@]}" "$@"
 fi
 
-if [ $configure_only -eq 1 ]; then
+if [ "$configure_only" -eq 1 ]; then
     exit 0
 fi
 
 target=all
-if [ $do_install -eq 1 ]; then
+if [ "$do_install" -eq 1 ]; then
     target=install
 fi
 
-if [ $do_clean -eq 1 ]; then
+if [ "$do_clean" -eq 1 ]; then
     call_cmake --build "$build_dir" --target clean
 fi
 
-if [ $do_docs -eq 1 ]; then
+if [ "$do_docs" -eq 1 ]; then
     call_cmake --build "$build_dir" --target docs --config "$build_type" "${make_args[@]}"
 fi
 

@@ -60,9 +60,8 @@ $do_docs = 0
 $do_install = 0
 $prefix_dir = ""
 
-. "$ROOTDIR\scripts\build\default_values.ps1"
-
-. "$ROOTDIR\scripts\build\common_functions.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\default_values.ps1')
+. (Join-Path $ROOTDIR 'scripts\build\common_functions.ps1')
 
 # ------------------------------------------------------------------------------
 
@@ -104,7 +103,7 @@ function Extra-Help {
 
 # ------------------------------------------------------------------------------
 
-. "$ROOTDIR\scripts\build\parse_common_args.ps1" @args
+. (Join-Path $ROOTDIR 'scripts\build\parse_common_args.ps1') @args
 
 # ------------------------------------------------------------------------------
 
@@ -134,7 +133,7 @@ if ([bool]$Prefix) {
 # ==============================================================================
 # Locate python or python3
 
-. "$ROOTDIR\scripts\build\locate_python3.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\locate_python3.ps1')
 
 # ==============================================================================
 
@@ -163,7 +162,7 @@ if ($do_clean_build_dir) {
 }
 
 # NB: `created_venv` variable can be used to detect if a virtualenv was created or not
-. "$ROOTDIR\scripts\build\python_virtualenv_activate.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\python_virtualenv_activate.ps1')
 
 if ($dry_run -ne 1) {
     # Make sure the root directory is in the virtualenv PATH
@@ -180,12 +179,12 @@ if ($dry_run -ne 1) {
 # Locate cmake or cmake3
 
 # NB: `cmake_from_venv` variable is set by this script (and is used by python_virtualenv_update.sh)
-. "$ROOTDIR\scripts\build\locate_cmake.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\locate_cmake.ps1')
 
 # ------------------------------------------------------------------------------
 # Update Python virtualenv (if requested/necessary)
 
-. "$ROOTDIR\scripts\build\python_virtualenv_update.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\python_virtualenv_update.ps1')
 
 # ------------------------------------------------------------------------------
 # Setup arguments for build

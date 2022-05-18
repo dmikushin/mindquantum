@@ -19,27 +19,6 @@ $BASEPATH = Split-Path $MyInvocation.MyCommand.Path -Parent
 # ==============================================================================
 # Default values for input arguments
 
-if( $build_type -eq $null) { $build_type = 'Release' }
-if( $cmake_debug_mode -eq $null) { $cmake_debug_mode = $false }
-if( $cmake_generator -eq $null) { $cmake_generator='' }
-if( $cmake_make_silent -eq $null) { $cmake_make_silent = $false }
-if( $cuda_arch -eq $null) { $cuda_arch='' }
-if( $do_clean_3rdparty -eq $null) { $do_clean_3rdparty = $false }
-if ($do_clean_build_dir -eq $null) { $do_clean_build_dir = $false }
-if ($do_clean_cache -eq $null) { $do_clean_cache = $false }
-if( $do_clean_venv -eq $null) { $do_clean_venv = $false }
-if( $do_update_venv -eq $null) { $do_update_venv = $false }
-if ($do_verbose -eq $null) { $do_verbose = $false }
-if( $dry_run -eq $null) { $dry_run = $false }
-if( $enable_ccache -eq $null) { $enable_ccache = $false }
-if( $enable_cxx -eq $null) { $enable_cxx = $false }
-if( $enable_gpu -eq $null) { $enable_gpu = $false }
-if( $enable_projectq -eq $null) { $enable_projectq = $true }
-if( $enable_tests -eq $null) { $enable_tests = $false }
-if( $force_local_pkgs -eq $null) { $force_local_pkgs = $false }
-if( $local_pkgs -eq $null) { $local_pkgs = @() }
-if ($n_jobs -eq $null) { $n_jobs = -1 }
-
 $IsLinuxEnv = [bool](Get-Variable -Name "IsLinux" -ErrorAction Ignore)
 $IsMacOSEnv = [bool](Get-Variable -Name "IsMacOS" -ErrorAction Ignore)
 $IsWinEnv = !$IsLinuxEnv -and !$IsMacOSEnv
@@ -91,11 +70,7 @@ if ($n_jobs_default -eq $null) {
 
 # ==============================================================================
 
-$source_dir = Resolve-Path "$BASEPATH\..\.."
-$build_dir = "$source_dir\build"
-$python_venv_path="$source_dir\venv"
-
-$third_party_libraries = ((Get-ChildItem -Path "$source_dir\third_party" -Directory -Exclude cmake).Name).ForEach("ToLower")
+$third_party_libraries = ((Get-ChildItem -Path "$ROOTDIR\third_party" -Directory -Exclude cmake).Name).ForEach("ToLower")
 
 # ==============================================================================
 # Other helper variables

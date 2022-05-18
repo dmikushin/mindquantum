@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# shellcheck disable=SC2154
+
 [ "${_sourced_parse_common_args}" != "" ] && return || _sourced_parse_common_args=.
 
 BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -23,8 +25,17 @@ PROGRAM=$(basename "$0")
 
 : "${config_file=$ROOTDIR/build.conf}"
 
-# shellcheck source=SCRIPTDIR/default_values.sh
-. "$BASEPATH/default_values.sh"
+for arg in "$@"; do
+    if [[ "$arg" == '-v' || $arg == '--verbose' ]]; then
+        # shellcheck disable=SC2034
+        verbose=1
+        break
+    fi
+done
+
+# Read default values from default config file (without overriding any defined Bash variables)
+echo "Reading INI/Unix default configuration"
+set_variable_from_ini -C "$BASEPATH/default_values.conf"
 
 # shellcheck source=SCRIPTDIR/common_functions.sh
 . "$BASEPATH/common_functions.sh"
@@ -33,6 +44,7 @@ PROGRAM=$(basename "$0")
 
 print_show_libraries() {
     echo 'Known third-party libraries:'
+    # shellcheck disable=SC2034
     for lib in $third_party_libraries; do
         echo " - $lib"
     done
@@ -49,11 +61,11 @@ parse_with_libraries() {
         set_var enable_projectq "$2"
     elif [ "$2" -eq 1 ]; then
         local_pkgs+=("$1")
-        eval "_local_pkgs_was_set=1"
+        declare -gi _local_pkgs_was_set=1
     else
         for index in "${!local_pkgs[@]}" ; do [[ ${local_pkgs[$index]} == "$1" ]] && unset -v 'local_pkgs[$index]' ; done
         local_pkgs=("${local_pkgs[@]}")
-        eval "_local_pkgs_was_set=1"
+        declare -gi _local_pkgs_was_set=1
     fi
 }
 
@@ -245,12 +257,10 @@ shift $((OPTIND-1)) # remove parsed options and args from $@ list
 
 if [ -f "$config_file" ]; then
     echo "Reading INI/Unix conf configuration file: $config_file"
-    . "$ROOTDIR/scripts/parse_ini.sh"
-    # NB: right now we are ignoring the section names... but that might change at some point
-    ini_values=$(parse_ini_file "$config_file")
-    debug_print "Values read from INI configuration file:"
-    debug_print "$ini_values"
-    eval "$ini_values"
+    debug_print 'NB: overriding values only if not specified on the command line'
+
+    # NB: Check whether the variables were set from the command line and do not override those
+    set_variable_from_ini -c "$config_file"
 fi
 
 if [[ $n_jobs -eq -1 && ! $cmake_generator == "Ninja"  ]]; then
