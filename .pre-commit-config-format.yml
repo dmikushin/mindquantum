@@ -42,13 +42,13 @@ repos:
 
   # Changes tabs to spaces
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.1.13
+    rev: v1.2.0
     hooks:
       - id: remove-tabs
         exclude: ^(.*patch[0-9]*)$
 
   - repo: https://github.com/PyCQA/doc8/
-    rev: 0.11.1
+    rev: 0.11.2
     hooks:
       - id: doc8
 
