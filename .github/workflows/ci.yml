@@ -675,6 +675,7 @@ jobs:
     env:
       CYGWIN_NOWINPATH: 1  # only have cygwin's executables on PATH
       CHERE_INVOKING: 1  # prevent profile script to change directory
+      CCACHE_VERSION: 4.6.1
     steps:
       - run: git config --global core.autocrlf input
 
@@ -716,14 +717,19 @@ jobs:
         shell: bash --login -eo pipefail -o igncr {0}
         run: |
           export PATH="$PATH:$PWD/ccache/bin"
-          if ! command -v ccache >/dev/null 2>&1; then
-              wget https://github.com/ccache/ccache/releases/download/v4.6/ccache-4.6.tar.gz
-              tar xf ccache-4.6.tar.gz
-              cmake -S ccache-4.6 -B ccache-4.6/build -DENABLE_TESTING=OFF -DENABLE_DOCUMENTATION=OFF \
+          if ! command -v ccache >/dev/null 2>&1 || [[ \
+            "$(ccache --version | head -1)" != "ccache version ${CCACHE_VERSION}" ]]; then
+              echo "Building CCache ${CCACHE_VERSION} from source"
+              wget https://github.com/ccache/ccache/releases/download/v${CCACHE_VERSION}/ccache-${CCACHE_VERSION}.tar.gz
+              tar xf ccache-${CCACHE_VERSION}.tar.gz
+              cmake -S ccache-${CCACHE_VERSION} -B ccache-${CCACHE_VERSION}/build \
+                    -DENABLE_TESTING=OFF -DENABLE_DOCUMENTATION=OFF \
                     -DCCACHE_DEV_MODE=OFF -DHIREDIS_FROM_INTERNET=ON \
                     -DHAVE_ASM_SSE41=OFF -DHAVE_ASM_AVX2=OFF -DHAVE_ASM_AVX512=OFF \
                     -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/ccache"
-              make -C ccache-4.6/build -j$(nproc) install VERBOSE=1
+              make -C ccache-${CCACHE_VERSION}/build -j$(nproc) install VERBOSE=1
+          else
+              echo 'Skip building CCcache'
           fi
 
       - name: Configure CCache
