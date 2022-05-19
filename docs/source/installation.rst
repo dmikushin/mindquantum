@@ -97,9 +97,19 @@ message):
     -h,--help            Show this help message and exit
     -n                   Dry run; only print commands but do not execute them
 
+    -B,--build=[dir]     Specify build directory
+                         Defaults to: /home/user/mindquantum/build
     --ccache             If ccache or sccache are found within the PATH, use them with CMake
     --clean-3rdparty     Clean 3rd party installation directory
+    --clean-all          Clean everything before building.
+                         Equivalent to --clean-venv --clean-builddir
+    --clean-builddir     Delete build directory before building
+    --clean-cache        Re-run CMake with a clean CMake cache
     --clean-venv         Delete Python virtualenv before building
+    --config=[dir]       Path to INI configuration file with default values for the parameters
+                         Defaults to: /home/user/mindquantum/build.conf
+                         NB: command line arguments always take precedence over configuration
+                         file values
     --cxx                (experimental) Enable MindQuantum C++ support
     --debug              Build in debug mode
     --debug-cmake        Enable debugging mode for CMake configuration step
@@ -110,14 +120,14 @@ message):
     --ninja              Build using Ninja instead of make
     --quiet              Disable verbose build rules
     --show-libraries     Show all known third-party libraries
-    --test               Build C++ tests
+    --test               Build C++ tests and install dependencies for Python testing as well
     -v, --verbose        Enable verbose output from the Bash scripts
     --venv=[dir]         Path to Python virtual environment
-                         Defaults to: /home/damien/code/hiq/mindquantum/venv
+                         Defaults to: /home/user/mindquantum/venv
     --with-<library>     Build the third-party <library> from source
-                         (ignored if --local-pkgs is passed, except for projectq and quest)
+                         (ignored if --local-pkgs is passed, except for projectq)
     --without-<library>  Do not build the third-party library from source
-                         (ignored if --local-pkgs is passed, except for projectq and quest)
+                         (ignored if --local-pkgs is passed, except for projectq)
 
   CUDA related options:
     --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.
@@ -127,18 +137,15 @@ message):
   Python related options:
     --update-venv        Update the python virtual environment
 
+  Developer options:
+    --cmake-no-registry  Disable the use of CMake package registries during configuration
+
   Extra options:
-    -B,--build [dir]     Specify build directory
-                         Defaults to: /home/damien/code/hiq/mindquantum/build
     --clean              Run make clean before building
-    --clean-all          Clean everything before building.
-                         Equivalent to --clean-venv --clean-builddir
-    --clean-builddir     Delete build directory before building
-    --clean-cache        Re-run CMake with a clean CMake cache
     -c,--configure       Force running the CMake configure step
-    --configure-only     Stop after the CMake configure and generation steps (ie. before
-                         building MindQuantum)
-    --doc                Setup the Python virtualenv for building the documentation and ask
+    --configure-only     Stop after the CMake configure and generation steps
+                         (ie. before building MindQuantum)
+    --doc,--docs         Setup the Python virtualenv for building the documentation and ask
                          CMake to build the documentation
     --install            Build the ´install´ target
     --prefix             Specify installation prefix
@@ -150,7 +157,13 @@ message):
   build_locally.sh -B build --gpu
   build_locally.sh -B build --cxx --with-boost --without-gmp --venv=/tmp/venv
   build_locally.sh -B build -- -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc
-  build_locally.sh -B build --cxx --gpu -- -DCMAKE_NVCXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++
+  build_locally.sh -B build --cxx --gpu -- \
+         -DCMAKE_NVCXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++
+
+    --doc                Setup the Python virtualenv for building the documentation and ask
+                         CMake to build the documentation
+    --install            Build the ´install´ target
+    --prefix             Specify installation prefix
 
 .. [1] PowerShell and Bash scripts typically have identical functionality sets whereas the MS-DOS BATCH script might
        not. For example, the latter does not support the ``/WithOutXXX``-type arguments.
@@ -292,9 +305,19 @@ It has similar options as the scripts decribed in :ref:`build_locally_for_devs`:
     -h,--help            Show this help message and exit
     -n                   Dry run; only print commands but do not execute them
 
+    -B,--build=[dir]     Specify build directory
+                         Defaults to: /home/user/mindquantum/build
     --ccache             If ccache or sccache are found within the PATH, use them with CMake
     --clean-3rdparty     Clean 3rd party installation directory
+    --clean-all          Clean everything before building.
+                         Equivalent to --clean-venv --clean-builddir
+    --clean-builddir     Delete build directory before building
+    --clean-cache        Re-run CMake with a clean CMake cache
     --clean-venv         Delete Python virtualenv before building
+    --config=[dir]       Path to INI configuration file with default values for the parameters
+                         Defaults to: /home/user/mindquantum/build.conf
+                         NB: command line arguments always take precedence over configuration
+                         file values
     --cxx                (experimental) Enable MindQuantum C++ support
     --debug              Build in debug mode
     --debug-cmake        Enable debugging mode for CMake configuration step
@@ -305,14 +328,14 @@ It has similar options as the scripts decribed in :ref:`build_locally_for_devs`:
     --ninja              Build using Ninja instead of make
     --quiet              Disable verbose build rules
     --show-libraries     Show all known third-party libraries
-    --test               Build C++ tests
+    --test               Build C++ tests and install dependencies for Python testing as well
     -v, --verbose        Enable verbose output from the Bash scripts
     --venv=[dir]         Path to Python virtual environment
-                         Defaults to: /home/damien/code/hiq/mindquantum/venv
+                         Defaults to: /home/user/mindquantum/venv
     --with-<library>     Build the third-party <library> from source
-                         (ignored if --local-pkgs is passed, except for projectq and quest)
+                         (ignored if --local-pkgs is passed, except for projectq)
     --without-<library>  Do not build the third-party library from source
-                         (ignored if --local-pkgs is passed, except for projectq and quest)
+                         (ignored if --local-pkgs is passed, except for projectq)
 
   CUDA related options:
     --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.
@@ -322,17 +345,22 @@ It has similar options as the scripts decribed in :ref:`build_locally_for_devs`:
   Python related options:
     --update-venv        Update the python virtual environment
 
+  Developer options:
+    --cmake-no-registry  Disable the use of CMake package registries during configuration
+
   Extra options:
     --delocate           Delocate the binary wheels after build is finished
+                         (enabled by default; pass --no-delocate to disable)
+    --no-delocate        Disable delocating the binary wheels after build is finished
+    --no-build-isolation Pass --no-isolation to python3 -m build
     -o,--output=[dir]    Output directory for built wheels
     -p,--plat-name=[dir] Platform name to use for wheel delocation
                          (only effective if --delocate is used)
 
   Example calls:
-  build.sh -B build
-  build.sh -B build --gpu
-  build.sh -B build --cxx --with-boost --without-gmp --venv=/tmp/venv
-  build.sh -B build --cxx --gpu -- -DCMAKE_NVCXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++
+  build.sh
+  build.sh --gpu
+  build.sh --cxx --with-boost --without-gmp --venv=/tmp/venv
 
 .. _requirements:
 
