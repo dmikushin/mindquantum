@@ -38,7 +38,7 @@ if [ -z "$PYTHON" ]; then
     fi
 
     debug_print "Using Python from: $(which $PYTHON)"
-elif [ $verbose -eq 1 ]; then
+elif [ "${verbose:-0}" -eq 1 ]; then
     debug_print "Using Python from environment variable: $(which $PYTHON)"
 fi
 

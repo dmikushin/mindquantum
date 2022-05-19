@@ -16,15 +16,28 @@ if ($_sourced_parse_common_args -eq $null) { $_sourced_parse_common_args=1 } els
 
 $BASEPATH = Split-Path $MyInvocation.MyCommand.Path -Parent
 
-# ------------------------------------------------------------------------------
+# ==============================================================================
+
+if ($ROOTDIR -eq $null) {
+    die '(internal error): ROOTDIR variable not defined!'
+}
+
+# ==============================================================================
 
 if( $config_file -eq $null) { $config_file = "$ROOTDIR\build.conf" }
 
-$has_build_dir = $false
+if ($Verbose.IsPresent -Or $Debug.IsPresent) {
+    $DebugPreference = 'Continue'
+    Assign-Value -Script '_verbose_was_set' $true
+}
 
-. "$BASEPATH\default_values.ps1"
+Write-Output "Reading INI/Unix default configuration"
+Set-VariableFromIni -Path (Join-Path $BASEPATH 'default_values.conf') -CheckNull
 
-. "$BASEPATH\common_functions.ps1"
+# Other default values (ie. those not present in the config file)
+. (Join-Path $BASEPATH 'default_values.ps1')
+
+. (Join-Path $BASEPATH 'common_functions.ps1')
 
 # ==============================================================================
 
@@ -105,12 +118,6 @@ if($ShowLibraries.IsPresent) {
 
 # ==============================================================================
 
-# NB: need to set this first...
-if ($Verbose.IsPresent -Or $Debug.IsPresent) {
-    $DebugPreference = 'Continue'
-    Assign-Value -Script '_verbose_was_set' $true
-}
-
 if ($DryRun.IsPresent) {
     Set-Value 'dry_run'
 }
@@ -169,7 +176,6 @@ if ($UpdateVenv.IsPresent) {
 }
 
 if ([bool]$Build) {
-    $has_build_dir = $true
     Set-Value 'build_dir' "$Build"
 }
 
@@ -237,19 +243,9 @@ $local_pkgs = ($local_pkgs -join ',')
 
 if (Test-Path -Path "$config_file") {
     Write-Output "Reading INI/Unix conf configuration file: $config_file"
-    . "$ROOTDIR\scripts\parse_ini.ps1"
-    $ini_values = Parse-IniFile "$config_file"
+    Write-Debug 'NB: overriding values only if not specified on the command line'
 
-    # NB: right now we are ignoring the section names... but that might change at some point
-    foreach ($section in $ini_values.GetEnumerator()) {
-        foreach ($section_value in $section.Value.GetEnumerator()) {
-            $eval_str = "if (`$_$($section_value.Name)_was_set -eq `$null) { "
-            $eval_str += Assign-Value -OnlyOutput $section_value.Name $section_value.Value
-            $eval_str += " }"
-            Write-Debug "$eval_str"
-            Invoke-Expression -Command "$eval_str"
-        }
-    }
+    Set-VariableFromIni -Path "$config_file" -CheckSet
 }
 
 # NB: in case it was set to true in the configuration file

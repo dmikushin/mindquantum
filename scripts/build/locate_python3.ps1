@@ -18,9 +18,8 @@ $BASEPATH = Split-Path $MyInvocation.MyCommand.Path -Parent
 
 # ------------------------------------------------------------------------------
 
-. "$BASEPATH\default_values.ps1"
-
-. "$BASEPATH\common_functions.ps1"
+. (Join-Path $BASEPATH 'default_values.ps1')
+. (Join-Path $BASEPATH 'common_functions.ps1')
 
 # ==============================================================================
 

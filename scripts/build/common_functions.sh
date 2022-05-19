@@ -19,14 +19,14 @@ BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}" )" &> /dev/null && pwd 
 
 # ==============================================================================
 
-# shellcheck source=SCRIPTDIR/default_values.sh
-. "$BASEPATH/default_values.sh"
+# shellcheck source=SCRIPTDIR/../parse_ini.sh
+. "$BASEPATH/../parse_ini.sh"
 
 # ==============================================================================
 
 function debug_print() {
-    if [ ${verbose:-0} -eq 1 ]; then
-        echo "DEBUG $*"
+    if [ "${verbose:-0}" -eq 1 ]; then
+        echo "DEBUG $*" >&2
     fi
 }
 
@@ -38,18 +38,44 @@ function print_warning() {
 
 # ------------------------------------------------------------------------------
 
+function assign_value() {
+    name=$1
+    shift
+    value=$1
+    shift
+    output_only=${1:-0}
+
+    eval_str="$name"
+
+    if [[ ${value,,} =~ ^(yes|true)$ ]]; then
+        eval_str="$eval_str=1"
+    elif [[ ${value,,} =~ ^(no|false)$ ]]; then
+        eval_str="$eval_str=0"
+    elif [[ ${value,,} =~ ^[0-9]+$ ]]; then
+        eval_str="$eval_str=$value"
+    elif [[ ${value,,} =~ \"\ \" ]]; then
+        eval_str="$eval_str=( $value )"
+    else
+        eval_str="$eval_str=\"$value\""
+    fi
+
+    if [ "$output_only " -eq 1 ]; then
+        echo "$eval_str"
+    else
+        debug_print "$eval_str"
+        eval "$eval_str"
+    fi
+}
+
 function set_var() {
     local name value
 
     name=$1
     shift
-    if [ $# -gt 0 ]; then
-        value=$1
-    else
-        value=1
-    fi
-    eval "$name=$value"
-    eval "_${name}_was_set=1"
+    value=${1:-1}
+
+    assign_value "$name" "$value"
+    assign_value "_${name}_was_set" 1
 }
 
 function die() {
@@ -69,10 +95,115 @@ function needs_arg() {
     fi
 }
 
+# ------------------------------------------------------------------------------
+
+function is_abspath {
+    case "x$1" in
+    (x*/..|x*/../*|x../*|x*/.|x*/./*|x./*)
+        rc=1
+        ;;
+    (x/*)
+        rc=0
+        ;;
+    (*)
+        rc=1
+        ;;
+    esac
+    return $rc
+}
+
+# __set_variable_from_ini <section> <check_set> <check_null> <dry_run>
+function __set_variable_from_ini {
+    local section check_set check_null do_dry_run var value eval_str null_test
+    section=$1 && shift
+    check_set=$1 && shift
+    check_null=$1 && shift
+    do_dry_run=$1 && shift
+
+    for var in $(eval "echo \${!configuration_${section/./_}[*]}"); do
+        value=$(eval "echo \${configuration_${section/./_}[$var]}")
+        eval_str=''
+        null_test='%s'
+        if [[ $section =~ ^.*(path|paths)$ ]]; then
+            if [ -n "$value" ]; then
+                if ! is_abspath "$value"; then
+                    value="\"$ROOTDIR/$value\""
+                fi
+            fi
+            eval_str="declare -g $var=$value"
+        elif [[ ${value,,} =~ ^(true|yes)$ ]]; then
+            eval_str="declare -gi $var=1"
+        elif [[ ${value,,} =~ ^(false|no)$ ]]; then
+            eval_str="declare -gi $var=0"
+        elif [[ ${value} =~ ^.*\|.*$ ]]; then
+            null_test='%s@a'
+            eval_str="declare -ga $var && mapfile -t $var <<< \"$(echo -e "${value/|/\\n}")\""
+        elif [[ $value =~ ^-?[0-9]+$ ]]; then
+            eval_str="declare -gi $var=$value"
+        else
+            eval_str="declare -g $var='$value'"
+        fi
+
+        debug_print "$(printf "%-50s  # [%s]" "$eval_str" "$section")"
+
+        if [ "$check_set" -eq 1 ]; then
+            eval_str=$(printf "[[ \"\${_%s_was_set:-0}\" -eq 0 ]] && %s" "$var" "$eval_str")
+        elif [ "$check_null" -eq 1 ]; then
+            eval_str=$(printf "[[ -z \"\${${null_test}}\" ]] && %s" "$var" "$eval_str")
+        fi
+
+        if [ "$do_dry_run" -eq 0 ]; then
+            # debug_print "  invoked expression: $eval_str"
+            eval "$eval_str"
+        fi
+    done
+}
+
+# --------------------------------------
+
+# set_variable_from_ini <filename> [-s <section>] [-c] [-C] [-n]
+# -c: check_set
+# -C: check_null
+# -n: dry_run
+function set_variable_from_ini {
+    local target_section dry_run check_set check_null OPT OPTARG OPTIND
+
+    declare -i dry_run=0
+    declare -i check_set=0
+    declare -i check_null=0
+    target_section=''
+    while getopts "s:cCn" OPT; do
+        case "$OPT" in
+            s)  target_section="$OPTARG"
+                ;;
+            c)  check_set=1
+                ;;
+            C)  check_null=1
+                ;;
+            n)  dry_run=1
+                ;;
+            /?) exit 2
+                ;;
+        esac
+    done
+    shift $((OPTIND-1)) # remove parsed options and args from $@ list
+
+    parse_ini_file "$1"
+
+    if [ -n "$target_section" ]; then
+        __set_variable_from_ini "$target_section" $check_set $check_null $dry_run
+    else
+        # shellcheck disable=SC2154
+        for section in "${configuration_sections[@]}"; do
+            __set_variable_from_ini "$section" $check_set $check_null $dry_run
+        done
+    fi
+}
+
 # ==============================================================================
 
 call_cmd() {
-   if [ $dry_run -ne 1 ]; then
+   if [ "${dry_run:-0}" -ne 1 ]; then
        "$@"
        return $?
    else
@@ -84,7 +215,7 @@ call_cmd() {
 # ------------------------------------------------------------------------------
 
 call_cmake() {
-    if [ $dry_run -ne 1 ]; then
+    if [ "${dry_run:-0}" -ne 1 ]; then
         echo "**********"
         echo "Calling CMake with: cmake " "$@"
         echo "**********"

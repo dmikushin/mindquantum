@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# shellcheck disable=SC2154
+
 [ "${_sourced_python_virtualenv_activate}" != "" ] && return || _sourced_python_virtualenv_activate=.
 
 BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}" )" &> /dev/null && pwd )
@@ -39,7 +41,7 @@ fi
 
 # ==============================================================================
 
-if [ $do_clean_venv -eq 1 ]; then
+if [ "$do_clean_venv" -eq 1 ]; then
     echo "Deleting virtualenv folder: $python_venv_path"
     call_cmd rm -rf "$python_venv_path"
 fi
@@ -57,7 +59,7 @@ if [ ! -d "$python_venv_path" ]; then
     created_venv=1
     echo "Creating Python virtualenv: $PYTHON -m venv ${venv_args[*]}"
     call_cmd "$PYTHON" -m venv "${venv_args[@]}"
-elif [ $do_update_venv -eq 1 ]; then
+elif [ "$do_update_venv" -eq 1 ]; then
     venv_args+=(  --upgrade )
     echo "Updating Python virtualenv: $PYTHON -m venv ${venv_args[*]}"
     call_cmd "$PYTHON" -m venv "${venv_args[@]}"
@@ -79,7 +81,7 @@ elif [ -f "$python_venv_path/Scripts/activate" ]; then
     debug_print "PATH=$PATH"
     hash -r
     debug_print "PYTHON = $(which "$PYTHON")"
-elif [ $dry_run -eq 1 ]; then
+elif [ "${dry_run:-0}" -eq 1 ]; then
     call_cmd source "$python_venv_path/bin/activate"
 else
     die 'Unable to activate Python virtual environment!'

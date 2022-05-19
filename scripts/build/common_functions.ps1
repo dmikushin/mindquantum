@@ -18,7 +18,7 @@ $BASEPATH = Split-Path $MyInvocation.MyCommand.Path -Parent
 
 # ==============================================================================
 
-. "$BASEPATH\default_values.ps1"
+. (Join-Path $BASEPATH '..\parse_ini.ps1')
 
 # ==============================================================================
 
@@ -73,6 +73,51 @@ function Set-Value {
 }
 
 # ------------------------------------------------------------------------------
+
+function Set-VariableFromIni([string]$Path,
+                             [string]$TargetSection,
+                             [switch]$CheckNull,
+                             [switch]$CheckSet,
+                             [switch]$DryRun)
+{
+    $ini_values = Parse-IniFile -Path "$Path"
+    if ($TargetSection -ne "") {
+        ($ini_values.GetEnumerator() | Where-Object {$_.Name -ne $TargetSection}) | `
+          ForEach-Object {$ini_values.Remove($_.Name)}
+    }
+
+    # NB: right now we are ignoring the section names... but that might change at some point
+    foreach ($section in $ini_values.GetEnumerator()) {
+        foreach ($section_value in $section.Value.GetEnumerator()) {
+            $name = $section_value.Name.Replace('.', '_')
+            $value = $section_value.Value
+
+            if ($section.Name -Match '^.*(path|paths)$') {
+                if (-Not [System.IO.Path]::IsPathRooted($value) -And [bool]$value) {
+                    $value = Join-Path $ROOTDIR $value
+                }
+            }
+
+            $eval_str = Assign-Value -OnlyOutput -Script $name $value
+            Write-Debug ("{0}  # [{1}]" -f $eval_str.PadRight(50, ' '), $section.Name)
+
+            if($CheckSet) {
+                $eval_str = "if (`$_${name}_was_set -eq `$null) { $eval_str }"
+            }
+            elseif ($CheckNull) {
+                $eval_str = "if (`$${name} -eq `$null) { $eval_str }"
+            }
+
+            if (-Not $DryRun) {
+                # Write-Debug "  invoked expression: $eval_str"
+                Invoke-Expression -Command "$eval_str"
+            }
+        }
+    }
+
+}
+
+# ==============================================================================
 
 function die {
     Write-Error "$args"

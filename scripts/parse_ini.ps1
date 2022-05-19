@@ -19,7 +19,6 @@ if ($_sourced_parse_ini -eq $null) { $_sourced_parse_ini=1 } else { return }
 function Convert-IniValue($value)
 {
     $ini = [ordered]@{}
-    $count = @{}
     switch -regex ("$value")
     {
         "^\s*(\d+)\s*$" {
@@ -40,22 +39,19 @@ function Convert-IniValue($value)
     }
 }
 
-function Parse-IniFile ($filePath)
+function Parse-IniFile ([string]$Path)
 {
     $ini = [ordered]@{}
-    $count = @{}
     $section = 'main'
     $ini[$section] = [ordered]@{}
-    switch -regex -file $filePath
+    switch -regex -file $Path
     {
         '^(;|#.*)$' { continue }
 
         #Section.
         '^\[(.+)\]$' {
-            $section = $matches[1].Trim().Replace('.', '_')
+            $section = $matches[1].Trim()
             $ini[$section] = [ordered]@{}
-            $count[$section] = @{}
-            $CommentCount = 0
             continue
         }
 
@@ -67,7 +63,6 @@ function Parse-IniFile ($filePath)
             }
             $value = Convert-IniValue "$value"
             $ini[$section][$name] += $value
-            $count[$section][$name] += 1
             continue
         }
 
@@ -89,6 +84,9 @@ function Parse-IniFile ($filePath)
             continue
         }
     }
+
+    # Remove empty sections
+    ($ini.GetEnumerator() | Where-Object { $_.Value.Count -eq 0 }) | ForEach-Object { $ini.Remove($_.Name) }
 
     return $ini
 }

@@ -18,7 +18,8 @@ $BASEPATH = Split-Path $MyInvocation.MyCommand.Path -Parent
 
 # ------------------------------------------------------------------------------
 
-. "$BASEPATH\common_functions.ps1"
+. (Join-Path $BASEPATH 'default_values.ps1')
+. (Join-Path $BASEPATH 'common_functions.ps1')
 
 # ==============================================================================
 
@@ -63,9 +64,9 @@ if($IsWinEnv) {
 }
 
 Write-Output "Activating Python virtual environment: $python_venv_path"
-$activate_path = "$python_venv_path\bin\Activate.ps1"
-if (Test-Path -Path "$python_venv_path\Scripts\Activate.ps1" -PathType Leaf) {
-    $activate_path = "$python_venv_path\Scripts\Activate.ps1"
+$activate_path = Join-Path $python_venv_path 'bin\Activate.ps1'
+if (Test-Path -Path (Join-Path $python_venv_path 'Scripts\Activate.ps1') -PathType Leaf) {
+    $activate_path = (Join-Path $python_venv_path 'Scripts\Activate.ps1')
 }
 
 if (-Not $dry_run) {

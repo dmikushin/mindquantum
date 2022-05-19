@@ -51,17 +51,10 @@ $PROGRAM = Split-Path $MyInvocation.MyCommand.Path -Leaf
 # ==============================================================================
 # Default values
 
-$delocate_wheel = $true
-$no_build_isolation = $false
-$output_path = "$ROOTDIR\output"
-$platform_name = ''
-
 # Override some of the default values
 $enable_cxx = $true
 
-. "$ROOTDIR\scripts\build\default_values.ps1"
-
-. "$ROOTDIR\scripts\build\common_functions.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\common_functions.ps1')
 
 # ------------------------------------------------------------------------------
 
@@ -92,7 +85,7 @@ function Extra-Help {
 
 # ------------------------------------------------------------------------------
 
-. "$ROOTDIR\scripts\build\parse_common_args.ps1" @args
+. (Join-Path $ROOTDIR 'scripts\build\parse_common_args.ps1') @args
 
 # ------------------------------------------------------------------------------
 
@@ -119,7 +112,7 @@ if ([bool]$PlatName) {
 # ==============================================================================
 # Locate python or python3
 
-. "$ROOTDIR\scripts\build\locate_python3.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\locate_python3.ps1')
 
 # ==============================================================================
 
@@ -130,12 +123,12 @@ cd "$ROOTDIR"
 # ------------------------------------------------------------------------------
 
 # NB: `created_venv` variable can be used to detect if a virtualenv was created or not
-. "$ROOTDIR\scripts\build\python_virtualenv_activate.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\python_virtualenv_activate.ps1')
 
 # ------------------------------------------------------------------------------
 # Update Python virtualenv (if requested/necessary)
 
-. "$ROOTDIR\scripts\build\python_virtualenv_update.ps1"
+. (Join-Path $ROOTDIR 'scripts\build\python_virtualenv_update.ps1')
 
 # ------------------------------------------------------------------------------
 # Setup arguments for build
@@ -181,7 +174,7 @@ if ($build_type -eq 'Debug') {
     $build_args += 'build', "--debug"
 }
 
-if ($has_build_dir) {
+if ($_build_dir_was_set) {
     $build_args += 'build_ext', '--build-dir', "$build_dir"
 }
 
@@ -212,7 +205,7 @@ if ($no_build_isolation) {
 # ------------------------------------------------------------------------------
 # Build the wheels
 
-if ($has_build_dir) {
+if ($_build_dir_was_set) {
     if ($do_clean_build_dir) {
         Write-Output "Deleting build folder: $build_dir"
         Call-Cmd Remove-Item -Force -Recurse "$build_dir" -ErrorAction SilentlyContinue

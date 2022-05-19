@@ -18,27 +18,6 @@
 # ==============================================================================
 # Default values for input arguments
 
-: "${build_type=Release}"
-: "${cmake_debug_mode=0}"
-: "${cmake_generator=}"
-: "${cmake_make_silent=0}"
-: "${cuda_arch=}"
-: "${do_clean_3rdparty=0}"
-: "${do_clean_build_dir=0}"
-: "${do_clean_cache=0}"
-: "${do_clean_venv=0}"
-: "${do_update_venv=0}"
-: "${dry_run=0}"
-: "${enable_ccache=0}"
-: "${enable_cxx=0}"
-: "${enable_gpu=0}"
-: "${enable_projectq=1}"
-: "${enable_tests=0}"
-: "${force_local_pkgs=0}"
-[[ -z ${local_pkgs@a} ]] && local_pkgs=()
-: "${n_jobs=-1}"
-: "${verbose=0}"
-
 if [ -z "$n_jobs_default" ]; then
     if command -v nproc >/dev/null 2>&1; then
         n_jobs_default=$(nproc)
@@ -51,11 +30,7 @@ fi
 
 # ==============================================================================
 
-: "${source_dir=$(realpath "$ROOTDIR")}"
-: "${build_dir="$source_dir/build"}"
-: "${python_venv_path="$source_dir/venv"}"
-
-: "${third_party_libraries=$(cd "$source_dir/third_party" \
+: "${third_party_libraries=$(cd "$ROOTDIR/third_party" \
                                 && find . -maxdepth 1 -type d ! -path . | grep -vE '(cmake|CMakeLists.txt)' \
                                     | sed 's|./||')}"
 

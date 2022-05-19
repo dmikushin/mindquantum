@@ -162,7 +162,10 @@ jobs:
       - name: Test (setup.py) installation
         if: matrix.test_bdist_wheel
         run: |
-          ./build.sh --cxx --with-projectq --debug-cmake --test --build="${{ github.workspace }}/build" --no-delocate
+          mkdir -p "${{ github.workspace }}/wheel_build"
+          cp -r "${{ github.workspace }}/build/.mqlibs" "${{ github.workspace }}/wheel_build"
+          ./build.sh --cxx --with-projectq --debug-cmake --test --build="${{ github.workspace }}/wheel_build" \
+            --no-delocate
 
   # ============================================================================
 
