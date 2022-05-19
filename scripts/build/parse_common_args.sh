@@ -128,6 +128,9 @@ help_message() {
     echo 'Python related options:'
     echo '  --update-venv        Update the python virtual environment'
     echo ''
+    echo 'Developer options:'
+    echo '  --cmake-no-registry  Disable the use of CMake package registries during configuration'
+    echo ''
 
     if command -v extra_help >/dev/null 2>&1; then
         extra_help
@@ -167,96 +170,99 @@ while getopts "${getopts_args}" OPT; do
     fi
 
     case "$OPT" in
-        h | help )       no_arg;
-                         help_message >&2
-                         exit 1 ;;
-        B | build)       needs_arg;
-                         # shellcheck disable=SC2034
-                         set_var build_dir "$OPTARG"
-                         ;;
-        ccache )         no_arg;
-                         set_var enable_ccache
-                         ;;
-        config )         no_arg;
-                         set_var config_file "$OPTARG"
-                         ;;
-        clean-3rdparty ) no_arg;
-                         set_var do_clean_3rdparty
-                         ;;
-        clean-all )      no_arg;
-                         set_var do_clean_venv
-                         set_var do_clean_build_dir
-                         ;;
-        clean-builddir ) no_arg;
-                         set_var do_clean_build_dir
-                         ;;
-        clean-cache )    no_arg
-                         set_var do_clean_cache
-                         ;;
-        clean-venv )     no_arg;
-                         set_var do_clean_venv
-                         ;;
-        cuda-arch )      needs_arg;
-                         set_var cuda_arch "$(echo "$OPTARG" | tr ',' ';')"
-                         ;;
-        cxx )            no_arg;
-                         set_var enable_cxx
-                         ;;
-        debug )          no_arg;
-                         set_var build_type 'Debug'
-                         ;;
-        debug-cmake )    no_arg;
-                         set_var cmake_debug_mode
-                         ;;
-        gpu )            no_arg;
-                         set_var enable_gpu
-                         ;;
-        j | jobs )       needs_arg;
-                         set_var n_jobs "$OPTARG"
-                         ;;
-        local-pkgs )     no_arg;
-                         set_var force_local_pkgs
-                         ;;
-        n )              no_arg;
-                         set_var dry_run
-                         ;;
-        ninja )          no_arg;
-                         set_var cmake_generator 'Ninja'
-                         ;;
-        quiet )          no_arg;
-                         set_var cmake_make_silent
-                         ;;
-        show-libraries ) no_arg;
-                         print_show_libraries
-                         exit 1
-                         ;;
-        test )           no_arg;
-                         set_var enable_tests
-                         ;;
-        update-venv )    no_arg;
-                         set_var do_update_venv
-                         ;;
-        v | verbose )    no_arg;
-                         set_var verbose
-                         ;;
-        venv )           needs_arg;
-                         set_var python_venv_path "$OPTARG"
-                         ;;
-        with )           no_arg;
-                         parse_with_libraries "$library" $enable_lib
-                         ;;
-        \? )             # bad short option (error reported via getopts)
-                         exit 2
-                         ;;
-         * )             success=0
-                         if [ $has_extra_args -eq 1 ]; then
-                             parse_extra_args "$OPT" "$OPTARG"
-                             success="$?"
-                         fi
-                         if [ $success -ne 0 ]; then
-                             die "Illegal option: $OPT or --$OPT"
-                         fi
-                         ;;
+        h | help )          no_arg;
+                            help_message >&2
+                            exit 1 ;;
+        B | build)          needs_arg;
+                            # shellcheck disable=SC2034
+                            set_var build_dir "$OPTARG"
+                            ;;
+        ccache )            no_arg;
+                            set_var enable_ccache
+                            ;;
+        cmake-no-registry ) no_arg;
+                            set_var cmake_no_registry
+                            ;;
+        config )            needs_arg;
+                            set_var config_file "$OPTARG"
+                            ;;
+        clean-3rdparty )    no_arg;
+                            set_var do_clean_3rdparty
+                            ;;
+        clean-all )         no_arg;
+                            set_var do_clean_venv
+                            set_var do_clean_build_dir
+                            ;;
+        clean-builddir )    no_arg;
+                            set_var do_clean_build_dir
+                            ;;
+        clean-cache )       no_arg
+                            set_var do_clean_cache
+                            ;;
+        clean-venv )        no_arg;
+                            set_var do_clean_venv
+                            ;;
+        cuda-arch )         needs_arg;
+                            set_var cuda_arch "$(echo "$OPTARG" | tr ',' ';')"
+                            ;;
+        cxx )               no_arg;
+                            set_var enable_cxx
+                            ;;
+        debug )             no_arg;
+                            set_var build_type 'Debug'
+                            ;;
+        debug-cmake )       no_arg;
+                            set_var cmake_debug_mode
+                             ;;
+        gpu )               no_arg;
+                            set_var enable_gpu
+                            ;;
+        j | jobs )          needs_arg;
+                            set_var n_jobs "$OPTARG"
+                            ;;
+        local-pkgs )        no_arg;
+                            set_var force_local_pkgs
+                            ;;
+        n )                 no_arg;
+                            set_var dry_run
+                            ;;
+        ninja )             no_arg;
+                            set_var cmake_generator 'Ninja'
+                            ;;
+        quiet )             no_arg;
+                            set_var cmake_make_silent
+                            ;;
+        show-libraries )    no_arg;
+                            print_show_libraries
+                            exit 1
+                            ;;
+        test )              no_arg;
+                            set_var enable_tests
+                            ;;
+        update-venv )       no_arg;
+                            set_var do_update_venv
+                            ;;
+        v | verbose )       no_arg;
+                            set_var verbose
+                            ;;
+        venv )              needs_arg;
+                            set_var python_venv_path "$OPTARG"
+                            ;;
+        with )              no_arg;
+                            parse_with_libraries "$library" $enable_lib
+                            ;;
+        \? )                # bad short option (error reported via getopts)
+                            exit 2
+                            ;;
+         * )                success=0
+                            if [ $has_extra_args -eq 1 ]; then
+                                parse_extra_args "$OPT" "$OPTARG"
+                                success="$?"
+                            fi
+                            if [ $success -ne 0 ]; then
+                                die "Illegal option: $OPT or --$OPT"
+                            fi
+                           ;;
    esac
 done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list

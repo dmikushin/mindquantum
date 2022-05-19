@@ -69,7 +69,7 @@ function Help-Message() {
     Write-Output '  -CleanBuildDir      Delete build directory before building'
     Write-Output '  -CleanCache         Re-run CMake with a clean CMake cache'
     Write-Output '  -CleanVenv          Delete Python virtualenv before building'
-    Write-Output '  -Config             Path to INI configuration file with default values for the parameters'
+    Write-Output '  -Config [dir]       Path to INI configuration file with default values for the parameters'
     Write-Output ("                      Defaults to: {0}" -f $config_file)
     Write-Output '                      NB: command line arguments always take precedence over configuration file values'
     Write-Output '  -Cxx                (experimental) Enable MindQuantum C++ support'
@@ -98,6 +98,9 @@ function Help-Message() {
     Write-Output 'Python related options:'
     Write-Output '  -UpdateVenv         Update the python virtual environment'
     Write-Output ''
+    Write-Output 'Developer options:'
+    Write-Output '  -CMakeNoRegistry    Disable the use of CMake package registries during configuration'
+    Write-Output ''
 
     if (Test-CommandExists Extra-Help) {
         Extra-Help
@@ -117,6 +120,10 @@ if($ShowLibraries.IsPresent) {
 }
 
 # ==============================================================================
+
+if ($CMakeNoRegistry.IsPresent) {
+    Set-Value 'cmake_no_registry'
+}
 
 if ($DryRun.IsPresent) {
     Set-Value 'dry_run'

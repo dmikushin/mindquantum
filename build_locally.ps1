@@ -16,6 +16,7 @@ Param(
     [ValidateNotNullOrEmpty()][string]$A,
     [Alias("B")][ValidateNotNullOrEmpty()][string]$Build,
     [switch]$CCache,
+    [switch]$CMakeNoRegistry,
     [switch]$Clean,
     [switch]$Clean3rdParty,
     [switch]$CleanAll,
@@ -194,6 +195,8 @@ $cmake_args = @('-DIN_PLACE_BUILD:BOOL=ON'
                 "-DBUILD_TESTING:BOOL={0}" -f $CMAKE_BOOL[$enable_tests]
                 "-DCLEAN_3RDPARTY_INSTALL_DIR:BOOL={0}" -f $CMAKE_BOOL[$do_clean_3rdparty]
                 "-DUSE_VERBOSE_MAKEFILE:BOOL={0}" -f $CMAKE_BOOL[-not $cmake_make_silent]
+                "-DCMAKE_FIND_USE_PACKAGE_REGISTRY:BOOL={0}" -f $CMAKE_BOOL[-not $cmake_no_registry]
+                "-DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY:BOOL:BOOL={0}" -f $CMAKE_BOOL[-not $cmake_no_registry]
                )
 $make_args = @()
 
@@ -303,6 +306,9 @@ Specify build directory. Defaults to: Path\To\Script\build
 
 .PARAMETER CCache
 If ccache or sccache are found within the PATH, use them with CMake
+
+.PARAMETER CMakeNoRegistry
+Disable the use of CMake package registries during configuration
 
 .PARAMETER Clean
 Run make clean before building

@@ -15,6 +15,7 @@
 Param(
     [Alias("B")][ValidateNotNullOrEmpty()][string]$Build,
     [switch]$CCache,
+    [switch]$CMakeNoRegistry,
     [switch]$Clean3rdParty,
     [switch]$CleanAll,
     [switch]$CleanBuildDir,
@@ -164,6 +165,15 @@ else {
     $build_args += '--set', 'USE_VERBOSE_MAKEFILE'
 }
 
+if ($cmake_no_registry) {
+    $build_args += '--unset', 'CMAKE_FIND_USE_PACKAGE_REGISTRY'
+    $build_args += '--unset', 'CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY'
+}
+else {
+    $build_args += '--set', 'CMAKE_FIND_USE_PACKAGE_REGISTRY'
+    $build_args += '--set', 'CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY'
+}
+
 if ([bool]$cmake_generator) {
     $build_args += '-G', "$cmake_generator"
 }
@@ -285,6 +295,9 @@ Specify build directory. Defaults to: Path\To\Script\build
 
 .PARAMETER CCache
 If ccache or sccache are found within the PATH, use them with CMake
+
+.PARAMETER CMakeNoRegistry
+Disable the use of CMake package registries during configuration
 
 .PARAMETER Clean3rdParty
 Clean 3rd party installation directory

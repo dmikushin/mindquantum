@@ -134,6 +134,14 @@ else
     args+=(--unset USE_VERBOSE_MAKEFILE)
 fi
 
+if [ "$cmake_no_registry" -eq 1 ]; then
+    args+=(--unset CMAKE_FIND_USE_PACKAGE_REGISTRY)
+    args+=(--unset CMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY)
+else
+    args+=(--set CMAKE_FIND_USE_PACKAGE_REGISTRY)
+    args+=(--set CMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY)
+fi
+
 if [ -n "$cmake_generator" ]; then
     args+=(-G "${cmake_generator}")
 fi

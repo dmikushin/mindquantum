@@ -153,7 +153,9 @@ cmake_args=(-DIN_PLACE_BUILD:BOOL=ON
             -DENABLE_CXX_EXPERIMENTAL:BOOL="${CMAKE_BOOL[$enable_cxx]}"
             -DBUILD_TESTING:BOOL="${CMAKE_BOOL[$enable_tests]}"
             -DCLEAN_3RDPARTY_INSTALL_DIR:BOOL="${CMAKE_BOOL[$do_clean_3rdparty]}"
-            -DUSE_VERBOSE_MAKEFILE:BOOL="${CMAKE_BOOL[! $cmake_make_silent]}")
+            -DUSE_VERBOSE_MAKEFILE:BOOL="${CMAKE_BOOL[! $cmake_make_silent]}"
+            -DCMAKE_FIND_USE_PACKAGE_REGISTRY:BOOL="${CMAKE_BOOL[! $cmake_no_registry]}"
+            -DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY:BOOL="${CMAKE_BOOL[! $cmake_no_registry]}")
 make_args=()
 
 if [[ -n "$cmake_generator" ]]; then
