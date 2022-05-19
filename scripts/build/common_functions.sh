@@ -166,9 +166,9 @@ function __set_variable_from_ini {
 # -C: check_null
 # -n: dry_run
 function set_variable_from_ini {
-    local target_section dry_run check_set check_null OPT OPTARG OPTIND
+    local target_section do_dry_run check_set check_null OPT OPTARG OPTIND
 
-    declare -i dry_run=0
+    declare -i do_dry_run=0
     declare -i check_set=0
     declare -i check_null=0
     target_section=''
@@ -180,7 +180,7 @@ function set_variable_from_ini {
                 ;;
             C)  check_null=1
                 ;;
-            n)  dry_run=1
+            n)  do_dry_run=1
                 ;;
             /?) exit 2
                 ;;
@@ -191,11 +191,11 @@ function set_variable_from_ini {
     parse_ini_file "$1"
 
     if [ -n "$target_section" ]; then
-        __set_variable_from_ini "$target_section" $check_set $check_null $dry_run
+        __set_variable_from_ini "$target_section" $check_set $check_null $do_dry_run
     else
         # shellcheck disable=SC2154
         for section in "${configuration_sections[@]}"; do
-            __set_variable_from_ini "$section" $check_set $check_null $dry_run
+            __set_variable_from_ini "$section" $check_set $check_null $do_dry_run
         done
     fi
 }
