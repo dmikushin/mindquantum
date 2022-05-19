@@ -1043,9 +1043,11 @@ function(mindquantum_add_pkg pkg_name)
   endforeach()
 
   # check options
+  string(REPLACE "${PROJECT_BINARY_DIR}" "<binary-dir>" _purged_ARGN "${ARGN}")
+  string(REPLACE "${PROJECT_SOURCE_DIR}" "<source-dir>" _purged_ARGN "${_purged_ARGN}")
   set(${pkg_name}_CONFIG_TXT
       "${CMAKE_CXX_COMPILER_VERSION}-${CMAKE_C_COMPILER_VERSION}
-            ${ARGN} - ${${pkg_name}_USE_STATIC_LIBS}- ${${pkg_name}_PATCHES_HASH}
+            ${_purged_ARGN} - ${${pkg_name}_USE_STATIC_LIBS}- ${${pkg_name}_PATCHES_HASH}
             ${${pkg_name}_CXXFLAGS}--${${pkg_name}_CFLAGS}--${${pkg_name}_LDFLAGS}")
   string(REPLACE ";" "-" ${pkg_name}_CONFIG_TXT ${${pkg_name}_CONFIG_TXT})
   string(MD5 ${pkg_name}_CONFIG_HASH ${${pkg_name}_CONFIG_TXT})
