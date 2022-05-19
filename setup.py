@@ -76,8 +76,17 @@ def get_extra_cmake_options():
 
     argv = copy.deepcopy(sys.argv)
     # parse command line options and consume those we care about
+    var_name = None
     for arg in argv:
-        if opt_key == 'G':
+        if opt_key == 'var':
+            if var_name is None:
+                var_name = arg.strip()
+                sys.argv.remove(arg)
+                continue
+            else:
+                _cmake_extra_options.append(f'-D{var_name}:STRING={arg.strip()}')
+
+        elif opt_key == 'G':
             has_generator = True
             _cmake_extra_options += ['-G', arg.strip()]
         elif opt_key == 'A':
@@ -92,15 +101,12 @@ def get_extra_cmake_options():
             opt_key = None
             continue
 
-        if arg in ['--unset', '--set', '--compiler-flags']:
+        if arg in ['--unset', '--set', '--var', '--compiler-flags']:
+            var_name = None
             opt_key = arg[2:].lower()
             sys.argv.remove(arg)
             continue
-        if arg in ['-A']:
-            opt_key = arg[1:]
-            sys.argv.remove(arg)
-            continue
-        if arg in ['-G']:
+        if arg in ('-A', '-G'):
             opt_key = arg[1:]
             sys.argv.remove(arg)
             continue

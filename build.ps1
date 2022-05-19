@@ -72,7 +72,7 @@ function Extra-Help {
     Write-Output 'Extra options:'
     Write-Output '  -Delocate            Delocate the binary wheels after build is finished'
     Write-Output '                       (enabled by default; pass -NoDelocate to disable)'
-    Write-Output '  -NoIsolation         Pass --no-isolation to python3 -m build'
+    Write-Output '  -NoBuildIsolation    Pass --no-isolation to python3 -m build'
     Write-Output '  -O,-Output [dir]     Output directory for built wheels'
     Write-Output '  -P,-PlatName [dir]   Platform name to use for wheel delocation'
     Write-Output '                       (only effective if -Delocate is used)'
@@ -133,6 +133,8 @@ cd "$ROOTDIR"
 # ------------------------------------------------------------------------------
 # Setup arguments for build
 
+if ($_build_dir_was_set -eq $null) { $_build_dir_was_set = $false }
+
 $build_args = @()
 
 $cmake_option_names = @{
@@ -180,12 +182,24 @@ if ($_build_dir_was_set) {
 
 # --------------------------------------
 
-if ($enable_ccache)  {
-    Write-Error -Category NotImplemented -Message "-Ccache is unsupported (thus ignored) with $PROGRAM!"
-}
-
 if ($enable_gpu -And [bool]$cuda_arch) {
     Write-Error -Category NotImplemented -Message "-CudaArch is unsupported (thus ignored) with $PROGRAM!"
+}
+
+if ($enable_ccache) {
+    $ccache_exec=''
+    if(Test-CommandExists ccache) {
+        $ccache_exec = 'ccache'
+    }
+    elseif(Test-CommandExists sccache) {
+        $ccache_exec = 'sccache'
+    }
+
+    if ([bool]$ccache_exec) {
+        $ccache_exec = (Get-Command "$ccache_exec").Source
+        $build_args += '--var', 'CMAKE_C_COMPILER_LAUNCHER', "$ccache_exec"
+        $build_args += '--var', 'CMAKE_CXX_COMPILER_LAUNCHER', "$ccache_exec"
+    }
 }
 
 Write-Debug 'Will be passing these arguments to setup.py:'

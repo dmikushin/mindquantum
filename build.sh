@@ -46,7 +46,7 @@ function extra_help() {
     echo '  --delocate           Delocate the binary wheels after build is finished'
     echo '                       (enabled by default; pass --no-delocate to disable)'
     echo '  --no-delocate        Disable delocating the binary wheels after build is finished'
-    echo '  --no-isolation       Pass --no-isolation to python3 -m build'
+    echo '  --no-build-isolation Pass --no-isolation to python3 -m build'
     echo '  -o,--output=[dir]    Output directory for built wheels'
     echo '  -p,--plat-name=[dir] Platform name to use for wheel delocation'
     echo '                       (only effective if --delocate is used)'
@@ -62,23 +62,23 @@ getopts_args_extra='o:p:'
 
 function parse_extra_args() {
     case "$1" in
-        delocate )       no_arg;
-                         set_var delocate_wheel
-                         ;;
-        no-delocate )    no_arg;
-                         set_var delocate_wheel 0
-                         ;;
-        no-isolation )   no_arg;
-                         set_var no_build_isolation
-                         ;;
-        o | output )     needs_arg;
-                         set_var output_path "$2"
-                         ;;
-        p | plat-name )  needs_arg;
-                         set_var platform_name "$2"
-                         ;;
-        ??* )            die "Illegal option --OPT: $1"
-                         ;;
+        delocate )           no_arg;
+                             set_var delocate_wheel
+                             ;;
+        no-delocate )        no_arg;
+                             set_var delocate_wheel 0
+                             ;;
+        no-build-isolation ) no_arg;
+                             set_var no_build_isolation
+                             ;;
+        o | output )         needs_arg;
+                             set_var output_path "$2"
+                             ;;
+        p | plat-name )      needs_arg;
+                             set_var platform_name "$2"
+                             ;;
+        ??* )                die "Illegal option --OPT: $1"
+                             ;;
     esac
 }
 
@@ -146,18 +146,28 @@ if [[ "$build_type" == 'Debug' ]]; then
     args+=(build --debug)
 fi
 
-if [ "$_build_dir_was_set" -eq 1 ]; then
+if [ "${_build_dir_was_set:-0}" -eq 1 ]; then
     args+=(build_ext --build-dir "$build_dir")
 fi
 
 # --------------------------------------
 
-if [ "$enable_ccache" -eq 1 ]; then
-    print_warning "--ccache is unsupported (thus ignored) with $PROGRAM!"
-fi
-
 if [[ "$enable_gpu" -eq 1 && -n "$cuda_arch" ]]; then
     print_warning "--cuda-arch is unsupported (thus ignored) with $PROGRAM!"
+fi
+
+if [ "$enable_ccache" -eq 1 ]; then
+    ccache_exec=
+    if command -v ccache > /dev/null 2>&1; then
+        ccache_exec=ccache
+    elif command -v sccache > /dev/null 2>&1; then
+        ccache_exec=sccache
+    fi
+    if [ -n "$ccache_exec" ]; then
+        ccache_exec=$(which "$ccache_exec")
+        args+=(--var CMAKE_C_COMPILER_LAUNCHER "$ccache_exec")
+        args+=(--var CMAKE_CXX_COMPILER_LAUNCHER "$ccache_exec")
+    fi
 fi
 
 debug_print "Will be passing these arguments to setup.py:"
@@ -177,7 +187,7 @@ fi
 # ------------------------------------------------------------------------------
 # Build the wheels
 
-if [ "$_build_dir_was_set" -eq 1 ]; then
+if [ "${_build_dir_was_set:-0}" -eq 1 ]; then
     if [ "$do_clean_build_dir" -eq 1 ]; then
         echo "Deleting build folder: $build_dir"
         call_cmd rm -rf "$build_dir"
