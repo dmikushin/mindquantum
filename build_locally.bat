@@ -168,6 +168,11 @@ rem ============================================================================
     shift & goto :initial
   )
 
+  if /I "%1" == "/OnlyPytest" (
+    set install_only_pytest=1
+    shift & goto :initial
+  )
+
   if /I "%1" == "/Prefix" (
     set value=%2
     if not defined value goto :arg_prefix
@@ -176,7 +181,7 @@ rem ============================================================================
       echo %BASENAME%: option requires an argument -- '/Prefix'
       goto :END
     )
-    set prefix=!value!
+    set prefix_dir=!value!
     shift & shift & goto :initial
   )
 
@@ -307,7 +312,7 @@ if !force_local_pkgs! == 1 (
   if NOT "!local_pkgs!" == "" set cmake_args=!cmake_args! -DMQ_FORCE_LOCAL_PKGS=!local_pkgs!
 )
 
-if NOT "!prefix!" == "" set cmake_args=!cmake_args! -DCMAKE_INSTALL_PREFIX:FILEPATH=!prefix!
+if NOT "!prefix_dir!" == "" set cmake_args=!cmake_args! -DCMAKE_INSTALL_PREFIX:FILEPATH=!prefix_dir!
 
 if !ninja! == 1 (
   set cmake_args=!cmake_args! -GNinja
@@ -465,7 +470,6 @@ exit /B 0
   echo   /Prefix             Specify installation prefix
   echo   /Quiet              Disable verbose build rules
   echo   /ShowLibraries      Show all known third-party libraries
-  echo   /Test               Build C++ tests and install dependencies for Python testing as well
   echo   /Venv *path*        Path to Python virtual environment
   echo                       Defaults to: %python_venv_path%
   echo   /With*library*      Build the third-party *library* from source (*library* is case-insensitive)
@@ -473,9 +477,16 @@ exit /B 0
   rem echo   /Without*library*   Do not build the third-party library from source (*library* is case-insensitive)
   rem echo                       (ignored if /LocalPkgs is passed, except for projectq)
   echo:
+  echo Test related options:
+  echo   /Test               Build C++ tests and install dependencies for Python testing as well
+  echo   /OnlyPytest         Only install pytest and its dependencies when creating/building the virtualenv
+  echo:
   echo CUDA related options:
   echo   /CudaArch *arch*    Comma-separated list of architectures to generate device code for.
   echo                       Only useful if /Gpu is passed. See CMAKE_CUDA_ARCHITECTURES for more information.
+  echo:
+  echo Python related options:
+  echo   /UpdateVenv         Update the python virtual environment
   echo:
   echo NB: any unknown arguments will be passed onto the CMake during the configuration step.
   echo:

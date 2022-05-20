@@ -175,6 +175,11 @@ rem ============================================================================
     shift & goto :initial
   )
 
+  if /I "%1" == "/OnlyPytest" (
+    set install_only_pytest=1
+    shift & goto :initial
+  )
+
   if /I "%1" == "/NoIsolation" (
     set build_isolation=0
     shift & goto :initial
@@ -188,7 +193,7 @@ rem ============================================================================
       echo %PROGRAM%: option requires an argument -- '/Prefix'
       goto :END
     )
-    set prefix=!value!
+    set prefix_dir=!value!
     shift & shift & goto :initial
   )
 
@@ -389,6 +394,13 @@ rem ============================================================================
   echo                       (ignored if /LocalPkgs is passed, except for projectq)
   rem echo   /Without*library*   Do not build the third-party library from source (*library* is case-insensitive)
   rem echo                       (ignored if /LocalPkgs is passed, except for projectq)
+  echo:
+  echo Test related options:
+  echo   /Test               Build C++ tests and install dependencies for Python testing as well
+  echo   /OnlyPytest         Only install pytest and its dependencies when creating/building the virtualenv
+  echo:
+  echo Python related options:
+  echo   /UpdateVenv         Update the python virtual environment
   echo:
   echo NB: any unknown arguments will be passed on to 'python3 -m build'
   echo:

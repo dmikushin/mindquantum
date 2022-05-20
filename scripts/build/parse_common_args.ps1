@@ -82,7 +82,6 @@ function Help-Message() {
     Write-Output '  -Ninja              Build using Ninja instead of make'
     Write-Output '  -Quiet              Disable verbose build rules'
     Write-Output '  -ShowLibraries      Show all known third-party libraries'
-    Write-Output '  -Test               Build C++ tests and install dependencies for Python testing as well'
     Write-Output '  -V,-Verbose         Enable verbose output from the Bash scripts'
     Write-Output '  -Venv <path>        Path to Python virtual environment'
     Write-Output ("                      Defaults to: {0}" -f $python_venv_path)
@@ -90,6 +89,10 @@ function Help-Message() {
     Write-Output '                      (ignored if --local-pkgs is passed, except for projectq)'
     Write-Output '  -Without<library>   Do not build the third-party library from source (<library> is case-insensitive)'
     Write-Output '                      (ignored if --local-pkgs is passed, except for projectq)'
+    Write-Output ''
+    Write-Output 'Test related options'
+    Write-Output '  -Test               Build C++ tests and install dependencies for Python testing as well'
+    Write-Output '  -OnlyPytest         Only install pytest and its dependencies when creating/building the virtualenv'
     Write-Output ''
     Write-Output 'CUDA related options:'
     Write-Output '  -CudaArch <arch>    Comma-separated list of architectures to generate device code for.'
@@ -176,6 +179,10 @@ if ($Quiet.IsPresent) {
 
 if ($Test.IsPresent) {
     Set-Value 'enable_tests'
+}
+
+if ($OnlyPytest.IsPresent) {
+    Set-Value 'only_install_pytest'
 }
 
 if ($UpdateVenv.IsPresent) {

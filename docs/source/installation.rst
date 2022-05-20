@@ -115,12 +115,11 @@ message):
     --debug-cmake        Enable debugging mode for CMake configuration step
     --gpu                Enable GPU support
     -j,--jobs [N]        Number of parallel jobs for building
-                         Defaults to: 88
+                         Defaults to: 16
     --local-pkgs         Compile third-party dependencies locally
     --ninja              Build using Ninja instead of make
     --quiet              Disable verbose build rules
     --show-libraries     Show all known third-party libraries
-    --test               Build C++ tests and install dependencies for Python testing as well
     -v, --verbose        Enable verbose output from the Bash scripts
     --venv=[dir]         Path to Python virtual environment
                          Defaults to: /home/user/mindquantum/venv
@@ -128,6 +127,11 @@ message):
                          (ignored if --local-pkgs is passed, except for projectq)
     --without-<library>  Do not build the third-party library from source
                          (ignored if --local-pkgs is passed, except for projectq)
+
+  Test related options:
+    --test               Build C++ tests and install dependencies for Python testing as well
+    --only-pytest        Only install pytest and its dependencies when creating/building the
+                         virtualenv
 
   CUDA related options:
     --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.
@@ -159,11 +163,6 @@ message):
   build_locally.sh -B build -- -DCMAKE_CUDA_COMPILER=/opt/cuda/bin/nvcc
   build_locally.sh -B build --cxx --gpu -- \
          -DCMAKE_NVCXX_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++
-
-    --doc                Setup the Python virtualenv for building the documentation and ask
-                         CMake to build the documentation
-    --install            Build the ´install´ target
-    --prefix             Specify installation prefix
 
 .. [1] PowerShell and Bash scripts typically have identical functionality sets whereas the MS-DOS BATCH script might
        not. For example, the latter does not support the ``/WithOutXXX``-type arguments.
@@ -323,12 +322,11 @@ It has similar options as the scripts decribed in :ref:`build_locally_for_devs`:
     --debug-cmake        Enable debugging mode for CMake configuration step
     --gpu                Enable GPU support
     -j,--jobs [N]        Number of parallel jobs for building
-                         Defaults to: 88
+                         Defaults to: 16
     --local-pkgs         Compile third-party dependencies locally
     --ninja              Build using Ninja instead of make
     --quiet              Disable verbose build rules
     --show-libraries     Show all known third-party libraries
-    --test               Build C++ tests and install dependencies for Python testing as well
     -v, --verbose        Enable verbose output from the Bash scripts
     --venv=[dir]         Path to Python virtual environment
                          Defaults to: /home/user/mindquantum/venv
@@ -336,6 +334,11 @@ It has similar options as the scripts decribed in :ref:`build_locally_for_devs`:
                          (ignored if --local-pkgs is passed, except for projectq)
     --without-<library>  Do not build the third-party library from source
                          (ignored if --local-pkgs is passed, except for projectq)
+
+  Test related options:
+    --test               Build C++ tests and install dependencies for Python testing as well
+    --only-pytest        Only install pytest and its dependencies when creating/building the
+                         virtualenv
 
   CUDA related options:
     --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.

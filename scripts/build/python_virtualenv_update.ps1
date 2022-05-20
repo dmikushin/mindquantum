@@ -34,7 +34,11 @@ if ($ROOTDIR -eq $null) {
 # ==============================================================================
 
 if ($created_venv -or $do_update_venv) {
-    $pkgs = @('pip', 'setuptools', 'wheel', 'build', 'pybind11', 'setuptools-scm[toml]')
+    $critical_pkgs = @('pip', 'setuptools', 'wheel', 'build')
+    Write-Output ("Updating critical Python packages: $PYTHON -m pip install -U " + ($critical_pkgs -Join ' '))
+    Call-Cmd "$PYTHON" -m pip install -U @critical_pkgs
+
+    $pkgs = @('pybind11', 'setuptools-scm[toml]')
 
     if ($IsLinuxEnv) {
         $pkgs += 'auditwheel'
@@ -50,6 +54,9 @@ if ($created_venv -or $do_update_venv) {
     if ($enable_tests) {
         if ("$Env:VENV_PYTHON_TEST_PKGS" -ne "") {
             $pkgs += ( "$Env:VENV_PYTHON_TEST_PKGS" -Split ' ' )
+        }
+        elseif ($only_install_pytest) {
+            $pkgs += 'pytest', 'pytest-cov', 'pytest-mock', 'mock'
         }
         else {
             $tmp_file = (New-TemporaryFile).Name
@@ -76,7 +83,6 @@ if ($created_venv -or $do_update_venv) {
     if ($do_update_venv) {
         $pip_args += '-U'
     }
-
 
     # TODO(dnguyen): add wheel delocation package for Windows once we figure this out
 

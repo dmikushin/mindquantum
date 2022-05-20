@@ -37,8 +37,12 @@ fi
 
 # ==============================================================================
 
-if [[ ${created_venv:-0} -eq 1 || ${do_update_venv:-0} -eq 1 ]]; then
-    pkgs=(pip setuptools wheel build pybind11 setuptools-scm[toml])
+if [[ "${created_venv:-0}" -eq 1 || "${do_update_venv:-0}" -eq 1 ]]; then
+    critical_pkgs=(pip setuptools wheel build)
+    echo "Updating critical Python packages: $PYTHON -m pip install -U ${critical_pkgs[*]}"
+    call_cmd "$PYTHON" -m pip install -U "${critical_pkgs[@]}"
+
+    pkgs=(pybind11 setuptools-scm[toml])
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         pkgs+=(auditwheel)
@@ -54,6 +58,8 @@ if [[ ${created_venv:-0} -eq 1 || ${do_update_venv:-0} -eq 1 ]]; then
         if [[ -n "$VENV_PYTHON_TEST_PKGS" ]]; then
             read -ra test_pkgs <<< "$VENV_PYTHON_TEST_PKGS"
             pkgs+=( "${test_pkgs[@]}" )
+        elif [ "${only_install_pytest:-0}" -eq 1 ]; then
+            pkgs+=( pytest pytest-cov pytest-mock mock )
         else
             tmp_file=$(mktemp req_mq_XXX)
 

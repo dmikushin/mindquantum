@@ -33,6 +33,7 @@ if NOT DEFINED enable_tests set enable_tests=0
 if NOT DEFINED force_local_pkgs set force_local_pkgs=0
 if NOT DEFINED local_pkgs set local_pkgs=
 if NOT DEFINED n_jobs set n_jobs=-1
+if NOT DEFINED only_install_pytest set only_install_pytest=0
 if NOT DEFINED verbose set verbose=0
 
 if NOT DEFINED n_jobs_default (

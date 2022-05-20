@@ -40,11 +40,25 @@ goto :EOF
 
 :update_venv
 
-set pkgs=pip setuptools wheel build pybind11 setuptools-scm[toml]
+set critical_pkgs=pip setuptools wheel build
+echo Updating critical Python packages: !PYTHON! -m pip install -U !critical_pkgs!
+call %BASEPATH%\dos\call_cmd.bat !PYTHON! -m pip install -U !critical_pkgs!
+
+set pkgs=pybind11 setuptools-scm[toml]
 
 if !cmake_from_venv! == 1 set pkgs=!pkgs! cmake
 
 if !enable_tests! == 1 (
+  if NOT "%VENV_PYTHON_TEST_PKGS%" == "" (
+    set pkgs=!pkgs! %VENV_PYTHON_TEST_PKGS%
+    goto :done_test_pkgs
+  )
+
+  if !only_install_pytest! == 1 (
+    set pkgs=!pkgs! pytest pytest-cov pytest-mock mock
+    goto :done_test_pkgs
+  )
+
   call :mktemp tmp_file "%temp%"
 
   pushd "!ROOTDIR!"
@@ -54,6 +68,8 @@ if !enable_tests! == 1 (
   for /F %%i in ('findstr /v "^[ ]*$" "!tmp_file!"') do set pkgs=!pkgs! %%i
   del /F !tmp_file!
 )
+
+:done_test_pkgs
 
 if !do_docs! == 1 set pkgs=!pkgs! breathe sphinx sphinx_rtd_theme importlib-metadata myst-parser
 

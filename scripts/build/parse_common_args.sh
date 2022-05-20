@@ -112,7 +112,6 @@ help_message() {
     echo '  --ninja              Build using Ninja instead of make'
     echo '  --quiet              Disable verbose build rules'
     echo '  --show-libraries     Show all known third-party libraries'
-    echo '  --test               Build C++ tests and install dependencies for Python testing as well'
     echo '  -v, --verbose        Enable verbose output from the Bash scripts'
     echo '  --venv=[dir]         Path to Python virtual environment'
     echo "                       Defaults to: $python_venv_path"
@@ -120,6 +119,10 @@ help_message() {
     echo '                       (ignored if --local-pkgs is passed, except for projectq)'
     echo '  --without-<library>  Do not build the third-party library from source'
     echo '                       (ignored if --local-pkgs is passed, except for projectq)'
+    echo ''
+    echo 'Test related options:'
+    echo '  --test               Build C++ tests and install dependencies for Python testing as well'
+    echo '  --only-pytest        Only install pytest and its dependencies when creating/building the virtualenv'
     echo ''
     echo 'CUDA related options:'
     echo '  --cuda-arch=[arch]   Comma-separated list of architectures to generate device code for.'
@@ -228,6 +231,9 @@ while getopts "${getopts_args}" OPT; do
                             ;;
         ninja )             no_arg;
                             set_var cmake_generator 'Ninja'
+                            ;;
+        only-pytest )       no_arg;
+                            set_var only_install_pytest
                             ;;
         quiet )             no_arg;
                             set_var cmake_make_silent

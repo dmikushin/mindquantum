@@ -35,6 +35,7 @@ Param(
     [switch]$Ninja,
     [switch]$NoBuildIsolation,
     [switch]$NoDelocate,
+    [switch]$OnlyPytest,
     [Alias("O")][ValidateNotNullOrEmpty()][string]$Output,
     [ValidateNotNullOrEmpty()][string]$PlatName,
     [switch]$Quiet,
@@ -350,6 +351,9 @@ Do not delocate the binary wheels after build is finished (pass -Delocate to ena
 
 .PARAMETER NoBuildIsolation
 Pass --no-isolation to python3 -m build
+
+.PARAMETER OnlyPytest
+Only install pytest and its dependencies when creating/building the virtualenv
 
 .PARAMETER Output
 Output directory for built wheels
