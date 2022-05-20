@@ -60,6 +60,11 @@ if(USE_OPENMP)
   find_package(OpenMP)
   if(OpenMP_FOUND)
     list(APPEND PARALLEL_LIBS OpenMP::OpenMP_CXX)
+  else()
+    # cmake-lint: disable=C0103
+    set(USE_OPENMP
+        FALSE
+        CACHE INTERNAL "Disabled OpenMP support")
   endif()
   if(APPLE)
     list(POP_FRONT CMAKE_MODULE_PATH)
