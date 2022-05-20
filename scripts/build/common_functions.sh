@@ -24,16 +24,36 @@ BASEPATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}" )" &> /dev/null && pwd 
 
 # ==============================================================================
 
+ncolors=$(tput colors 2> /dev/null)
+if [ -n "$ncolors" ] && [ "$ncolors" -ge 16 ]; then
+    _BOLD="$(tput bold)"
+    _UNDERLINE="$(tput smul)"
+    _STANDOUT="$(tput smso)"
+    _NORMAL="$(tput sgr0)"
+    _BLACK="$(tput setaf 0)"
+    _RED="$(tput setaf 1)"
+    _GREEN="$(tput setaf 2)"
+    _YELLOW="$(tput setaf 3)"
+    _BLUE="$(tput setaf 4)"
+    _MAGENTA="$(tput setaf 5)"
+    _CYAN="$(tput setaf 6)"
+    _WHITE="$(tput setaf 7)"
+    _GREY="$(tput setaf 8)"
+fi
+unset ncolors
+
+# ==============================================================================
+
 function debug_print() {
     if [ "${verbose:-0}" -eq 1 ]; then
-        echo "DEBUG $*" >&2
+        echo "${_YELLOW}DEBUG $*${_NORMAL}" >&2
     fi
 }
 
 function print_warning() {
-    echo '**********' >&2
-    echo "WARN $*" >&2
-    echo '**********' >&2
+    echo "${_GREEN}**********${_NORMAL}" >&2
+    echo "${_GREEN}WARN $*${_NORMAL}" >&2
+    echo "${_GREEN}**********${_NORMAL}" >&2
 }
 
 # ------------------------------------------------------------------------------
@@ -80,7 +100,7 @@ function set_var() {
 
 function die() {
     # complain to STDERR and exit with error
-    echo "$*" >&2; exit 2;
+    echo "${_BOLD}${_RED}$*${_NORMAL}" >&2; exit 2;
 }
 
 function no_arg() {
