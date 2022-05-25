@@ -44,7 +44,7 @@ typedef uint64_t idx_t;
 
 namespace projectq {
 template <typename T>
-class Projectq : public Simulator {
+class Projectq : public ::projectq::Simulator {
  private:
     unsigned seed;
     unsigned n_qubits_;
@@ -605,7 +605,7 @@ class Projectq : public Simulator {
 
 template <typename T>
 CT<T> InnerProduct(const Projectq<T> &bra, const Projectq<T> &ket) {
-    auto res = ComplexInnerProduct<T, Simulator::calc_type>(bra.vec_, ket.vec_, bra.GetLen());
+    auto res = ComplexInnerProduct<T, ::projectq::Simulator::calc_type>(bra.vec_, ket.vec_, bra.GetLen());
     return res;
 }
 

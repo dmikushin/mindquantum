@@ -14,6 +14,7 @@
 
 #include "python/core/circuit.hpp"
 
+#include <cstdint>
 #include <vector>
 
 #include <pybind11/operators.h>
@@ -25,6 +26,7 @@
 #include <tweedledum/Parser/tfc.h>
 #include <tweedledum/Utils/Visualization/string_utf8.h>
 
+#include "core/types.hpp"
 #include "ops/gates.hpp"
 #include "ops/parametric/angle_gates.hpp"
 #include "python/bindings.hpp"
@@ -44,6 +46,10 @@ auto apply_operator_t() {
         py::arg("cbits") = cbits_t{})
 
 void mindquantum::python::init_circuit(pybind11::module& module) {
+    py::class_<instruction_t>(module, "Instruction");
+    py::class_<inst_ref_t>(module, "InstRef");
+    py::class_<qubit_t>(module, "Qubit");
+
     py::class_<circuit_t>(module, "Circuit")
         .def_static("from_qasm_file", &td::qasm::parse_source_file)
         .def_static("from_qasm_string", &td::qasm::parse_source_buffer)
@@ -80,9 +86,12 @@ void mindquantum::python::init_circuit(pybind11::module& module) {
         .DEF_APPLY_OPERATOR_OVERLOAD(ops::parametric::Ry)
         .DEF_APPLY_OPERATOR_OVERLOAD(ops::Rz)
         .DEF_APPLY_OPERATOR_OVERLOAD(ops::parametric::Rz)
+        .DEF_APPLY_OPERATOR_OVERLOAD(ops::Sx)
+        .DEF_APPLY_OPERATOR_OVERLOAD(ops::Sxdg)
         .DEF_APPLY_OPERATOR_OVERLOAD(ops::S)
         .DEF_APPLY_OPERATOR_OVERLOAD(ops::Sdg)
         .DEF_APPLY_OPERATOR_OVERLOAD(ops::Swap)
+        .DEF_APPLY_OPERATOR_OVERLOAD(ops::SqrtSwap)
         .DEF_APPLY_OPERATOR_OVERLOAD(ops::T)
         .DEF_APPLY_OPERATOR_OVERLOAD(ops::Tdg)
         .DEF_APPLY_OPERATOR_OVERLOAD(ops::X)

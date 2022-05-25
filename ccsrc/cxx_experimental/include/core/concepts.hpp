@@ -20,6 +20,11 @@
 #include "core/config.hpp"
 
 #include "core/traits.hpp"
+#include "core/types.hpp"
+
+namespace mindquantum {
+class CircuitBlock;
+}  // namespace mindquantum
 
 namespace mindquantum::concepts {
 template <typename T, typename U>
@@ -30,5 +35,8 @@ concept tuple_contains = traits::tuple_contains<T, std::tuple<Ts...>>;
 
 template <typename T>
 concept std_complex = traits::is_complex_v<T>;
+
+template <typename T>
+concept CircuitLike = (concepts::same_decay_as<circuit_t, T> || concepts::same_decay_as<CircuitBlock, T>);
 }  // namespace mindquantum::concepts
 #endif /* CORE_CONCEPTS_HPP */

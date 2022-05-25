@@ -57,6 +57,7 @@ norecursedirs = ['third_party', 'mindquantum/ccsrc']
 mock_use_standalone_module = true
 markers = [
     "symengine: test using the mindquantum.symengine module",
+    "cxx_exp_projectq: tests involving the ProjectQ simulator",
 ]
 
 

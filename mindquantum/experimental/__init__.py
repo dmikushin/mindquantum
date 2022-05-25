@@ -15,10 +15,27 @@
 
 """Experimental C++ backend for MindQuantum."""
 
-from ._mindquantum_cxx import circuit, ops, symengine  # noqa: F401
+import sys
+
+from ._mindquantum_cxx import (  # noqa: F401
+    circuit,
+    ops,
+    optimizer,
+    simulator,
+    symengine,
+)
 
 # isort: split
 
 from . import _symengine_utilities
+
+# NB: These below will allow `from mindquantum.experimental.XXX import YYY` but not
+#     `from minquantum.experimental.XXX.YYY import ZZZ` for example
+sys.modules[f'{__name__}.circuit'] = circuit
+sys.modules[f'{__name__}.ops'] = ops
+sys.modules[f'{__name__}.optimizer'] = optimizer
+sys.modules[f'{__name__}.simulator'] = simulator
+sys.modules[f'{__name__}.simulator.projectq'] = simulator.projectq
+sys.modules[f'{__name__}.symengine'] = symengine
 
 symengine.symbols = _symengine_utilities.symbols

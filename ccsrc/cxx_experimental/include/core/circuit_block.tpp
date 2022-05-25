@@ -143,7 +143,7 @@ namespace mindquantum
      {
           // clang-format off
           static_assert(std::is_invocable_r_v<circuit_t, Fn, const circuit_t&> ||
-                        std::is_invocable_r_v<void, Fn, const circuit_t&>);
+                        std::is_invocable_r_v<void, Fn, circuit_t&>);
           // clang-format on
           if constexpr (std::is_invocable_r_v<circuit_t, Fn, const circuit_t&>) {
                circuit_ = fn(circuit_);

@@ -65,8 +65,8 @@ using mindquantum::uncommitted;
 namespace std {
 #if MQ_HAS_CONCEPTS
 template <typename T>
-requires(!std::same_as<std::remove_cvref_t<T>, CircuitManager::qubit_t>) bool operator==(
-    const std::vector<CircuitManager::qubit_t>& lhs, const std::vector<T>& rhs) {
+    requires(!std::same_as<std::remove_cvref_t<T>, CircuitManager::qubit_t>)
+bool operator==(const std::vector<CircuitManager::qubit_t>& lhs, const std::vector<T>& rhs) {
     return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
 }
 #else

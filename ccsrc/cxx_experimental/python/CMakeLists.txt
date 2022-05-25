@@ -32,8 +32,14 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/python DESTINATION ${MQ_INST
 # ==============================================================================
 
 pybind11_add_module(
-  _mindquantum_cxx ${CMAKE_CURRENT_LIST_DIR}/lib/_mindquantum_cxx.cpp ${CMAKE_CURRENT_LIST_DIR}/lib/core/circuit.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/lib/ops/ops.cpp ${CMAKE_CURRENT_LIST_DIR}/lib/core/symengine.cpp MODULE
+  _mindquantum_cxx
+  ${CMAKE_CURRENT_LIST_DIR}/lib/_mindquantum_cxx.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/lib/core/circuit.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/lib/core/symengine.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/lib/ops/ops.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/lib/optimizer/optimizer.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/lib/simulator/simulator.cpp
+  MODULE
   OUTPUT_HINT "${MQ_PYTHON_PACKAGE_NAME}/experimental")
 target_link_libraries(_mindquantum_cxx PRIVATE mindquantum_cxx mindquantum_python_interface)
 

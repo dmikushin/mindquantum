@@ -12,17 +12,9 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#ifndef PYTHON_BINDINGS_HPP
-#define PYTHON_BINDINGS_HPP
+#ifndef SIMULATOR_CONFIG_HPP
+#define SIMULATOR_CONFIG_HPP
 
-#include <pybind11/pybind11.h>
+#include "core/config.hpp"
 
-namespace mindquantum::python {
-void init_circuit(pybind11::module& module);
-void init_ops(pybind11::module& module);
-void init_optimizer(pybind11::module& module);
-void init_symengine(pybind11::module& module);
-void init_simulator(pybind11::module& module);
-}  // namespace mindquantum::python
-
-#endif /* PYTHON_BINDINGS_HPP */
+#endif /* SIMULATOR_CONFIG_HPP */

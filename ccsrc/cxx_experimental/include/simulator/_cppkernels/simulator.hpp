@@ -15,27 +15,38 @@
 #ifndef SIMULATOR_HPP_
 #define SIMULATOR_HPP_
 
-#include <complex>
-#include <vector>
-
-#include "core/config.hpp"
-
-#if defined(NOINTRIN) || !defined(INTRIN)
-#    include "nointrin/kernels.hpp"
-#else
-#    include "intrin/kernels.hpp"
-#endif
-
 #include <algorithm>
 #include <cassert>
+#include <complex>
 #include <functional>
 #include <map>
 #include <random>
 #include <tuple>
+#include <vector>
 
-#include "fusion.hpp"
-#include "intrin/alignedallocator.hpp"
+#ifdef USE_OPENMP
+#    include <omp.h>
+#endif  // USE_OPENMP  // NOLINT
 
+#include "core/config.hpp"
+
+#include "simulator/_cppkernels/fusion.hpp"
+#include "simulator/_cppkernels/intrin/alignedallocator.hpp"
+
+#if defined(NOINTRIN) || !defined(INTRIN)
+#    include "simulator/_cppkernels/nointrin/kernels.hpp"
+#else
+#    include "simulator/_cppkernels/intrin/kernels.hpp"
+#endif
+
+#define USE_NEW 1
+#ifdef USE_NEW
+#    define USE_STATIC_STATEVECTOR 0
+#else
+#    define USE_STATIC_STATEVECTOR 1
+#endif
+
+namespace projectq {
 class Simulator {
  public:
     using calc_type = double;
@@ -54,21 +65,51 @@ class Simulator {
         rng_ = std::bind(dist, std::ref(rnd_eng_));
     }
 
+    bool has_qubit(qubit_id_t id) const noexcept {
+        return map_.count(id) > 0;
+    }
+
     void allocate_qubit(qubit_id_t id) {
         if (map_.count(id) == 0) {
             map_[id] = N_++;
+#ifdef USE_NEW
+#    ifndef _OPENMP
+            // NB: if realloc occurs, then old elements are copied and the new ones initialized to 0.
+            vec_.resize(1UL << N_, 0.);
+#    else
+            // Same as above, but we use OpenMP
+            auto newvec = StateVector(1UL << N_, 0.
+#        pragma omp parallel for schedule(static)
+            for (std::size_t i = 0; i < vec_.size(); ++i) {
+                newvec[i] = vec_[i];
+            }
+            vec_ = std::move(newvec);
+#    endif  // !_OPENMP
+#else
+#    if !USE_STATIC_STATEVECTOR
+            auto newvec = StateVector(1UL << N_);
+#    else
             StateVector newvec;  // avoid large memory allocations
-            if (tmpBuff1_.capacity() >= (1UL << N_))
+            if (tmpBuff1_.capacity() >= (1UL << N_)) {
                 std::swap(newvec, tmpBuff1_);
+            }
             newvec.resize(1UL << N_);
-#pragma omp parallel for schedule(static)
-            for (std::size_t i = 0; i < newvec.size(); ++i)
+#    endif  // !USE_STATIC_STATEVECTOR
+#    pragma omp parallel for schedule(static)
+            for (std::size_t i = 0; i < newvec.size(); ++i) {
                 newvec[i] = (i < vec_.size()) ? vec_[i] : 0.;
+            }
+#    if !USE_STATIC_STATEVECTOR
+            vec_ = std::move(newvec);
+#    else
             std::swap(vec_, newvec);
             // recycle large memory
             std::swap(tmpBuff1_, newvec);
-            if (tmpBuff1_.capacity() < tmpBuff2_.capacity())
+            if (tmpBuff1_.capacity() < tmpBuff2_.capacity()) {
                 std::swap(tmpBuff1_, tmpBuff2_);
+            }
+#    endif  // !USE_STATIC_STATEVECTOR
+#endif      // USE_NEW
         } else
             throw(
                 std::runtime_error("AllocateQubit: ID already exists. Qubit "
@@ -121,17 +162,28 @@ class Simulator {
                     vec_[i + j + static_cast<std::size_t>(!value) * delta] = 0.;
             }
         } else {
+#if !USE_STATIC_STATEVECTOR
+            StateVector newvec((1UL << (N_ - 1)));
+#    pragma omp parallel for schedule(static)
+#else
             StateVector newvec;  // avoid costly memory reallocations
-            if (tmpBuff1_.capacity() >= (1UL << (N_ - 1)))
+            if (tmpBuff1_.capacity() >= (1UL << (N_ - 1UL))) {
                 std::swap(tmpBuff1_, newvec);
-            newvec.resize((1UL << (N_ - 1)));
-#pragma omp parallel for schedule(static) if (0)
+            }
+            newvec.resize((1UL << (N_ - 1UL)));
+#    pragma omp parallel for schedule(static) if (0)
+#endif
             for (std::size_t i = 0; i < vec_.size(); i += 2 * delta)
                 std::copy_n(&vec_[i + static_cast<std::size_t>(value) * delta], delta, &newvec[i / 2]);
+#if !USE_STATIC_STATEVECTOR
+            vec_ = std::move(newvec);
+#else
             std::swap(vec_, newvec);
             std::swap(tmpBuff1_, newvec);
             if (tmpBuff1_.capacity() < tmpBuff2_.capacity())
                 std::swap(tmpBuff1_, tmpBuff2_);
+
+#endif
 
             for (auto& p : map_) {
                 if (p.second > pos)
@@ -237,41 +289,53 @@ class Simulator {
             for (unsigned j = 0; j < quregs[i].size(); ++j)
                 quregs[i][j] = map_[quregs[i][j]];
 
+#if !USE_STATIC_STATEVECTOR
+        StateVector newvec(vec_.size(), 0.);
+        std::vector<int> res(quregs.size());
+#    pragma omp parallel for schedule(static) firstprivate(res) num_threads(num_threads)
+#else
         StateVector newvec;  // avoid costly memory reallocations
-        if (tmpBuff1_.capacity() >= vec_.size())
+        if (tmpBuff1_.capacity() >= vec_.size()) {
             std::swap(newvec, tmpBuff1_);
+        }
         newvec.resize(vec_.size());
-#pragma omp parallel for schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); i++)
+#    pragma omp parallel for schedule(static)
+        for (std::size_t i = 0; i < vec_.size(); i++) {
             newvec[i] = 0;
-
-        //#pragma omp parallel reduction(+:newvec[:newvec.size()])
-        // if(parallelize) // requires OpenMP 4.5
+        }
+#    if _OPENMP >= 201511  // OpenMP 4.5+
+#        pragma omp parallel reduction(+ : newvec[:newvec.size()]) if (parallelize)
+#    endif  // _OPENMP >= 201511
         {
             std::vector<int> res(quregs.size());
             //#pragma omp for schedule(static)
-            for (std::size_t i = 0; i < vec_.size(); ++i) {
-                if ((ctrlmask & i) == ctrlmask) {
-                    for (unsigned qr_i = 0; qr_i < quregs.size(); ++qr_i) {
-                        res[qr_i] = 0;
-                        for (unsigned qb_i = 0; qb_i < quregs[qr_i].size(); ++qb_i)
-                            res[qr_i] |= ((i >> quregs[qr_i][qb_i]) & 1) << qb_i;
+#endif
+        for (std::size_t i = 0; i < vec_.size(); ++i) {
+            if ((ctrlmask & i) == ctrlmask) {
+                for (unsigned qr_i = 0; qr_i < quregs.size(); ++qr_i) {
+                    res[qr_i] = 0;
+                    for (unsigned qb_i = 0; qb_i < quregs[qr_i].size(); ++qb_i)
+                        res[qr_i] |= ((i >> quregs[qr_i][qb_i]) & 1) << qb_i;
+                }
+                f(res);
+                auto new_i = i;
+                for (unsigned qr_i = 0; qr_i < quregs.size(); ++qr_i) {
+                    for (unsigned qb_i = 0; qb_i < quregs[qr_i].size(); ++qb_i) {
+                        if (!(((new_i >> quregs[qr_i][qb_i]) & 1) == ((res[qr_i] >> qb_i) & 1)))
+                            new_i ^= (1UL << quregs[qr_i][qb_i]);
                     }
-                    f(res);
-                    auto new_i = i;
-                    for (unsigned qr_i = 0; qr_i < quregs.size(); ++qr_i) {
-                        for (unsigned qb_i = 0; qb_i < quregs[qr_i].size(); ++qb_i) {
-                            if (!(((new_i >> quregs[qr_i][qb_i]) & 1) == ((res[qr_i] >> qb_i) & 1)))
-                                new_i ^= (1UL << quregs[qr_i][qb_i]);
-                        }
-                    }
-                    newvec[new_i] += vec_[i];
-                } else
-                    newvec[i] += vec_[i];
-            }
+                }
+                newvec[new_i] += vec_[i];
+            } else
+                newvec[i] += vec_[i];
+        }
+#if !USE_STATIC_STATEVECTOR
+        vec_ = std::move(newvec);
+#else
         }
         std::swap(vec_, newvec);
         std::swap(tmpBuff1_, newvec);
+#endif
     }
 
     // faster version without calling python
@@ -312,14 +376,19 @@ class Simulator {
         run();
         calc_type expectation = 0.;
 
+#if !USE_STATIC_STATEVECTOR
+        auto current_state = vec_;
+#else
         StateVector current_state;  // avoid costly memory reallocations
-        if (tmpBuff1_.capacity() >= vec_.size())
+        if (tmpBuff1_.capacity() >= vec_.size()) {
             std::swap(tmpBuff1_, current_state);
+        }
         current_state.resize(vec_.size());
-#pragma omp parallel for schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); ++i)
+#    pragma omp parallel for schedule(static)
+        for (std::size_t i = 0; i < vec_.size(); ++i) {
             current_state[i] = vec_[i];
-
+        }
+#endif
         for (auto const& term : td) {
             auto const& coefficient = term.second;
             apply_term(term.first, ids, {});
@@ -331,30 +400,44 @@ class Simulator {
                 auto const a2 = std::real(vec_[i]);
                 auto const b2 = std::imag(vec_[i]);
                 delta += a1 * a2 - b1 * b2;
+#if USE_STATIC_STATEVECTOR
                 // reset vec_
                 vec_[i] = current_state[i];
+#endif
             }
             expectation += coefficient * delta;
+#if !USE_STATIC_STATEVECTOR
+            vec_ = current_state;
+#endif
         }
+#if USE_STATIC_STATEVECTOR
         std::swap(current_state, tmpBuff1_);
+#endif
         return expectation;
     }
 
     void apply_qubit_operator(ComplexTermsDict const& td, std::vector<qubit_id_t> const& ids) {
         run();
-        StateVector new_state,
-            current_state;  // avoid costly memory reallocations
-        if (tmpBuff1_.capacity() >= vec_.size())
+#if !USE_STATIC_STATEVECTOR
+        auto new_state = StateVector(vec_.size(), 0.);
+        auto current_state = vec_;
+#else
+        StateVector new_state;
+        StateVector current_state;  // avoid costly memory reallocations
+        if (tmpBuff1_.capacity() >= vec_.size()) {
             std::swap(tmpBuff1_, new_state);
-        if (tmpBuff2_.capacity() >= vec_.size())
+        }
+        if (tmpBuff2_.capacity() >= vec_.size()) {
             std::swap(tmpBuff2_, current_state);
+        }
         new_state.resize(vec_.size());
         current_state.resize(vec_.size());
-#pragma omp parallel for schedule(static)
+#    pragma omp parallel for schedule(static)
         for (std::size_t i = 0; i < vec_.size(); ++i) {
             new_state[i] = 0;
             current_state[i] = vec_[i];
         }
+#endif
         for (auto const& term : td) {
             auto const& coefficient = term.second;
             apply_term(term.first, ids, {});
@@ -364,9 +447,13 @@ class Simulator {
                 vec_[i] = current_state[i];
             }
         }
+#if !USE_STATIC_STATEVECTOR
+        vec_ = std::move(new_state);
+#else
         std::swap(vec_, new_state);
         std::swap(tmpBuff1_, new_state);
         std::swap(tmpBuff2_, current_state);
+#endif
     }
 
     calc_type get_probability(std::vector<bool> const& bit_string, std::vector<qubit_id_t> const& ids) {
@@ -605,11 +692,17 @@ class Simulator {
     RndEngine rnd_eng_;
     std::function<double()> rng_;
 
+#if USE_STATIC_STATEVECTOR
     // large array buffers to avoid costly reallocations
-    static StateVector tmpBuff1_, tmpBuff2_;
+    static StateVector tmpBuff1_, tmpBuff2_;  // NOLINT
+#endif
 };
 
+#if USE_STATIC_STATEVECTOR
 inline Simulator::StateVector Simulator::tmpBuff1_;
 inline Simulator::StateVector Simulator::tmpBuff2_;
+#endif
+
+}  // namespace projectq
 
 #endif

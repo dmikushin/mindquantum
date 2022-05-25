@@ -12,6 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+#include <fmt/format.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -26,36 +27,50 @@
 namespace ops = mindquantum::ops;
 namespace py = pybind11;
 
-void init_tweedledum_ops(pybind11::module& module) {
-    py::class_<ops::Barrier>(module, "Barrier").def(py::init<>());
-    py::class_<ops::H>(module, "H").def(py::init<>());
-    py::class_<ops::Measure>(module, "Measure").def(py::init<>());
-    py::class_<ops::S>(module, "S").def(py::init<>());
-    py::class_<ops::Sdg>(module, "Sdg").def(py::init<>());
-    py::class_<ops::Swap>(module, "Swap").def(py::init<>());
-    py::class_<ops::Sx>(module, "Sx").def(py::init<>());
-    py::class_<ops::Sxdg>(module, "Sxdg").def(py::init<>());
-    py::class_<ops::T>(module, "T").def(py::init<>());
-    py::class_<ops::Tdg>(module, "Tdg").def(py::init<>());
-    py::class_<ops::X>(module, "X").def(py::init<>());
-    py::class_<ops::Y>(module, "Y").def(py::init<>());
-    py::class_<ops::Z>(module, "Z").def(py::init<>());
+namespace {
+// NB: These two should have auto return types but GCC 7 & 8 don't play well if we do :-(
+template <typename operator_t>
+std::string_view to_string(const operator_t& op) {
+    return operator_t::kind();
+}
+template <typename operator_t>
+std::string to_string_angle(const operator_t& op) {
+    return fmt::format("{}", operator_t::kind(), op.angle());
+}
+}  // namespace
 
-    py::class_<ops::P>(module, "P").def(py::init<const double>());
-    py::class_<ops::Rx>(module, "Rx").def(py::init<const double>());
-    py::class_<ops::Rxx>(module, "Rxx").def(py::init<const double>());
-    py::class_<ops::Ry>(module, "Ry").def(py::init<const double>());
-    py::class_<ops::Ryy>(module, "Ryy").def(py::init<const double>());
-    py::class_<ops::Rz>(module, "Rz").def(py::init<const double>());
-    py::class_<ops::Rzz>(module, "Rzz").def(py::init<const double>());
+void init_tweedledum_ops(pybind11::module& module) {
+    py::class_<ops::Barrier>(module, "Barrier").def(py::init<>()).def("__str__", &::to_string<ops::Barrier>);
+    py::class_<ops::H>(module, "H").def(py::init<>()).def("__str__", &::to_string<ops::H>);
+    py::class_<ops::Measure>(module, "Measure").def(py::init<>()).def("__str__", &::to_string<ops::Measure>);
+    py::class_<ops::S>(module, "S").def(py::init<>()).def("__str__", &::to_string<ops::S>);
+    py::class_<ops::Sdg>(module, "Sdg").def(py::init<>()).def("__str__", &::to_string<ops::Sdg>);
+    py::class_<ops::Swap>(module, "Swap").def(py::init<>()).def("__str__", &::to_string<ops::Swap>);
+    py::class_<ops::Sx>(module, "Sx").def(py::init<>()).def("__str__", &::to_string<ops::Sx>);
+    py::class_<ops::Sxdg>(module, "Sxdg").def(py::init<>()).def("__str__", &::to_string<ops::Sxdg>);
+    py::class_<ops::T>(module, "T").def(py::init<>()).def("__str__", &::to_string<ops::T>);
+    py::class_<ops::Tdg>(module, "Tdg").def(py::init<>()).def("__str__", &::to_string<ops::Tdg>);
+    py::class_<ops::X>(module, "X").def(py::init<>()).def("__str__", &::to_string<ops::X>);
+    py::class_<ops::Y>(module, "Y").def(py::init<>()).def("__str__", &::to_string<ops::Y>);
+    py::class_<ops::Z>(module, "Z").def(py::init<>()).def("__str__", &::to_string<ops::Z>);
+
+    py::class_<ops::P>(module, "P").def(py::init<const double>()).def("__str__", &::to_string_angle<ops::P>);
+    py::class_<ops::Rx>(module, "Rx").def(py::init<const double>()).def("__str__", &::to_string_angle<ops::Rx>);
+    py::class_<ops::Rxx>(module, "Rxx").def(py::init<const double>()).def("__str__", &::to_string_angle<ops::Rxx>);
+    py::class_<ops::Ry>(module, "Ry").def(py::init<const double>()).def("__str__", &::to_string_angle<ops::Ry>);
+    py::class_<ops::Ryy>(module, "Ryy").def(py::init<const double>()).def("__str__", &::to_string_angle<ops::Ryy>);
+    py::class_<ops::Rz>(module, "Rz").def(py::init<const double>()).def("__str__", &::to_string_angle<ops::Rz>);
+    py::class_<ops::Rzz>(module, "Rzz").def(py::init<const double>()).def("__str__", &::to_string_angle<ops::Rzz>);
 }
 
 void init_mindquantum_ops(pybind11::module& module) {
-    py::class_<ops::SqrtSwap>(module, "SqrtSwap").def(py::init<>());
+    py::class_<ops::SqrtSwap>(module, "SqrtSwap").def(py::init<>()).def("__str__", &::to_string<ops::SqrtSwap>);
 
-    py::class_<ops::Entangle>(module, "Entangle").def(py::init<const uint32_t>());
+    py::class_<ops::Entangle>(module, "Entangle")
+        .def(py::init<const uint32_t>())
+        .def("__str__", &::to_string<ops::Entangle>);
     py::class_<ops::Ph>(module, "Ph").def(py::init<const double>());
-    py::class_<ops::QFT>(module, "QFT").def(py::init<const uint32_t>());
+    py::class_<ops::QFT>(module, "QFT").def(py::init<const uint32_t>()).def("__str__", &::to_string<ops::QFT>);
     py::class_<ops::QubitOperator>(module, "QubitOperator")
         .def(py::init<const uint32_t, const ops::QubitOperator::ComplexTermsDict&>());
 

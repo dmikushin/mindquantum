@@ -68,15 +68,19 @@ ReflowComments: true
 SortIncludes: true
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: true
+SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: true
 SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
 SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
 SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyParentheses: false
 SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
-Standard: c++17
+StatementMacros: []
+TypenameMacros: []
+Standard: Latest
 TabWidth: 4
 UseTab: Never
 WhitespaceSensitiveMacros: ['CLANG_DIAG_ON', 'CLANG_DIAG_OFF', 'GCC_DIAG_ON', 'GCC_DIAG_OFF', 'MSVC_DIAG_ON',

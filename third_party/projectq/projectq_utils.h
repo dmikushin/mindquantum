@@ -44,10 +44,10 @@ inline Fusion::Matrix MCast(const VVT<CT<T>> &m) {
 }
 
 template <typename T>
-inline Simulator::ComplexTermsDict HCast(const VT<PauliTerm<T>> &ham_) {
-    Simulator::ComplexTermsDict res;
+inline ::projectq::Simulator::ComplexTermsDict HCast(const VT<PauliTerm<T>> &ham_) {
+    ::projectq::Simulator::ComplexTermsDict res;
     for (auto &pt : ham_) {
-        Simulator::Term term;
+        ::projectq::Simulator::Term term;
         for (auto &pw : pt.first) {
             // cppcheck-suppress useStlAlgorithm
             term.push_back(std::make_pair(static_cast<unsigned>(pw.first), pw.second));

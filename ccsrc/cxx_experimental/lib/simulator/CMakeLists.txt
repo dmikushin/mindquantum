@@ -1,6 +1,6 @@
 # ==============================================================================
 #
-# Copyright 2020 <Huawei Technologies Co., Ltd>
+# Copyright 2022 <Huawei Technologies Co., Ltd>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,6 @@
 #
 # ==============================================================================
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/cengines)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/core)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/decompositions)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/mapping)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ops)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/optimisation)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/simulator)
-
-target_link_libraries(mindquantum_cxx PUBLIC mindquantum::tweedledum ${OpenMP_tgt} Threads::Threads)
+target_sources(mindquantum_cxx PRIVATE ${CMAKE_CURRENT_LIST_DIR}/projectq_simulator.cpp)
+target_compile_definitions(mindquantum_cxx INTERFACE INTRIN)
+target_link_libraries(mindquantum_cxx INTERFACE intrin_flag_CXX)

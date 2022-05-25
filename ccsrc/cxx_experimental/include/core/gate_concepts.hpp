@@ -37,7 +37,7 @@ namespace mindquantum::concepts {
 template <typename op_t>
 concept Gate = requires(op_t optor) {
     // clang-format off
-        { op_t::kind() } -> std::same_as<std::string_view>;
+    { op_t::kind() } -> std::same_as<std::string_view>;
     // clang-format on
 };
 
@@ -46,7 +46,7 @@ concept FixedNumTargetGate = requires(op_t optor) {
     requires Gate<op_t>;
     requires std::default_initializable<op_t>;
     // clang-format off
-        requires std::greater<>{}(traits::num_targets<op_t>, 0);
+    requires std::greater<>{}(traits::num_targets<op_t>, 0);
     // clang-format on
 };
 
@@ -60,7 +60,7 @@ template <typename op_t>
 concept SingleDoubleGate = requires(op_t optor) {
     requires Gate<op_t>;
     // clang-format off
-        { optor.param() } -> same_decay_as<double>;
+    { optor.param() } -> same_decay_as<double>;
     // clang-format on
 };
 
@@ -68,8 +68,8 @@ template <typename op_t>
 concept MultiDoubleGate = requires(op_t optor) {
     requires Gate<op_t>;
     // clang-format off
-        // TODO(damien): Perhaps store the number of parameters as a static constexpr class variable?
-        { optor.params() } -> same_decay_as<std::vector<double>>;
+    // TODO(damien): Perhaps store the number of parameters as a static constexpr class variable?
+    { optor.params() } -> same_decay_as<std::vector<double>>;
     // clang-format on
 };
 
@@ -78,7 +78,7 @@ concept AngleGate = requires(op_t optor) {
     requires Gate<op_t>;
     requires std::constructible_from<op_t, double>;
     // clang-format off
-        { optor.angle() } -> same_decay_as<double>;
+    { optor.angle() } -> same_decay_as<double>;
     // clang-format on
 };
 
@@ -88,14 +88,16 @@ concept ParametricGate = requires(op_t optor, SymEngine::map_basic_basic subs) {
     requires std::same_as<typename op_t::is_parametric, void>;
     requires Gate<typename op_t::non_param_type>;
     requires std::integral<decltype(op_t::num_params)>;
-    requires std::greater<>{}(op_t::num_params, 0);
+    requires std::greater<> {
+    }
+    (op_t::num_params, 0);
 
     // clang-format off
-        { optor.param(0UL) } -> same_decay_as<ops::parametric::basic_t>;
-        { optor.params() } -> same_decay_as<ops::parametric::param_list_t>;
-        { optor.eval(subs)} -> same_decay_as<op_t>;
-        { optor.eval_full(subs) } -> same_decay_as<typename op_t::non_param_type>;
-        { optor.eval_smart(subs) } -> same_decay_as<tweedledum::Operator>;
+    { optor.param(0UL) } -> same_decay_as<ops::parametric::basic_t>;
+    { optor.params() } -> same_decay_as<ops::parametric::param_list_t>;
+    { optor.eval(subs)} -> same_decay_as<op_t>;
+    { optor.eval_full(subs) } -> same_decay_as<typename op_t::non_param_type>;
+    { optor.eval_smart(subs) } -> same_decay_as<tweedledum::Operator>;
     // clang-format on
 };
 
@@ -113,12 +115,11 @@ template <typename op_t /*, typename evaluated_t */>
 concept SingleParameterGate = requires(op_t optor) {
     requires ParametricGate<op_t>;
     // clang-format off
-        requires std::equal_to<>{}(op_t::num_params, 1);
+    requires std::equal_to<>{}(op_t::num_params, 1);
     // clang-format on
     // // Make sure that the parameter evaluates to what we expect
     // requires std::same_as<param_eval_t<0, typename op_t::params_type>, evaluated_t>;
 };
-
 #else
 #endif  // MQ_HAS_CONCEPTS
 }  // namespace mindquantum::concepts

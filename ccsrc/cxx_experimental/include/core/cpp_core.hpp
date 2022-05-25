@@ -43,7 +43,7 @@ class CppCore {
 
     using Complex = std::complex<double>;
     using c_type = std::complex<double>;
-    using ArrayType = std::vector<c_type, aligned_allocator<c_type, 64>>;
+    using ArrayType = std::vector<c_type, ::projectq::aligned_allocator<c_type, 64>>;
     using MatrixType = std::vector<ArrayType>;
 
     CppCore();
@@ -59,7 +59,7 @@ class CppCore {
     void set_engine_list(const engine_list_t& engine_list);
 
     // WARN: this function does not take ownership of sim!
-    void set_simulator_backend(Simulator& sim);
+    void set_simulator_backend(::projectq::Simulator& sim);
 
     /*!
      * \brief Allocate a single qubit
@@ -112,7 +112,7 @@ class CppCore {
     bool simulator_backend_;
     bool has_new_operations_;
 
-    Simulator* sim_;
+    ::projectq::Simulator* sim_;
 
     CircuitManager circuit_manager_;
 

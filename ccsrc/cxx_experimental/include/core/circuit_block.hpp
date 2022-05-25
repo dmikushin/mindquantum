@@ -204,8 +204,13 @@ class CircuitBlock {
     //! Simple accessor for the underlying External IDs
     std::vector<ext_id_t> ext_ids() const;
 
-    //! Simple accessor for the underlying internal IDs (both qubits and cbits)
+    //! Simple accessor for the underlying internal IDs (qubits only)
     std::vector<td_qid_t> td_ids() const;
+
+    //! Simple accessor for the underlying internal IDs (qubits only)
+    std::vector<td_qid_t> qubits() const {
+        return td_ids();
+    }
 
     // -----------------------------------------------
 

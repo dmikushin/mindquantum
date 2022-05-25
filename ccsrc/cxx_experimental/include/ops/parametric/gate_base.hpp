@@ -195,7 +195,8 @@ class ParametricBase {
      */
 #if MQ_HAS_CONCEPTS
     template <typename... Ts>
-    requires(has_const_num_targets && (concepts::expr_or_number<Ts> || ...)) constexpr ParametricBase(Ts&&... args)
+        requires(has_const_num_targets && (concepts::expr_or_number<Ts> || ...))
+    constexpr ParametricBase(Ts&&... args)
 #else
     template <typename... Ts, typename T = self_t,
               typename = std::enable_if_t<T::has_const_num_targets && !traits::is_param_base<Ts...>::value>>
@@ -213,8 +214,8 @@ class ParametricBase {
      */
 #if MQ_HAS_CONCEPTS
     template <typename... Ts>
-    requires(!has_const_num_targets
-             && (concepts::expr_or_number<Ts> || ...)) constexpr ParametricBase(uint32_t num_targets, Ts&&... args)
+        requires(!has_const_num_targets && (concepts::expr_or_number<Ts> || ...))
+    constexpr ParametricBase(uint32_t num_targets, Ts&&... args)
 #else
     template <typename... Ts, typename T = self_t, typename = std::enable_if_t<!T::has_const_num_targets>>
     constexpr ParametricBase(uint32_t num_targets, Ts&&... args)

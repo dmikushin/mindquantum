@@ -31,6 +31,7 @@
 #    include <iostream>
 #endif  // MEASURE_TIMINGS
 
+namespace projectq {
 class Item {
  public:
     using Index = unsigned;
@@ -211,5 +212,6 @@ class Fusion {
     ItemVector items_;
     IndexSet ctrl_set_;
 };
+}  // namespace projectq
 
 #endif

@@ -70,7 +70,7 @@ void CppCore::set_engine_list(const engine_list_t& engine_list) {
     engine_list_ = engine_list;
 }
 
-void CppCore::set_simulator_backend(Simulator& sim) {
+void CppCore::set_simulator_backend(::projectq::Simulator& sim) {
     sim_ = &sim;
     simulator_backend_ = true;
 }

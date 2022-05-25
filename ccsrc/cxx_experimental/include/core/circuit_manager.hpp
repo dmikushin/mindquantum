@@ -90,7 +90,7 @@ class CircuitManager {
 
     //! Commit the changes of the current circuit
     /*!
-     * Calls \c commit() on the current circuit, movs it to storage and add a new empty circuit for processing
+     * Calls \c commit() on the current circuit, moves it to storage and add a new empty circuit for processing
      */
     void commit_changes();
 

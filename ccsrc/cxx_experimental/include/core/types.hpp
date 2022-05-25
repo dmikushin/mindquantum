@@ -24,7 +24,7 @@
 #include <tweedledum/IR/Qubit.h>
 
 namespace mindquantum {
-using qubit_id_t = unsigned int;
+using qubit_id_t = uint32_t;
 using qureg_t = std::vector<qubit_id_t>;
 
 using qubit_t = tweedledum::Qubit;

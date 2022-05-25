@@ -27,6 +27,7 @@
 #    define noexcept
 #endif
 
+namespace projectq {
 template <typename T, unsigned int Alignment>
 class aligned_allocator {
  public:
@@ -105,6 +106,7 @@ class aligned_allocator {
         return true;
     }
 };
+}  // namespace projectq
 
 #if __cplusplus < 201103L
 #    undef noexcept
