@@ -14,9 +14,11 @@
 # limitations under the License.
 # ============================================================================
 """Simulator."""
+import warnings
+
 import numpy as np
 
-from mindquantum import mqbackend as mb
+import mindquantum.mqbackend as mb
 from mindquantum.core.circuit import Circuit
 from mindquantum.core.gates import BarrierGate, Measure, MeasureResult
 from mindquantum.core.gates.basic import BasicGate
@@ -561,34 +563,61 @@ which is {self.n_qubits}, but get {simulator_left.n_qubits}"
             raise ValueError("circuit for variational algorithm cannot have measure gate")
         if parallel_worker is not None:
             _check_int_type("parallel_worker", parallel_worker)
-        if encoder_params_name is None and ansatz_params_name is None:
-            encoder_params_name = []
-            ansatz_params_name = list(circ_right.params_name)
-            for i in circ_left.params_name:
+        if encoder_params_name is not None:
+            warnings.warn(
+                "Setting encoder_params_name is perecated from version 0.7.0, please call '.as_encoder()' \
+of the circuit you want to work as encoder, and do not set in this API.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            encoder_params_name_old_api = encoder_params_name
+        else:
+            encoder_params_name_old_api = []
+        if ansatz_params_name is not None:
+            warnings.warn(
+                "Setting ansatz_params_name is perecated from version 0.7.0, please call '.as_ansatz()' \
+of the circuit you want to work as ansatz, and do not set in this API.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            ansatz_params_name_old_api = ansatz_params_name
+        else:
+            ansatz_params_name_old_api = []
+
+        ansatz_params_name = circ_right.all_ansatz.keys()
+        encoder_params_name = circ_right.all_encoder.keys()
+        if not encoder_params_name_old_api:
+            encoder_params_name_old_api = encoder_params_name
+        if not ansatz_params_name_old_api:
+            ansatz_params_name_old_api = ansatz_params_name
+        if non_hermitian:
+            for i in circ_left.all_ansatz.keys():
                 if i not in ansatz_params_name:
                     ansatz_params_name.append(i)
-        if encoder_params_name is None:
-            encoder_params_name = []
-        if ansatz_params_name is None:
-            ansatz_params_name = []
-        _check_input_type("encoder_params_name", list, encoder_params_name)
-        _check_input_type("ansatz_params_name", list, ansatz_params_name)
-        for i in encoder_params_name:
-            _check_input_type("Element of encoder_params_name", str, i)
-        for i in ansatz_params_name:
-            _check_input_type("Element of ansatz_params_name", str, i)
-        s1 = set(circ_right.params_name) | set(circ_left.params_name)
-        s2 = set(encoder_params_name) | set(ansatz_params_name)
-        if s1 - s2 or s2 - s1:
-            raise ValueError("encoder_params_name and ansatz_params_name are different with circuit parameters")
-        circ_n_qubits = max(circ_left.n_qubits, circ_right.n_qubits)
-        if self.n_qubits < circ_n_qubits:
-            raise ValueError(f"Simulator has {self.n_qubits} qubits, but circuit has {circ_n_qubits} qubits.")
+            for i in circ_left.all_encoder.keys():
+                if i not in encoder_params_name:
+                    encoder_params_name.append(i)
+        if set(ansatz_params_name) & set(encoder_params_name):
+            raise RuntimeError("Parameter cannot be both encoder and ansatz parameter.")
+        if set(ansatz_params_name_old_api) != set(ansatz_params_name):
+            raise RuntimeError(
+                "You set wrong ansatz parameters. Please do not set ansatz_params_name anymore, but \
+call '.as_ansatz()' of circuit that you want to work as ansatz."
+            )
+        if set(encoder_params_name_old_api) != set(encoder_params_name):
+            raise RuntimeError(
+                "You set wrong encoder parameters. Please do not set encoder_params_name anymore, but \
+call '.as_encoder()' of circuit that you want to work as encoder."
+            )
         version = "both"
         if not ansatz_params_name:
             version = "encoder"
         if not encoder_params_name:
             version = "ansatz"
+
+        circ_n_qubits = max(circ_left.n_qubits, circ_right.n_qubits)
+        if self.n_qubits < circ_n_qubits:
+            raise ValueError(f"Simulator has {self.n_qubits} qubits, but circuit has {circ_n_qubits} qubits.")
 
         def grad_ops(*inputs):
             if version == "both" and len(inputs) != 2:

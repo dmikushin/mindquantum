@@ -29,6 +29,8 @@ from .utils import (
     D,
     add_prefix,
     apply,
+    as_ansatz,
+    as_encoder,
     change_param_name,
     controlled,
     dagger,
@@ -55,5 +57,7 @@ __all__ = [
     'add_prefix',
     'change_param_name',
     'shift',
+    'as_ansatz',
+    'as_encoder',
 ]
 __all__.sort()

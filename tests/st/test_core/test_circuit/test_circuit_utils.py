@@ -15,6 +15,7 @@
 # ============================================================================
 """Test Circuit utils."""
 import numpy as np
+import pytest
 
 import mindquantum.core.gates as G
 from mindquantum import (
@@ -27,8 +28,9 @@ from mindquantum import (
     pauli_word_to_circuits,
 )
 from mindquantum.algorithm.library import qft
-from mindquantum.core.circuit.utils import AP, CPN
+from mindquantum.core.circuit.utils import AP, CPN, add_prefix
 from mindquantum.core.circuit.utils import apply as A
+from mindquantum.core.circuit.utils import as_ansatz, as_encoder
 from mindquantum.core.circuit.utils import controlled as C
 from mindquantum.core.circuit.utils import dagger as D
 
@@ -131,3 +133,36 @@ def test_qft():
     s = c.get_qs()
     s_exp = np.ones(2**4) * 0.25
     assert np.allclose(s, s_exp)
+
+
+def test_as_encoder_as_ansatz():
+    """
+    Description: Test set encoder or ansatz of circuit.
+    Expectation: succeed.
+    """
+
+    @as_encoder
+    def circ1():
+        out = Circuit()
+        out += G.RX('a').on(0)
+        out += G.RX('b').on(0)
+        return out
+
+    circ11 = circ1() + as_encoder(Circuit([G.RX('c').on(0)]))
+    assert circ11.encoder_params_name == ['a', 'b', 'c']
+
+    @as_ansatz
+    def circ2():
+        out = Circuit()
+        out += G.RX('a').on(0)
+        out += G.RX('b').on(0)
+        return out
+
+    circ22 = circ2() + as_ansatz(Circuit([G.RX('c').on(0)]))
+    assert circ22.ansatz_params_name == ['a', 'b', 'c']
+
+    with pytest.raises(Exception, match="can not be both encoder parameters and ansatz parameters."):
+        circ11 + circ22
+    res = circ11.as_ansatz() + add_prefix(circ22.as_encoder(), 'e')
+    assert res.encoder_params_name == ['e_a', 'e_b', 'e_c']
+    assert res.ansatz_params_name == ['a', 'b', 'c']

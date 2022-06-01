@@ -161,6 +161,10 @@ class BitFlipChannel(PauliChannel):
         prop['p'] = self.p
         return prop
 
+    def __str_in_circ__(self):
+        """Return a string representation of the object in a quantum circuit."""
+        return f"BF({self.p})"
+
 
 class PhaseFlipChannel(PauliChannel):
     r"""
@@ -207,6 +211,10 @@ class PhaseFlipChannel(PauliChannel):
         prop = super().__extra_prop__()
         prop['p'] = self.p
         return prop
+
+    def __str_in_circ__(self):
+        """Return a string representation of the object in a quantum circuit."""
+        return f"PF({self.p})"
 
 
 class BitPhaseFlipChannel(PauliChannel):
@@ -256,6 +264,10 @@ class BitPhaseFlipChannel(PauliChannel):
         prop['p'] = self.p
         return prop
 
+    def __str_in_circ__(self):
+        """Return a string representation of the object in a quantum circuit."""
+        return f"BPF({self.p})"
+
 
 class DepolarizingChannel(PauliChannel):
     r"""
@@ -303,6 +315,10 @@ class DepolarizingChannel(PauliChannel):
         prop = super().__extra_prop__()
         prop['p'] = self.p
         return prop
+
+    def __str_in_circ__(self):
+        """Return a string representation of the object in a quantum circuit."""
+        return f"Dep({self.p})"
 
 
 class AmplitudeDampingChannel(NoiseGate, SelfHermitianGate):
@@ -368,6 +384,10 @@ class AmplitudeDampingChannel(NoiseGate, SelfHermitianGate):
         """Equality comparison operator."""
         return BasicGate.__eq__(self, other) and self.gamma == other.gamma
 
+    def __str_in_circ__(self):
+        """Return a string representation of the object in a quantum circuit."""
+        return f"AD({self.gamma})"
+
 
 class PhaseDampingChannel(NoiseGate, SelfHermitianGate):
     r"""
@@ -431,3 +451,7 @@ class PhaseDampingChannel(NoiseGate, SelfHermitianGate):
     def __eq__(self, other):
         """Equality comparison operator."""
         return super().__eq__(other) and self.gamma == other.gamma
+
+    def __str_in_circ__(self):
+        """Return a string representation of the object in a quantum circuit."""
+        return f"PD({self.gamma})"

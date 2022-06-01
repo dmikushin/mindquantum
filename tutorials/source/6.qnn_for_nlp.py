@@ -61,7 +61,7 @@ def generate_encoder_circuit(n_qubits, prefix=''):
     circ = Circuit()
     for i in range(n_qubits):
         circ += RX(prefix + str(i)).on(i)
-    return circ
+    return circ.as_encoder()
 
 
 generate_encoder_circuit(3, prefix='e')
@@ -154,9 +154,7 @@ def q_embedding(num_embedding, embedding_dim, window, layers, n_threads):
         circ += ansatz
         encoder_param_name.extend(encoder.params_name)
         ansatz_param_name.extend(ansatz.params_name)
-    grad_ops = Simulator('projectq', circ.n_qubits).get_expectation_with_grad(
-        hams, circ, None, None, encoder_param_name, ansatz_param_name, n_threads
-    )
+    grad_ops = Simulator('projectq', circ.n_qubits).get_expectation_with_grad(hams, circ, parallel_worker=n_threads)
     return MQLayer(grad_ops)
 
 
