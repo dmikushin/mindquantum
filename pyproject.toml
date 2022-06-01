@@ -60,6 +60,15 @@ markers = [
     "cxx_exp_projectq: tests involving the ProjectQ simulator",
 ]
 
+[tool.doc8]
+
+verbose = 0
+max_line_length = 120
+ignore-path-errors = [
+    "docs/api_python/mindquantum.algorithm.nisq.uccsd_singlet_get_packed_amplitudes.rst;D001",
+    "docs/api_python/mindquantum.algorithm.nisq.quccsd_generator.rst;D001",
+    "docs/api_python/mindquantum.algorithm.nisq.uccsd0_singlet_generator.rst;D001"
+]
 
 [tool.isort]
 
