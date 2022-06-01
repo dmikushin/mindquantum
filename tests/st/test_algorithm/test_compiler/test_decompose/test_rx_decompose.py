@@ -16,7 +16,7 @@
 '''test decompose rule'''
 import numpy as np
 
-from mindquantum.algorithm.compiler.decompose import crx_decompose
+from mindquantum.algorithm.compiler.decompose.rx_related import crx_decompose
 from mindquantum.core import RX, Circuit
 
 

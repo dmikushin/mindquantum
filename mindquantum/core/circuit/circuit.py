@@ -249,24 +249,24 @@ class Circuit(list):
             gates (Union[Circuit, list[BasicGate]]), A `Circuit` or a list of `BasicGate` you want to extend.
         """
         if isinstance(gates, Circuit):
-            self.all_measures.merge_only_one(mq_gates.all_measures, "Measure already exist.")
-            self.all_qubits.merge(mq_gates.all_qubits)
-            self.all_paras.merge(mq_gates.all_paras)
-            self.all_noises.merge(mq_gates.all_noises)
-            conflict_params = set(self.all_encoder.keys()) & set(mq_gates.all_ansatz.keys())
+            self.all_measures.merge_only_one(gates.all_measures, "Measure already exist.")
+            self.all_qubits.merge(gates.all_qubits)
+            self.all_paras.merge(gates.all_paras)
+            self.all_noises.merge(gates.all_noises)
+            conflict_params = set(self.all_encoder.keys()) & set(gates.all_ansatz.keys())
             if conflict_params:
                 raise RuntimeError(
                     f"Parameters {conflict_params} can not be both encoder \
 parameters and ansatz parameters."
                 )
-            conflict_params = set(self.all_ansatz.keys()) & set(mq_gates.all_encoder.keys())
+            conflict_params = set(self.all_ansatz.keys()) & set(gates.all_encoder.keys())
             if conflict_params:
                 raise RuntimeError(
                     f"Parameters {conflict_params} can not be both encoder \
 parameters and ansatz parameters."
                 )
-            self.all_encoder.merge(mq_gates.all_encoder)
-            self.all_ansatz.merge(mq_gates.all_ansatz)
+            self.all_encoder.merge(gates.all_encoder)
+            self.all_ansatz.merge(gates.all_ansatz)
             super().extend(gates)
         else:
             for gate in gates:
@@ -400,9 +400,9 @@ parameters and ansatz parameters."
             _check_gate_has_obj(gates)
             _check_gate_type(gates)
             super().insert(index, gates)
-            self.all_qubits.collect(mq_gates.obj_qubits)
-            self.all_qubits.collect(mq_gates.ctrl_qubits)
-            if mq_gates.parameterized:
+            self.all_qubits.collect(gates.obj_qubits)
+            self.all_qubits.collect(gates.ctrl_qubits)
+            if gates.parameterized:
                 self._collect_parameterized_gate(gates)
             if isinstance(gates, mq_gates.Measure):
                 self.all_measures.collect_only_one(gates, f'measure key {mq_gates.key} already exist.')

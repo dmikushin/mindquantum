@@ -222,9 +222,9 @@ class FermionOperator(_Operator):
         Returns:
             FermionOperator, fermion operator from mindquantum.
         """
-        from openfermion import FermionOperator
+        from openfermion import FermionOperator as OFFermionOperator
 
-        _check_input_type('of_ops', FermionOperator, of_ops)
+        _check_input_type('of_ops', OFFermionOperator, of_ops)
         out = FermionOperator()
         for k, v in of_ops.terms.items():
             out.terms[k] = ParameterResolver(v)
