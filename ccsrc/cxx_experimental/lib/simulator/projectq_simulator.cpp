@@ -20,7 +20,7 @@
 #include "core/types.hpp"
 #include "ops/gates.hpp"
 #include "ops/gates/qubit_operator.hpp"
-#include "simulator/_cppkernels/simulator.hpp"
+#include "simulator/simulator.hpp"
 
 namespace mindquantum::simulation::projectq {
 

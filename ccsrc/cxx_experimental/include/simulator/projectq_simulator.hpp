@@ -20,7 +20,7 @@
 #include "simulator/config.hpp"
 
 #include "core/types.hpp"
-#include "simulator/_cppkernels/simulator.hpp"
+#include "simulator/simulator.hpp"
 #include "simulator/simulator_base.hpp"
 
 namespace mindquantum::simulation::projectq {

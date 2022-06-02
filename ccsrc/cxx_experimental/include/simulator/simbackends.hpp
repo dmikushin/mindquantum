@@ -15,8 +15,6 @@
 #ifndef SIMBACKENDS_HPP
 #define SIMBACKENDS_HPP
 
-#include <pybind11/pybind11.h>
-
 #include <cstdlib>
 
 namespace backends
@@ -46,8 +44,8 @@ namespace backends
     // Check whether the SIM backend is available to the current process.
     bool SimBackendIsAvailable(SimBackend backend);
 
-    // Acquire the Python module for the given backend
-    pybind11::module_ SimBackendAcquire(SimBackend backend);
+    // TODO Acquire the native library for the given backend
+    // pybind11::module_ SimBackendAcquire(SimBackend backend);
 }  // namespace backends
 
 #endif /* SIMBACKENDS_HPP */
