@@ -1,7 +1,28 @@
 #!/usr/bin/env python3
+import itertools
 
 nqubits = 3
 
+# All combinations of qubits, excluding dupes, e.g. for nqubits = 2:
+# 0 0
+# 1 0
+# 0 1
+# 1 1
+combs = list(itertools.product([0, 1], repeat=nqubits))
+
+# Pretty-print the indexed PSI array values.
+strcombs = []
+for j in range(0, len(combs)):
+	comb = tuple(reversed(combs[j]))
+	strcomb = 'psi[I'.format(j)
+	for i in range(0, nqubits):
+		if comb[i] != 0:
+			strcomb += " + d{}".format(i)
+	strcomb += ']';
+	strcombs.append(strcomb)
+
+# Some string constants clash with the {} syntax of print(), so we
+# substitute them as constants.
 pragma = "#pragma";
 newline = "\n";
 
@@ -10,25 +31,9 @@ f"""
 template <class V, class M>
 inline void kernel_core(V &psi, std::size_t I, std::size_t d0{''.join(', std::size_t d{}'.format(i) for i in range (1, nqubits))}, M const& m)
 {{
-    std::array<std::complex<double>, 1U << nqubits> v;
-    v[0] = psi[I];
-    v[1] = psi[I + d0];
-
-    nqubits = 2:
-    
-    v[0] = psi[I];
-    v[1] = psi[I + d0];
-    v[2] = psi[I + d1];
-    v[3] = psi[I + d0 + d1];    
-
-    // All combinations of qubits, excluding dupes:
-    v[0] = 0 0
-    v[1] = 1 0
-    v[2] = 0 1
-    v[3] = 1 1
-
-    psi[I] = (add(mul(v[0], m[0][0]), mul(v[1], m[0][1])));
-    psi[I + d0] = (add(mul(v[0], m[1][0]), mul(v[1], m[1][1])));
+    std::complex<double> v[{1 << nqubits}];
+{''.join('    v[{}] = {};{}'.format(i, strcombs[i], newline) for i in range(0, len(strcombs)))}
+{''.join('    {} = {}'.format(strcombs[i], newline) for i in range(0, len(strcombs)))}
 }}
 
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
