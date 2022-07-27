@@ -21,6 +21,17 @@ for j in range(0, len(combs)):
 	strcomb += ']';
 	strcombs.append(strcomb)
 
+def rhs(n, j, i):
+	if i < n - 1:
+		return f'add(mul(v[{i}], m[{j}][{i}]), ' + rhs(n, j, i + 1)
+	else:
+		return f'mul(v[{i}], m[{j}][{i}]' + ''.join(')' for k in range(0, n))
+
+# Pretty-print the right hand sides (recursively).
+strrhs = [] 
+for j in range(0, len(strcombs)):
+	strrhs.append(rhs(len(strcombs), j, 0))
+
 # Some string constants clash with the {} syntax of print(), so we
 # substitute them as constants.
 pragma = "#pragma";
@@ -33,8 +44,7 @@ inline void kernel_core(V &psi, std::size_t I, std::size_t d0{''.join(', std::si
 {{
     std::complex<double> v[{1 << nqubits}];
 {''.join('    v[{}] = {};{}'.format(i, strcombs[i], newline) for i in range(0, len(strcombs)))}
-{''.join('    {} = {}'.format(strcombs[i], newline) for i in range(0, len(strcombs)))}
-}}
+{''.join('    {} = {}{}'.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs)))}}}
 
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
 template <class V, class M>
