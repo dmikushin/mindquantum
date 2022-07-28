@@ -1,50 +1,59 @@
 #!/usr/bin/env python3
+import argparse
 import itertools
+import os
 
-nqubits = 3
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Generate Haener-Steiger quantum kernels in the form used in ProjectQ simulator')
+    parser.add_argument('nqubits', type=int, help='The number of qubits to generate the kernel for')
+    parser.add_argument('output', type=str, help='Output file name')
+    args = parser.parse_args()
+    
+    nqubits = int(args.nqubits)
+    output = args.output
 
-# All combinations of qubits, excluding dupes, e.g. for nqubits = 2:
-# 0 0
-# 1 0
-# 0 1
-# 1 1
-combs = list(itertools.product([0, 1], repeat=nqubits))
+    # All combinations of qubits, excluding dupes, e.g. for nqubits = 2:
+    # 0 0
+    # 1 0
+    # 0 1
+    # 1 1
+    combs = list(itertools.product([0, 1], repeat=nqubits))
 
-# Pretty-print the indexed PSI array values.
-strcombs = []
-for j in range(0, len(combs)):
-	comb = tuple(reversed(combs[j]))
-	strcomb = 'psi[I'.format(j)
-	for i in range(0, nqubits):
-		if comb[i] != 0:
-			strcomb += " + d{}".format(i)
-	strcomb += ']';
-	strcombs.append(strcomb)
+    # Pretty-print the indexed PSI array values.
+    strcombs = []
+    for j in range(0, len(combs)):
+        comb = tuple(reversed(combs[j]))
+        strcomb = 'psi[I'.format(j)
+        for i in range(0, nqubits):
+            if comb[i] != 0:
+                strcomb += " + d{}".format(i)
+        strcomb += ']';
+        strcombs.append(strcomb)
 
-def rhs(n, j, i):
-	if i < n - 1:
-		return f'add(mul(v[{i}], m[{j}][{i}]), ' + rhs(n, j, i + 1)
-	else:
-		return f'mul(v[{i}], m[{j}][{i}]' + ''.join(')' for k in range(0, n))
+    def rhs(n, j, i):
+        if i < n - 1:
+            return f'add(mul(v[{i}], m[{j}][{i}]), ' + rhs(n, j, i + 1)
+        else:
+            return f'mul(v[{i}], m[{j}][{i}]' + ''.join(')' for k in range(0, n))
 
-# Pretty-print the right hand sides (recursively).
-strrhs = [] 
-for j in range(0, len(strcombs)):
-	strrhs.append(rhs(len(strcombs), j, 0))
+    # Pretty-print the right hand sides (recursively).
+    strrhs = [] 
+    for j in range(0, len(strcombs)):
+        strrhs.append(rhs(len(strcombs), j, 0))
 
-# Some string constants clash with the {} syntax of print(), so we
-# substitute them as constants.
-pragma = "#pragma";
-newline = "\n";
+    # Some string constants clash with the {} syntax of print(), so we
+    # substitute them as constants.
+    pragma = "#pragma";
+    newline = "\n";
 
-kernel = \
+    kernel = \
 f"""
 template <class V, class M>
 inline void kernel_core(V &psi, std::size_t I, std::size_t d0{''.join(', std::size_t d{}'.format(i) for i in range (1, nqubits))}, M const& m)
 {{
     std::complex<double> v[{1 << nqubits}];
 {''.join('    v[{}] = {};{}'.format(i, strcombs[i], newline) for i in range(0, len(strcombs)))}
-{''.join('    {} = {}{}'.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs)))}}}
+{''.join('    {} = {};{}'.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs)))}}}
 
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
 template <class V, class M>
@@ -75,5 +84,10 @@ void kernel(V &psi, {''.join('unsigned id{}, '.format(i) for i in range (0, nqub
 }}
 """
 
-print(kernel)
+    try:
+        os.makedirs(os.path.dirname(output))
+    except:
+        pass
+    with open(output, "w") as o:
+        o.write(kernel)
 

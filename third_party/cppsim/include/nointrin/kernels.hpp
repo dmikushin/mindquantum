@@ -12,13 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cmath>
-#include <cstdlib>
-#include <vector>
+#include <cstddef> // size_t
 #include <complex>
-#include <functional>
 #include <algorithm>
-#include "../intrin/alignedallocator.hpp"
 
 template <class T>
 inline T add(T a, T b){ return a+b; }
