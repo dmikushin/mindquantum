@@ -4,6 +4,8 @@ project(ProjectQGen)
 
 find_package(Python3 COMPONENTS Interpreter)
 
+add_subdirectory(ThirdParty/googletest EXCLUDE_FROM_ALL)
+
 macro(kernelgen)
 	set(oneValueArgs NQUBITS VARIANT TARGET)
 	cmake_parse_arguments(KERNELGEN "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -28,6 +30,7 @@ endmacro()
 
 add_executable(test_nointrin "src/test/test_nointrin.cpp")
 target_include_directories(test_nointrin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(test_nointrin PRIVATE gtest)
 kernelgen(TARGET test_nointrin NQUBITS 1 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 2 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 3 VARIANT nointrin)
