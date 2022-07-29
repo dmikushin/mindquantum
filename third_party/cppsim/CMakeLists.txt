@@ -29,6 +29,7 @@ macro(kernelgen)
 endmacro()
 
 add_executable(test_nointrin "src/test/test_nointrin.cpp")
+set_target_properties(test_nointrin PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
 target_include_directories(test_nointrin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(test_nointrin PRIVATE gtest)
 kernelgen(TARGET test_nointrin NQUBITS 1 VARIANT nointrin)

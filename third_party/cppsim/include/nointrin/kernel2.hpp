@@ -15,11 +15,13 @@
 template <class V, class M>
 inline void kernel_core(V &psi, std::size_t I, std::size_t d0, std::size_t d1, M const& m)
 {
-    std::complex<double> v[4];
-    v[0] = psi[I];
-    v[1] = psi[I + d0];
-    v[2] = psi[I + d1];
-    v[3] = psi[I + d0 + d1];
+    std::array v =
+    {
+        psi[I],
+        psi[I + d0],
+        psi[I + d1],
+        psi[I + d0 + d1]
+    };
 
     psi[I] = (add(mul(v[0], m[0][0]), add(mul(v[1], m[0][1]), add(mul(v[2], m[0][2]), mul(v[3], m[0][3])))));
     psi[I + d0] = (add(mul(v[0], m[1][0]), add(mul(v[1], m[1][1]), add(mul(v[2], m[1][2]), mul(v[3], m[1][3])))));

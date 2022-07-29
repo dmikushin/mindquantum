@@ -15,31 +15,34 @@
 template <class V, class M>
 inline void kernel_core(V &psi, std::size_t I, std::size_t d0, std::size_t d1, std::size_t d2, std::size_t d3, M const& m)
 {
-    std::complex<double> v[4];
-    v[0] = psi[I];
-    v[1] = psi[I + d0];
-    v[2] = psi[I + d1];
-    v[3] = psi[I + d0 + d1];
+    std::array v =
+    {
+        psi[I],
+        psi[I + d0],
+        psi[I + d1],
+        psi[I + d0 + d1]
+    };
 
-    std::complex<double> tmp[16];
-
-    tmp[0] = add(mul(v[0], m[0][0]), add(mul(v[1], m[0][1]), add(mul(v[2], m[0][2]), mul(v[3], m[0][3]))));
-    tmp[1] = add(mul(v[0], m[1][0]), add(mul(v[1], m[1][1]), add(mul(v[2], m[1][2]), mul(v[3], m[1][3]))));
-    tmp[2] = add(mul(v[0], m[2][0]), add(mul(v[1], m[2][1]), add(mul(v[2], m[2][2]), mul(v[3], m[2][3]))));
-    tmp[3] = add(mul(v[0], m[3][0]), add(mul(v[1], m[3][1]), add(mul(v[2], m[3][2]), mul(v[3], m[3][3]))));
-    tmp[4] = add(mul(v[0], m[4][0]), add(mul(v[1], m[4][1]), add(mul(v[2], m[4][2]), mul(v[3], m[4][3]))));
-    tmp[5] = add(mul(v[0], m[5][0]), add(mul(v[1], m[5][1]), add(mul(v[2], m[5][2]), mul(v[3], m[5][3]))));
-    tmp[6] = add(mul(v[0], m[6][0]), add(mul(v[1], m[6][1]), add(mul(v[2], m[6][2]), mul(v[3], m[6][3]))));
-    tmp[7] = add(mul(v[0], m[7][0]), add(mul(v[1], m[7][1]), add(mul(v[2], m[7][2]), mul(v[3], m[7][3]))));
-    tmp[8] = add(mul(v[0], m[8][0]), add(mul(v[1], m[8][1]), add(mul(v[2], m[8][2]), mul(v[3], m[8][3]))));
-    tmp[9] = add(mul(v[0], m[9][0]), add(mul(v[1], m[9][1]), add(mul(v[2], m[9][2]), mul(v[3], m[9][3]))));
-    tmp[10] = add(mul(v[0], m[10][0]), add(mul(v[1], m[10][1]), add(mul(v[2], m[10][2]), mul(v[3], m[10][3]))));
-    tmp[11] = add(mul(v[0], m[11][0]), add(mul(v[1], m[11][1]), add(mul(v[2], m[11][2]), mul(v[3], m[11][3]))));
-    tmp[12] = add(mul(v[0], m[12][0]), add(mul(v[1], m[12][1]), add(mul(v[2], m[12][2]), mul(v[3], m[12][3]))));
-    tmp[13] = add(mul(v[0], m[13][0]), add(mul(v[1], m[13][1]), add(mul(v[2], m[13][2]), mul(v[3], m[13][3]))));
-    tmp[14] = add(mul(v[0], m[14][0]), add(mul(v[1], m[14][1]), add(mul(v[2], m[14][2]), mul(v[3], m[14][3]))));
-    tmp[15] = add(mul(v[0], m[15][0]), add(mul(v[1], m[15][1]), add(mul(v[2], m[15][2]), mul(v[3], m[15][3]))));
-
+    std::array tmp =
+    {
+        add(mul(v[0], m[0][0]), add(mul(v[1], m[0][1]), add(mul(v[2], m[0][2]), mul(v[3], m[0][3])))),
+        add(mul(v[0], m[1][0]), add(mul(v[1], m[1][1]), add(mul(v[2], m[1][2]), mul(v[3], m[1][3])))),
+        add(mul(v[0], m[2][0]), add(mul(v[1], m[2][1]), add(mul(v[2], m[2][2]), mul(v[3], m[2][3])))),
+        add(mul(v[0], m[3][0]), add(mul(v[1], m[3][1]), add(mul(v[2], m[3][2]), mul(v[3], m[3][3])))),
+        add(mul(v[0], m[4][0]), add(mul(v[1], m[4][1]), add(mul(v[2], m[4][2]), mul(v[3], m[4][3])))),
+        add(mul(v[0], m[5][0]), add(mul(v[1], m[5][1]), add(mul(v[2], m[5][2]), mul(v[3], m[5][3])))),
+        add(mul(v[0], m[6][0]), add(mul(v[1], m[6][1]), add(mul(v[2], m[6][2]), mul(v[3], m[6][3])))),
+        add(mul(v[0], m[7][0]), add(mul(v[1], m[7][1]), add(mul(v[2], m[7][2]), mul(v[3], m[7][3])))),
+        add(mul(v[0], m[8][0]), add(mul(v[1], m[8][1]), add(mul(v[2], m[8][2]), mul(v[3], m[8][3])))),
+        add(mul(v[0], m[9][0]), add(mul(v[1], m[9][1]), add(mul(v[2], m[9][2]), mul(v[3], m[9][3])))),
+        add(mul(v[0], m[10][0]), add(mul(v[1], m[10][1]), add(mul(v[2], m[10][2]), mul(v[3], m[10][3])))),
+        add(mul(v[0], m[11][0]), add(mul(v[1], m[11][1]), add(mul(v[2], m[11][2]), mul(v[3], m[11][3])))),
+        add(mul(v[0], m[12][0]), add(mul(v[1], m[12][1]), add(mul(v[2], m[12][2]), mul(v[3], m[12][3])))),
+        add(mul(v[0], m[13][0]), add(mul(v[1], m[13][1]), add(mul(v[2], m[13][2]), mul(v[3], m[13][3])))),
+        add(mul(v[0], m[14][0]), add(mul(v[1], m[14][1]), add(mul(v[2], m[14][2]), mul(v[3], m[14][3])))),
+        add(mul(v[0], m[15][0]), add(mul(v[1], m[15][1]), add(mul(v[2], m[15][2]), mul(v[3], m[15][3]))))
+    };
+    
     v[0] = psi[I + d2];
     v[1] = psi[I + d0 + d2];
     v[2] = psi[I + d1 + d2];
