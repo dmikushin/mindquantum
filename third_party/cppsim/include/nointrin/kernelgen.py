@@ -51,13 +51,15 @@ f"""
 template <class V, class M>
 inline void kernel_core(V &psi, std::size_t I, std::size_t d0{''.join(', std::size_t d{}'.format(i) for i in range (1, nqubits))}, M const& m)
 {{
-    std::complex<double> v[{1 << nqubits}];
-{''.join('    v[{}] = {};{}'.format(i, strcombs[i], newline) for i in range(0, len(strcombs)))}
+    std::array v =
+    {{
+{''.join('        {},{}'.format(strcombs[i], newline) for i in range(0, len(strcombs)))}    }};
+
 {''.join('    {} = {};{}'.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs)))}}}
 
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
 template <class V, class M>
-void kernel(V &psi, {''.join('unsigned id{}, '.format(i) for i in range (0, nqubits))}M const& m, std::size_t ctrlmask)
+void kernel(V &psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in range (0, nqubits))}M const& m, std::size_t ctrlmask)
 {{
     std::size_t n = psi.size();
     std::size_t d0 = 1UL << id0{''.join(', d{} = 1UL << id{}'.format(i, i) for i in range (1, nqubits))};
