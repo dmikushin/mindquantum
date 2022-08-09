@@ -1,3 +1,5 @@
+// Ensure hand-written and generated kernels give equal results.
+
 #include "nointrin/kernels.hpp"
 
 namespace generated {
