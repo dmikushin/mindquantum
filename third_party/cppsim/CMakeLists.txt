@@ -1,10 +1,17 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-project(ProjectQGen)
+project(projectqgen)
 
 find_package(Python3 COMPONENTS Interpreter)
 
 add_subdirectory(ThirdParty/googletest EXCLUDE_FROM_ALL)
+
+add_subdirectory(ThirdParty/res_embed EXCLUDE_FROM_ALL)
+
+include(ResEmbed)
+
+add_library(${PROJECT_NAME} SHARED)
+res_embed(TARGET ${PROJECT_NAME} NAME "nointrin" PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py")
 
 macro(kernelgen)
 	set(oneValueArgs NQUBITS VARIANT TARGET)
@@ -37,3 +44,4 @@ kernelgen(TARGET test_nointrin NQUBITS 2 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 3 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 4 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 5 VARIANT nointrin)
+
