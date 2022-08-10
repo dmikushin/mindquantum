@@ -1,17 +1,20 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-project(projectqgen)
-
-find_package(Python3 COMPONENTS Interpreter)
+project(_cppsim)
 
 add_subdirectory(ThirdParty/googletest EXCLUDE_FROM_ALL)
 
 add_subdirectory(ThirdParty/res_embed EXCLUDE_FROM_ALL)
 
+add_subdirectory(ThirdParty/pybind11 EXCLUDE_FROM_ALL)
+
+find_package(Python3 COMPONENTS Interpreter)
+
 include(ResEmbed)
 
-add_library(${PROJECT_NAME} SHARED)
-res_embed(TARGET ${PROJECT_NAME} NAME "nointrin" PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py")
+pybind11_add_module(${PROJECT_NAME} SHARED "src/${PROJECT_NAME}.cpp")
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+res_embed(TARGET ${PROJECT_NAME} NAME "nointrin" PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py" KEYWORD)
 
 macro(kernelgen)
 	set(oneValueArgs NQUBITS VARIANT TARGET)

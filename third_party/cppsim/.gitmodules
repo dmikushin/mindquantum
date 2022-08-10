@@ -4,3 +4,6 @@
 [submodule "ThirdParty/res_embed"]
 	path = ThirdParty/res_embed
 	url = https://github.com/dmikushin/res_embed.git
+[submodule "ThirdParty/pybind11"]
+	path = ThirdParty/pybind11
+	url = https://github.com/pybind/pybind11.git
