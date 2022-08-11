@@ -21,8 +21,6 @@ namespace generated {
 template<int nqubits, typename Kernels, typename V>
 bool compare(Kernels kernels, V& psi1)
 {
-	constexpr auto dim = 1UL << nqubits;
-
 	std::default_random_engine dre;
 	std::uniform_int_distribution<int> uid(0, 1000);
 

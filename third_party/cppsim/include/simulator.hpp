@@ -26,6 +26,8 @@
 
 #include "intrin/alignedallocator.hpp"
 #include "fusion.hpp"
+#include "kernelgen.hpp"
+
 #include <map>
 #include <cassert>
 #include <algorithm>
@@ -520,7 +522,9 @@ public:
                 kernel(vec_, ids[4], ids[3], ids[2], ids[1], ids[0], m, ctrlmask);
                 break;
             default:
-                throw std::invalid_argument("Gates with more than 5 qubits are not supported!");
+                // Use embedded generator to generate larger gates in runtime
+                kernelgen(vec_, ids, m, ctrlmask);
+		break;
         }
 
         fused_gates_ = Fusion();

@@ -8,13 +8,18 @@ add_subdirectory(ThirdParty/res_embed EXCLUDE_FROM_ALL)
 
 add_subdirectory(ThirdParty/pybind11 EXCLUDE_FROM_ALL)
 
-find_package(Python3 COMPONENTS Interpreter)
+find_package(Python3 COMPONENTS Interpreter Development)
 
 include(ResEmbed)
 
+add_library(kernelgen STATIC "src/kernelgen.cpp")
+set_property(TARGET kernelgen PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(kernelgen PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+res_embed(TARGET kernelgen NAME "nointrin" PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py" KEYWORD)
+target_link_libraries(kernelgen PUBLIC pybind11::pybind11 Python3::Python)
+
 pybind11_add_module(${PROJECT_NAME} SHARED "src/${PROJECT_NAME}.cpp")
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-res_embed(TARGET ${PROJECT_NAME} NAME "nointrin" PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py" KEYWORD)
+target_link_libraries(${PROJECT_NAME} PRIVATE kernelgen)
 
 macro(kernelgen)
 	set(oneValueArgs NQUBITS VARIANT TARGET)
@@ -47,4 +52,7 @@ kernelgen(TARGET test_nointrin NQUBITS 2 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 3 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 4 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 5 VARIANT nointrin)
+
+add_executable(benchmark "src/benchmark/benchmark.cpp")
+target_link_libraries(benchmark PRIVATE gtest kernelgen)
 
