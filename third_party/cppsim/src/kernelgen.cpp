@@ -1,18 +1,33 @@
 #include "kernelgen.hpp"
 #include "res_embed.h"
 
+#include <iostream>
+#include <pybind11/embed.h>
 #include <pybind11/eval.h>
 
 namespace py = pybind11;
 
 std::string KernelGen::generate(int nqubits)
 {
-	// TODO Use embedded Python interpreter to run the script
+	// Use embedded Python interpreter to run the script
 	// and get the resulting string of source code.
 	// We intentionally keep the generator in Python, in order
 	// to let the people to customize it more easily.
-	py::object scope = py::module_::import("__main__").attr("__dict__");
-	py::eval(nointrin, scope);
+	py::scoped_interpreter guard {};
+	try
+	{
+		py::dict globals = py::globals();
+		// Assign the __name__, otherwise it is set to "__main__" by default.
+		globals["__name__"] = "kernelgen";
+		py::eval<py::eval_statements>(nointrin, globals, globals);
+		auto source = globals["kernelgen"](nqubits).cast<std::string>();
+		return source;
+	}
+	catch (pybind11::error_already_set e)
+	{
+		std::cerr << "Unable to invoke the Python script: " << e.what() << std::endl;
+		exit(-1);
+	}
 }
 
 namespace res {

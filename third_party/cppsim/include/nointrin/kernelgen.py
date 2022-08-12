@@ -3,15 +3,7 @@ import argparse
 import itertools
 import os
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Generate Haener-Steiger quantum kernels in the form used in ProjectQ simulator')
-    parser.add_argument('nqubits', type=int, help='The number of qubits to generate the kernel for')
-    parser.add_argument('output', type=str, help='Output file name')
-    args = parser.parse_args()
-    
-    nqubits = int(args.nqubits)
-    output = args.output
-
+def kernelgen(nqubits):
     # All combinations of qubits, excluding dupes, e.g. for nqubits = 2:
     # 0 0
     # 1 0
@@ -86,10 +78,21 @@ void kernel(V &psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in 
 }}
 """
 
+    return kernel
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Generate Haener-Steiger quantum kernels in the form used in ProjectQ simulator')
+    parser.add_argument('nqubits', type=int, help='The number of qubits to generate the kernel for')
+    parser.add_argument('output', type=str, help='Output file name')
+    args = parser.parse_args()
+    
+    nqubits = int(args.nqubits)
+    output = args.output
+
     try:
         os.makedirs(os.path.dirname(output))
     except:
         pass
     with open(output, "w") as o:
-        o.write(kernel)
+        o.write(kernelgen(nqubits))
 
