@@ -1,6 +1,7 @@
-# ProjectQGen
+# _cppsim
 
-Generate Haener-Steiger quantum kernels in the form used in ProjectQ simulator.
+This is a standalone simulator backend for the ProjectQ framework, extended to
+generate Haener-Steiger quantum kernels for arbitrary number of qubits.
 
 ## Description
 
