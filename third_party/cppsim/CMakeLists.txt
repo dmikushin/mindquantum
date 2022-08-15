@@ -12,9 +12,11 @@ find_package(Python3 COMPONENTS Interpreter Development)
 
 include(ResEmbed)
 
-add_library(kernelgen STATIC "src/kernelgen.cpp")
+add_library(kernelgen STATIC "src/kernelgen.cpp" "src/compiler.cpp" "src/tempfile.cpp")
+set_target_properties(kernelgen PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
 set_property(TARGET kernelgen PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(kernelgen PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(kernelgen PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/digestpp)
 res_embed(TARGET kernelgen NAME "nointrin" PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py" KEYWORD)
 target_link_libraries(kernelgen PUBLIC pybind11::pybind11 Python3::Python)
 

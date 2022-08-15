@@ -7,3 +7,6 @@
 [submodule "ThirdParty/pybind11"]
 	path = ThirdParty/pybind11
 	url = https://github.com/pybind/pybind11.git
+[submodule "build/ThirdParty/digestpp"]
+	path = ThirdParty/digestpp
+	url = https://github.com/kerukuro/digestpp.git
