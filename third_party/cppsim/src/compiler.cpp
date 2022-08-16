@@ -73,48 +73,34 @@ void* Compiler::codegen(
 		ss << std::endl;
 		ss << "#include <cstdlib>";
 		ss << std::endl;
+		ss << "template <class T>";
+		ss << std::endl;
+		ss << "inline T add(T a, T b){ return a + b; }";
+		ss << std::endl;
+		ss << "template <class T>";
+		ss << "inline T mul(T a, T b){ return a * b; }";
+		ss << std::endl;
 		ss << std::endl;
 
 		// Add source code.
 		ss << source;
 		
-		// Add template specializations.
+		// Adding entrypoints.
 		for (auto type : std::array {
 			std::make_pair("std::complex<double>", "double"),
 			std::make_pair("int", "int")
 		})
 		{
-			// Add specialization.
-			ss << "template<> void kernel<";
-			ss << type.first;
-			ss << "*, std::array<std::array<int, ";
-			ss << nqubits;
-			ss << ">, ";
-			ss << nqubits;
-			ss << "> >(";
-			ss << type.first;
-			ss << "* &psi, " << std::endl;
-			for (int i = 0; i < nqubits; i++)
-			{
-				ss << "unsigned id";
-				ss << nqubits - i - 1;
-				ss << ", ";
-			}
-			ss << "std::array<std::array<int, ";
-			ss << nqubits;
-			ss << ">, ";
-			ss << nqubits;
-			ss << "> const& m, std::size_t ctrlmask);";
-			ss << std::endl << std::endl;
-			
-			// Adding entrypoint.
+			ss << std::endl;
 			ss << "extern \"C\" void kernel_";
 			ss << type.second;
 			ss << "(";
 			ss << type.second;
 			ss << "* psi, std::array<unsigned, ";
 			ss << nqubits;
-			ss << "> ids, std::array<std::array<int, ";
+			ss << "> ids, std::array<std::array<";
+			ss << type.first;
+			ss << ", ";
 			ss << nqubits;
 			ss << ">, ";
 			ss << nqubits;

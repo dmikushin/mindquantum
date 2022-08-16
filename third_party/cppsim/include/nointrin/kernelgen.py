@@ -53,8 +53,8 @@ inline void kernel_core(V &psi, std::size_t I, std::size_t d0{''.join(', std::si
 template <class V, class M>
 void kernel(V &psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in range (0, nqubits))}M const& m, std::size_t ctrlmask)
 {{
-    std::size_t n = psi.size();
     std::size_t d0 = 1UL << id0{''.join(', d{} = 1UL << id{}'.format(i, i) for i in range (1, nqubits))};
+    std::size_t n = 1{''.join(' + d{}'.format(i) for i in range (0, nqubits))};
     std::size_t dsorted[] = {{ d0{''.join(', d{}'.format(i) for i in range (1, nqubits))} }};
     std::sort(dsorted, dsorted + {nqubits}, std::greater<std::size_t>());
 
