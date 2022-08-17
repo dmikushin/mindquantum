@@ -24,9 +24,9 @@ def kernelgen(nqubits):
 
     def rhs(n, j, i):
         if i < n - 1:
-            return f'add(mul(v[{i}], m[{j}][{i}]), ' + rhs(n, j, i + 1)
+            return f'add(mul(v[{i}], M({j}, {i})), ' + rhs(n, j, i + 1)
         else:
-            return f'mul(v[{i}], m[{j}][{i}]' + ''.join(')' for k in range(0, n))
+            return f'mul(v[{i}], M({j}, {i})' + ''.join(')' for k in range(0, n))
 
     # Pretty-print the right hand sides (recursively).
     strrhs = [] 
@@ -35,13 +35,17 @@ def kernelgen(nqubits):
 
     # Some string constants clash with the {} syntax of print(), so we
     # substitute them as constants.
+    define = "#define"
+    undef = "#undef"
     pragma = "#pragma";
     newline = "\n";
 
     kernel = \
 f"""
-template <class V, class M>
-inline void kernel_core(V &psi, std::size_t I, std::size_t d0{''.join(', std::size_t d{}'.format(i) for i in range (1, nqubits))}, M const& m)
+{define} M(j, i) (m[j * {nqubits} + i])
+
+template<class T>
+inline void kernel_core(T* psi, std::size_t I, std::size_t d0{''.join(', std::size_t d{}'.format(i) for i in range (1, nqubits))}, const T* m)
 {{
     std::array v =
     {{
@@ -50,8 +54,8 @@ inline void kernel_core(V &psi, std::size_t I, std::size_t d0{''.join(', std::si
 {''.join('    {} = {};{}'.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs)))}}}
 
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
-template <class V, class M>
-void kernel(V &psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in range (0, nqubits))}M const& m, std::size_t ctrlmask)
+template<class T>
+void kernel(T* psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in range (0, nqubits))}const T* m, std::size_t ctrlmask)
 {{
     std::size_t d0 = 1UL << id0{''.join(', d{} = 1UL << id{}'.format(i, i) for i in range (1, nqubits))};
     std::size_t n = 1{''.join(' + d{}'.format(i) for i in range (0, nqubits))};
@@ -76,6 +80,8 @@ void kernel(V &psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in 
         }}
     }}
 }}
+
+{undef} M
 """
 
     return kernel

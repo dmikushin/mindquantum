@@ -98,26 +98,24 @@ void* Compiler::codegen(
 			ss << type.second;
 			ss << "* psi, std::array<unsigned, ";
 			ss << nqubits;
-			ss << "> ids, std::array<std::array<";
-			ss << type.first;
-			ss << ", ";
-			ss << nqubits;
-			ss << ">, ";
-			ss << nqubits;
-			ss << "> const& m, std::size_t ctrlmask)";
+			ss << "> ids, const ";
+			ss << type.second;
+			ss << "* m, std::size_t ctrlmask)";
 			ss << std::endl;
 			ss << "{";
 			ss << std::endl;
 			ss << "\tkernel(reinterpret_cast<";
 			ss << type.first;
-			ss << "*&>(psi), ";
+			ss << "*>(psi), ";
 			for (int i = 0; i < nqubits; i++)
 			{
 				ss << "ids[";
 				ss << nqubits - i - 1;
 				ss << "], ";
 			}
-			ss << "m, ctrlmask);";
+			ss << "reinterpret_cast<const ";
+			ss << type.first;
+			ss << "*>(m), ctrlmask);";
 			ss << std::endl;
 			ss << "}";
 			ss << std::endl;

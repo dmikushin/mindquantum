@@ -58,7 +58,7 @@ TEST(nointrin, kernel1)
 	ASSERT_TRUE(compare<1>([&](auto& psi1, auto& psi2, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id0, m, ctrlmask);
-		generated::kernel(psi2, id0, m, ctrlmask);
+		generated::kernel(&psi2[0], id0, &m[0][0], ctrlmask);
 	},
 	psi));
 }
@@ -73,7 +73,7 @@ TEST(nointrin, kernel2)
 	ASSERT_TRUE(compare<2>([&](auto& psi1, auto& psi2, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id1, id0, m, ctrlmask);
-		generated::kernel(psi2, id1, id0, m, ctrlmask);
+		generated::kernel(&psi2[0], id1, id0, &m[0][0], ctrlmask);
 	},
 	psi));
 }
@@ -89,7 +89,7 @@ TEST(nointrin, kernel3)
 	ASSERT_TRUE(compare<3>([&](auto& psi1, auto& psi2, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id2, id1, id0, m, ctrlmask);
-		generated::kernel(psi2, id2, id1, id0, m, ctrlmask);
+		generated::kernel(&psi2[0], id2, id1, id0, &m[0][0], ctrlmask);
 	},
 	psi));
 }
@@ -106,7 +106,7 @@ TEST(nointrin, kernel4)
 	ASSERT_TRUE(compare<4>([&](auto& psi1, auto& psi2, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id3, id2, id1, id0, m, ctrlmask);
-		generated::kernel(psi2, id3, id2, id1, id0, m, ctrlmask);
+		generated::kernel(&psi2[0], id3, id2, id1, id0, &m[0][0], ctrlmask);
 	},
 	psi));
 }
@@ -124,7 +124,7 @@ TEST(nointrin, kernel5)
 	ASSERT_TRUE(compare<5>([&](auto& psi1, auto& psi2, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id4, id3, id2, id1, id0, m, ctrlmask);
-		generated::kernel(psi2, id4, id3, id2, id1, id0, m, ctrlmask);
+		generated::kernel(&psi2[0], id4, id3, id2, id1, id0, &m[0][0], ctrlmask);
 	},
 	psi));
 }
