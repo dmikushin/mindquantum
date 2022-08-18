@@ -18,7 +18,7 @@ bool benchmark()
 	}
 
 	std::default_random_engine dre;
-	std::uniform_int_distribution<int> uid(0, 1000);
+	std::uniform_int_distribution<int> uid(-1000, 1000);
 
 	// Generate m matrix as integers.
 	std::array<std::array<int, nqubits>, nqubits> m;

@@ -96,9 +96,7 @@ void* Compiler::codegen(
 			ss << type.second;
 			ss << "(";
 			ss << type.second;
-			ss << "* psi, std::array<unsigned, ";
-			ss << nqubits;
-			ss << "> ids, const ";
+			ss << "* psi, const unsigned* ids, const ";
 			ss << type.second;
 			ss << "* m, std::size_t ctrlmask)";
 			ss << std::endl;
@@ -122,7 +120,7 @@ void* Compiler::codegen(
 		}
 			
 		const std::string& source = ss.str();
-#if 1
+#if 0
 		std::cout << source << std::endl;
 #endif
 		std::ofstream file(filename);
@@ -142,7 +140,7 @@ void* Compiler::codegen(
 #else
 		ss << "g++";
 #endif
-#if 1
+#if 0
 		ss << " -g -O0 -std=c++17 -x c++ ";
 #else
 		ss << " -g -O3 -ffast-math -fopenmp -std=c++17 -x c++ ";
@@ -184,8 +182,8 @@ void* Compiler::codegen(
 			return nullptr;
 		}
 
-		// TODO If the symbol does not exist, return NULL.
-		handle = dlsym(lib, "kernel_double");
+		// If the symbol does not exist, return NULL.
+		handle = dlsym(lib, "kernel_int");
 		if (!handle)
 		{
 			std::stringstream ss;

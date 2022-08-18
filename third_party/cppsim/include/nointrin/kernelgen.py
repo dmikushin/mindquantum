@@ -42,6 +42,7 @@ def kernelgen(nqubits):
 
     kernel = \
 f"""
+{define} LOOP_COLLAPSE{nqubits} {nqubits + 1} 
 {define} M(j, i) (m[j * {nqubits} + i])
 
 template<class T>

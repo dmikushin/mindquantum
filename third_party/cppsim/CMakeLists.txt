@@ -10,6 +10,8 @@ add_subdirectory(ThirdParty/pybind11 EXCLUDE_FROM_ALL)
 
 find_package(Python3 COMPONENTS Interpreter Development)
 
+find_package(OpenMP REQUIRED)
+
 include(ResEmbed)
 
 add_library(kernelgen STATIC "src/kernelgen.cpp" "src/compiler.cpp" "src/tempfile.cpp")
@@ -18,7 +20,7 @@ set_property(TARGET kernelgen PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(kernelgen PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(kernelgen PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/digestpp)
 res_embed(TARGET kernelgen NAME "nointrin" PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py" KEYWORD)
-target_link_libraries(kernelgen PUBLIC pybind11::pybind11 Python3::Python)
+target_link_libraries(kernelgen PUBLIC pybind11::pybind11 Python3::Python OpenMP::OpenMP_CXX)
 
 pybind11_add_module(${PROJECT_NAME} SHARED "src/${PROJECT_NAME}.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE kernelgen)
@@ -48,7 +50,7 @@ endmacro()
 add_executable(test_nointrin "src/test/test_nointrin.cpp")
 set_target_properties(test_nointrin PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
 target_include_directories(test_nointrin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(test_nointrin PRIVATE gtest)
+target_link_libraries(test_nointrin PRIVATE gtest kernelgen)
 kernelgen(TARGET test_nointrin NQUBITS 1 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 2 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 3 VARIANT nointrin)

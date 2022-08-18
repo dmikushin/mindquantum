@@ -19,7 +19,7 @@ public :
 
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
 template <class V, class Id, class M>
-void kernelgen(V &psi, Id ids, M const& m, std::size_t ctrlmask)
+void kernelgen(V &psi, Id& ids, M const& m, std::size_t ctrlmask)
 {
 	static KernelGen g;
 
@@ -38,8 +38,11 @@ void kernelgen(V &psi, Id ids, M const& m, std::size_t ctrlmask)
 		exit(-1);
 	}
 	
-	// TODO Call the generated kernel.
-	// typedef (*kernel_t)(std::complex<double>* &psi, ???
+	// Call the generated kernel.
+	typedef void (*kernel_t)(int* /*psi*/, unsigned int* /*ids*/, const int* /*m*/, size_t /*ctrlmask*/);
+	auto kernel = (kernel_t)handle;
+	#pragma omp parallel
+	kernel(reinterpret_cast<int*>(&psi[0]), &ids[0], reinterpret_cast<const int*>(&m[0][0]), ctrlmask);
 }
 
 #endif // KERNELGEN_HPP
