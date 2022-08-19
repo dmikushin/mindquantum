@@ -12,7 +12,7 @@ class KernelGen
 
 public :
 
-	std::string generate(int nqubits);
+	std::string generate(int nqubits, unsigned* ids = nullptr);
 
 	KernelGen();
 };
@@ -26,7 +26,7 @@ void kernelgen(V &psi, Id& ids, M const& m, std::size_t ctrlmask)
 	const auto nqubits = ids.size();
 
 	// Generate the kernel source code.
-	auto source = g.generate(nqubits);
+	auto source = g.generate(nqubits, &ids[0]);
 	
 	// Compile the source code using external compiler.
 	std::string errmsg;

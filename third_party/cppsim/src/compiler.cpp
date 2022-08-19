@@ -104,14 +104,18 @@ void* Compiler::codegen(
 			ss << std::endl;
 			ss << "\tkernel(reinterpret_cast<";
 			ss << type.first;
-			ss << "*>(psi), ";
-			for (int i = 0; i < nqubits; i++)
-			{
-				ss << "ids[";
-				ss << nqubits - i - 1;
-				ss << "], ";
-			}
-			ss << "reinterpret_cast<const ";
+#if 0
+                        ss << "*>(psi), ";
+                        for (int i = 0; i < nqubits; i++)
+                        {
+                                ss << "ids[";
+                                ss << nqubits - i - 1;
+                                ss << "], ";
+                        }
+                        ss << "reinterpret_cast<const ";
+#else
+			ss << "*>(psi), reinterpret_cast<const ";
+#endif
 			ss << type.first;
 			ss << "*>(m), ctrlmask);";
 			ss << std::endl;

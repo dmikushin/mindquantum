@@ -4,10 +4,11 @@
 #include <iostream>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
-std::string KernelGen::generate(int nqubits)
+std::string KernelGen::generate(int nqubits, unsigned* ids)
 {
 	// Use embedded Python interpreter to run the script
 	// and get the resulting string of source code.
@@ -20,8 +21,18 @@ std::string KernelGen::generate(int nqubits)
 		// Assign the __name__, otherwise it is set to "__main__" by default.
 		globals["__name__"] = "kernelgen";
 		py::eval<py::eval_statements>(nointrin, globals, globals);
-		auto source = globals["kernelgen"](nqubits).cast<std::string>();
-		return source;
+		if (ids)
+		{
+			std::vector<unsigned> vids;
+			vids.assign(ids, ids + nqubits);
+			auto source = globals["kernelgen"](nqubits, vids).cast<std::string>();
+			return source;
+		}
+		else
+		{
+			auto source = globals["kernelgen"](nqubits).cast<std::string>();
+			return source;
+		}
 	}
 	catch (pybind11::error_already_set e)
 	{

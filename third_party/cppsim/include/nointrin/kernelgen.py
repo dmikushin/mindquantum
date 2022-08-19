@@ -3,7 +3,7 @@ import argparse
 import itertools
 import os
 
-def kernelgen(nqubits):
+def kernelgen(nqubits, ids=None):
     # All combinations of qubits, excluding dupes, e.g. for nqubits = 2:
     # 0 0
     # 1 0
@@ -33,6 +33,10 @@ def kernelgen(nqubits):
     for j in range(0, len(strcombs)):
         strrhs.append(rhs(len(strcombs), j, 0))
 
+    dsorted = []
+    if ids != None:
+    	dsorted = sorted(ids, reverse = True)
+
     # Some string constants clash with the {} syntax of print(), so we
     # substitute them as constants.
     define = "#define"
@@ -45,8 +49,8 @@ f"""
 {define} LOOP_COLLAPSE{nqubits} {nqubits + 1} 
 {define} M(j, i) (m[j * {nqubits} + i])
 
-template<class T>
-inline void kernel_core(T* psi, std::size_t I, std::size_t d0{''.join(', std::size_t d{}'.format(i) for i in range (1, nqubits))}, const T* m)
+template<{''.join('std::size_t d{}, '.format(i) for i in range (0, nqubits)) if ids != None else ''}class T>
+inline void kernel_core(T* psi, std::size_t I{''.join(', std::size_t d{}'.format(i) for i in range (0, nqubits)) if ids == None else ''}, const T* m)
 {{
     std::array v =
     {{
@@ -56,18 +60,17 @@ inline void kernel_core(T* psi, std::size_t I, std::size_t d0{''.join(', std::si
 
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
 template<class T>
-void kernel(T* psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in range (0, nqubits))}const T* m, std::size_t ctrlmask)
+void kernel(T* psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in range (0, nqubits)) if ids == None else ''}const T* m, std::size_t ctrlmask)
 {{
-    std::size_t d0 = 1UL << id0{''.join(', d{} = 1UL << id{}'.format(i, i) for i in range (1, nqubits))};
-    std::size_t n = 1{''.join(' + d{}'.format(i) for i in range (0, nqubits))};
-    std::size_t dsorted[] = {{ d0{''.join(', d{}'.format(i) for i in range (1, nqubits))} }};
-    std::sort(dsorted, dsorted + {nqubits}, std::greater<std::size_t>());
-
+    {'constexpr ' if ids != None else ''}std::size_t d0 = 1UL << {'id0' if ids == None else ids[0]}{''.join(', d{} = 1UL << {}'.format(i, 'id{}'.format(i) if ids == None else ids[i]) for i in range (1, nqubits))};
+    {'constexpr ' if ids != None else ''}std::size_t n = 1{''.join(' + d{}'.format(i) for i in range (0, nqubits))};
+    {'constexpr ' if ids != None else ''}std::size_t dsorted[] = {{ d{nqubits - 1}{''.join(', d{}'.format(nqubits - i - 1) for i in range (1, nqubits))} }};
+    {'std::sort(dsorted, dsorted + {}, std::greater<std::size_t>());{}'.format(nqubits, newline) if ids == None else ''}
     if (ctrlmask == 0){{
         {pragma} omp for collapse(LOOP_COLLAPSE{nqubits}) schedule(static)
         for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){{
 {''.join('{}for (std::size_t i{} = 0; i{} < dsorted[{}]; i{} += 2 * dsorted[{}]){}'.format(''.join('    ' for j in range(0, i + 2)), i, i, i - 1, i, i, newline) for i in range (1, nqubits))}{''.join('    ' for i in range (0, nqubits + 2))}for (std::size_t i{nqubits} = 0; i{nqubits} < dsorted[{nqubits - 1}]; ++i{nqubits}){{
-        {''.join('    '.format(i) for i in range (1, nqubits + 2))}kernel_core(psi, i0{''.join(' + i{}'.format(i) for i in range (1, nqubits + 1))}, {''.join('d{}, '.format(i) for i in range (0, nqubits))}m);
+        {''.join('    '.format(i) for i in range (1, nqubits + 2))}kernel_core{'<d0' if ids != None else ''}{''.join(', d{}'.format(i) for i in range (1, nqubits)) if ids != None else ''}{'>' if ids != None else ''}(psi, i0{''.join(' + i{}'.format(i) for i in range (1, nqubits + 1))}, {''.join('d{}, '.format(i) for i in range (0, nqubits)) if ids == None else ''}m);
         {''.join('    '.format(i) for i in range (1, nqubits + 1))}}}
         }}
     }}
@@ -76,7 +79,7 @@ void kernel(T* psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in 
         for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){{
 {''.join('{}for (std::size_t i{} = 0; i{} < dsorted[{}]; i{} += 2 * dsorted[{}]){}'.format(''.join('    ' for j in range(0, i + 2)), i, i, i - 1, i, i, newline) for i in range (1, nqubits))}{''.join('    ' for i in range (0, nqubits + 2))}for (std::size_t i{nqubits} = 0; i{nqubits} < dsorted[{nqubits - 1}]; ++i{nqubits}){{
         {''.join('    '.format(i) for i in range (1, nqubits + 2))}if (((i0{''.join(' + i{}'.format(i) for i in range (1, nqubits + 1))})&ctrlmask) == ctrlmask)
-        {''.join('    '.format(i) for i in range (1, nqubits + 3))}kernel_core(psi, i0{''.join(' + i{}'.format(i) for i in range (1, nqubits + 1))}, {''.join('d{}, '.format(i) for i in range (0, nqubits))}m);
+        {''.join('    '.format(i) for i in range (1, nqubits + 3))}kernel_core{'<d0' if ids != None else ''}{''.join(', d{}'.format(i) for i in range (1, nqubits)) if ids != None else ''}{'>' if ids != None else ''}(psi, i0{''.join(' + i{}'.format(i) for i in range (1, nqubits + 1))}, {''.join('d{}, '.format(i) for i in range (0, nqubits)) if ids == None else ''}m);
         {''.join('    '.format(i) for i in range (1, nqubits + 1))}}}
         }}
     }}
