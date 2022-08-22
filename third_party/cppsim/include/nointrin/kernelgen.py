@@ -41,22 +41,41 @@ def kernelgen(nqubits, ids=None):
     # substitute them as constants.
     define = "#define"
     undef = "#undef"
-    pragma = "#pragma";
-    newline = "\n";
+    pragma = "#pragma"
+    newline = "\n"
 
     kernel = \
-f"""
-{define} LOOP_COLLAPSE{nqubits} {nqubits + 1} 
+"""
+{include} <algorithm>
+{include} <array>
+{include} <complex>
+{include} <cstdlib>
+
+{define} add(a, b) (a + b)
+{define} mul(a, b) (a * b)
+
 {define} M(j, i) (m[j * {nqubits} + i])
 
-template<{''.join('std::size_t d{}, '.format(i) for i in range (0, nqubits)) if ids != None else ''}class T>
-inline void kernel_core(T* psi, std::size_t I{''.join(', std::size_t d{}'.format(i) for i in range (0, nqubits)) if ids == None else ''}, const T* m)
+template<{d_template}class T>
+inline void kernel_core(T* psi, std::size_t I{d_var}, const T* m)
 {{
-    std::array v =
-    {{
-{''.join('        {},{}'.format(strcombs[i], newline) for i in range(0, len(strcombs)))}    }};
+    std::array v = {{{v_array}}};
 
-{''.join('    {} = {};{}'.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs)))}}}
+    {psi_assign}
+}}
+
+{undef} M
+""".format( \
+        include    = "#include", \
+        define     = "#define", \
+        undef      = "#undef", \
+        nqubits    = nqubits, \
+        d_template = ''.join('std::size_t d{}, '.format(i) for i in range (0, nqubits)) if ids != None else '', \
+        d_var      = ''.join(', std::size_t d{}'.format(i) for i in range (0, nqubits)) if ids == None else '', \
+        v_array    = newline + ''.join('        {},{}'.format(strcombs[i], newline) for i in range(0, len(strcombs))) + '    ', \
+        psi_assign = ''.join('{} = {};{}    '.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs)))) + \
+f"""
+{define} LOOP_COLLAPSE{nqubits} ({nqubits} + 1) 
 
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
 template<class T>
@@ -85,7 +104,8 @@ void kernel(T* psi, {''.join('unsigned id{}, '.format(nqubits - i - 1) for i in 
     }}
 }}
 
-{undef} M
+{undef} LOOP_COLLAPSE{nqubits}
+
 """
 
     return kernel

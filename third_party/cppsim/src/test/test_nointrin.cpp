@@ -1,8 +1,6 @@
 // Ensure hand-written and generated kernels give equal results.
 
-#include "nointrin/kernels.hpp"
-
-namespace generated {
+#define kernel generated_kernel
 
 #include "generated/nointrin/kernel1.hpp"
 #include "generated/nointrin/kernel2.hpp"
@@ -10,7 +8,9 @@ namespace generated {
 #include "generated/nointrin/kernel4.hpp"
 #include "generated/nointrin/kernel5.hpp"
 
-} // namespace generated
+#undef kernel
+
+#include "nointrin/kernels.hpp"
 
 #include "kernelgen.hpp"
 
@@ -67,7 +67,7 @@ TEST(nointrin, kernel1)
 	ASSERT_TRUE(compare<1>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id0, m, ctrlmask);
-		generated::kernel(&psi2[0], id0, &m[0][0], ctrlmask);
+		generated_kernel(&psi2[0], id0, &m[0][0], ctrlmask);
 		std::array ids { id0 };
 		kernelgen(psi3, ids, m , ctrlmask);
 	},
@@ -84,7 +84,7 @@ TEST(nointrin, kernel2)
 	ASSERT_TRUE(compare<2>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id1, id0, m, ctrlmask);
-		generated::kernel(&psi2[0], id1, id0, &m[0][0], ctrlmask);
+		generated_kernel(&psi2[0], id1, id0, &m[0][0], ctrlmask);
 		std::array ids { id0, id1 };
 		kernelgen(psi3, ids, m, ctrlmask);
 	},
@@ -102,7 +102,7 @@ TEST(nointrin, kernel3)
 	ASSERT_TRUE(compare<3>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id2, id1, id0, m, ctrlmask);
-		generated::kernel(&psi2[0], id2, id1, id0, &m[0][0], ctrlmask);
+		generated_kernel(&psi2[0], id2, id1, id0, &m[0][0], ctrlmask);
 		std::array ids { id0, id1, id2 };
 		kernelgen(psi3, ids, m, ctrlmask);
 	},
@@ -121,7 +121,7 @@ TEST(nointrin, kernel4)
 	ASSERT_TRUE(compare<4>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id3, id2, id1, id0, m, ctrlmask);
-		generated::kernel(&psi2[0], id3, id2, id1, id0, &m[0][0], ctrlmask);
+		generated_kernel(&psi2[0], id3, id2, id1, id0, &m[0][0], ctrlmask);
 		std::array ids { id0, id1, id2, id3 };
 		kernelgen(psi3, ids, m, ctrlmask);
 	},
@@ -141,7 +141,7 @@ TEST(nointrin, kernel5)
 	ASSERT_TRUE(compare<5>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id4, id3, id2, id1, id0, m, ctrlmask);
-		generated::kernel(&psi2[0], id4, id3, id2, id1, id0, &m[0][0], ctrlmask);
+		generated_kernel(&psi2[0], id4, id3, id2, id1, id0, &m[0][0], ctrlmask);
 		std::array ids { id0, id1, id2, id3, id4 };
 		kernelgen(psi3, ids, m, ctrlmask);
 	},

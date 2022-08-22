@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#define LOOP_COLLAPSE1 2
+
 template <class V, class M>
 inline void kernel_core(V &psi, std::size_t I, std::size_t d0, M const& m)
 {
