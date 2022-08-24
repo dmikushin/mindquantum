@@ -33,9 +33,9 @@ def kernelgen(nqubits, ids=None):
     for j in range(0, len(strcombs)):
         strrhs.append(rhs(len(strcombs), j, 0))
 
-    dsorted = []
+    ids_sorted = []
     if ids != None:
-    	dsorted = sorted(ids, reverse = True)
+    	ids_sorted = sorted(ids, reverse = True)
 
     # Some string constants clash with the {} syntax of print(), so we
     # substitute them as constants.
@@ -82,16 +82,16 @@ void kernel(T* psi, {id_var}const T* m, std::size_t ctrlmask)
     {sort}
     if (ctrlmask == 0){{
         {pragma} omp for collapse({collapse}) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){{
-{for_loops}{offset_2}for (std::size_t i{nqubits} = 0; i{nqubits} < dsorted[{nqubits_1}]; ++i{nqubits}){{
+        for (std::size_t i0 = 0; i0 < n; i0 += 2 * {dsorted_0}){{
+{for_loops}{offset_2}for (std::size_t i{nqubits} = 0; i{nqubits} < {dsorted_last}; ++i{nqubits}){{
         {offset_1}kernel_core{d_template}(psi, {i}, {d_args}m);
         {offset}}}
         }}
     }}
     else{{
         {pragma} omp for collapse({collapse}) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){{
-{for_loops}{offset_2}for (std::size_t i{nqubits} = 0; i{nqubits} < dsorted[{nqubits_1}]; ++i{nqubits}){{
+        for (std::size_t i0 = 0; i0 < n; i0 += 2 * {dsorted_0}){{
+{for_loops}{offset_2}for (std::size_t i{nqubits} = 0; i{nqubits} < {dsorted_last}; ++i{nqubits}){{
         {offset_1}if ((({i})&ctrlmask) == ctrlmask)
         {offset_2}kernel_core{d_template}(psi, {i}, {d_args}m);
         {offset}}}
@@ -107,13 +107,14 @@ void kernel(T* psi, {id_var}const T* m, std::size_t ctrlmask)
         undef       = "#undef", \
         pragma      = "#pragma", \
         nqubits     = nqubits, \
-        nqubits_1   = nqubits - 1, \
         id_var      = ''.join('unsigned id{}, '.format(nqubits - i - 1) for i in range (0, nqubits)) if ids == None else '', \
         constexpr   = 'constexpr ' if ids != None else '',
         d           = f"d0 = 1UL << {'id0' if ids == None else ids[0]}{''.join(', d{} = 1UL << {}'.format(i, 'id{}'.format(i) if ids == None else ids[i]) for i in range (1, nqubits))}", \
         d_args      = ''.join('d{}, '.format(i) for i in range (0, nqubits)) if ids == None else '', \
         n           = 'n = 1' + ''.join(' + d{}'.format(i) for i in range (0, nqubits)), \
-        dsorted     = f"dsorted[] = {{ d{nqubits - 1}" + ''.join(', d{}'.format(nqubits - i - 1) for i in range (1, nqubits)) + f" }}", \
+        dsorted     = (f"dsorted[] = {{ d{nqubits - 1}" + ''.join(', d{}'.format(nqubits - i - 1) for i in range (1, nqubits)) + f" }}") if ids == None else (f"dsorted0 = 1UL << {ids_sorted[0]}{''.join(', dsorted{} = 1UL << {}'.format(i, ids_sorted[i]) for i in range (1, nqubits))}"), \
+        dsorted_0    = "dsorted[0]" if ids == None else "dsorted0", \
+        dsorted_last = f"dsorted[{nqubits - 1}]" if ids == None else f"dsorted{nqubits - 1}", \
         sort        = f'std::sort(dsorted, dsorted + {nqubits}, std::greater<std::size_t>());{newline}' if ids == None else '', \
         collapse    = f"{nqubits + 1}", \
         offset    = ''.join('    '.format(i) for i in range (0, nqubits)), \
@@ -121,7 +122,9 @@ void kernel(T* psi, {id_var}const T* m, std::size_t ctrlmask)
         offset_2    = ''.join('    '.format(i) for i in range (0, nqubits + 2)), \
         d_template  = ('<d0' + ''.join(', d{}'.format(i) for i in range (1, nqubits)) + '>') if ids != None else '', \
         i           = 'i0' + ''.join(' + i{}'.format(i) for i in range (1, nqubits + 1)), \
-        for_loops   = ''.join('{}for (std::size_t i{} = 0; i{} < dsorted[{}]; i{} += 2 * dsorted[{}]){}'.format(''.join('    ' for j in range(0, i + 2)), i, i, i - 1, i, i, newline) for i in range (1, nqubits)))
+        for_loops   = ''.join('{}for (std::size_t i{} = 0; i{} < dsorted{left}{}{right}; i{} += 2 * dsorted{left}{}{right}){}'.format(''.join('    ' for j in range(0, i + 2)), i, i, i - 1, i, i, newline,
+            left  = '[' if ids == None else '', \
+            right = ']' if ids == None else '') for i in range (1, nqubits)))
 
     return kernel
 
