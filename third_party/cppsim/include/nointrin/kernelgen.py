@@ -24,9 +24,9 @@ def kernelgen(nqubits, ids=None):
 
     def rhs(n, j, i):
         if i < n - 1:
-            return f'add(mul(v[{i}], M({j}, {i})), ' + rhs(n, j, i + 1)
+            return f'add(mul(v_{i}, M({j}, {i})), ' + rhs(n, j, i + 1)
         else:
-            return f'mul(v[{i}], M({j}, {i})' + ''.join(')' for k in range(0, n))
+            return f'mul(v_{i}, M({j}, {i})' + ''.join(')' for k in range(0, n))
 
     # Pretty-print the right hand sides (recursively).
     strrhs = [] 
@@ -56,8 +56,7 @@ def kernelgen(nqubits, ids=None):
 template<{d_template}class T>
 inline void kernel_core(T* psi, std::size_t I{d_var}, const T* m)
 {{
-    std::array {v_array};
-
+    {v_assign}
     {psi_assign}
 }}
 
@@ -69,7 +68,7 @@ inline void kernel_core(T* psi, std::size_t I{d_var}, const T* m)
         nqubits    = nqubits, \
         d_template = ''.join('std::size_t d{}, '.format(i) for i in range (0, nqubits)) if ids != None else '', \
         d_var      = ''.join(', std::size_t d{}'.format(i) for i in range (0, nqubits)) if ids == None else '', \
-        v_array    = f"v = {{{newline}" + ''.join('{}{},{}'.format(' ' * 8, strcombs[i], newline) for i in range(0, len(strcombs))) + "{}}}".format(' ' * 4), \
+        v_assign    = ''.join('const auto v_{} = {};{}{}'.format(i, strcombs[i], newline, ' ' * 4) for i in range(0, len(strcombs))), \
         psi_assign = ''.join('{} = {};{}    '.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs)))) + \
 """
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
