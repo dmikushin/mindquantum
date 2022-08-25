@@ -3,7 +3,12 @@ import argparse
 import itertools
 import os
 
-def kernelgen(nqubits, ids=None):
+def kernelgen(nqubits, ids=None, matvec=True):
+    # Temporary falling back to no-matvec for runtime-generated
+    # kernels, because we don't have Eigen included there yet.
+    if ids:
+        matvec = False
+
     # All combinations of qubits, excluding dupes, e.g. for nqubits = 2:
     # 0 0
     # 1 0
@@ -22,13 +27,19 @@ def kernelgen(nqubits, ids=None):
         strcomb += ']';
         strcombs.append(strcomb)
 
-    def rhs(n, j, i):
-        if i < n - 1:
-            return f'add(mul(v_{i}, M({j}, {i})), ' + rhs(n, j, i + 1)
-        else:
-            return f'mul(v_{i}, M({j}, {i})' + ''.join(')' for k in range(0, n))
+    left = '_'
+    right = ''
+    if matvec:
+    	left = '['
+    	right = ']'
 
     # Pretty-print the right hand sides (recursively).
+    def rhs(n, j, i):
+        if i < n - 1:
+            return f'add(mul(v{left}{i}{right}, M({j}, {i})), ' + rhs(n, j, i + 1)
+        else:
+            return f'mul(v{left}{i}{right}, M({j}, {i})' + ''.join(')' for k in range(0, n))
+
     strrhs = [] 
     for j in range(0, len(strcombs)):
         strrhs.append(rhs(len(strcombs), j, 0))
@@ -47,16 +58,18 @@ def kernelgen(nqubits, ids=None):
 {include} <array>
 {include} <complex>
 {include} <cstdlib>
+{eigen}
 
 {define} add(a, b) (a + b)
 {define} mul(a, b) (a * b)
 
-{define} M(j, i) (m[j * {nqubits} + i])
+{define} M(j, i) (m[j * {n} + i])
 
 template<{d_template}class T>
 inline void kernel_core(T* psi, std::size_t I{d_var}, const T* m)
 {{
-    {v_assign}
+    {v}
+    {matvec}
     {psi_assign}
 }}
 
@@ -66,10 +79,13 @@ inline void kernel_core(T* psi, std::size_t I{d_var}, const T* m)
         define     = "#define", \
         undef      = "#undef", \
         nqubits    = nqubits, \
+        eigen      = "{define} EIGEN_DEFAULT_DENSE_INDEX_TYPE int{newline}{define} EIGEN_VECTORIZE{newline}{include} <Eigen/Dense>".format(define="#define", newline=newline, include = "#include") if matvec else '', \
+        n          = len(strcombs),
         d_template = ''.join('std::size_t d{}, '.format(i) for i in range (0, nqubits)) if ids != None else '', \
         d_var      = ''.join(', std::size_t d{}'.format(i) for i in range (0, nqubits)) if ids == None else '', \
-        v_assign    = ''.join('const auto v_{} = {};{}{}'.format(i, strcombs[i], newline, ' ' * 4) for i in range(0, len(strcombs))), \
-        psi_assign = ''.join('{} = {};{}    '.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs)))) + \
+        v          = f"const std::array v = {{{newline}" + ''.join('{}{},{}'.format(' ' * 8, strcombs[i], newline) for i in range(0, len(strcombs))) + "{}}};{}".format(' ' * 4, newline) if matvec else ''.join('const auto v_{} = {};{}{}'.format(i, strcombs[i], newline, ' ' * 4) for i in range(0, len(strcombs))), \
+        matvec     = "const auto result = Eigen::Map<const Eigen::Matrix<T, {n}, {n}, Eigen::RowMajor>>(m) * Eigen::Map<const Eigen::Vector<T, {n}>>(v.data());{newline}".format(n = len(strcombs), newline = newline) if matvec else '', \
+        psi_assign = ''.join('{} = {};{}    '.format(strcombs[i], strrhs[i], newline) for i in range(0, len(strcombs))) if not matvec else ''.join('{} = result[{}];{}    '.format(strcombs[i], i, newline) for i in range(0, len(strcombs)))) + \
 """
 // bit indices id[.] are given from high to low (e.g. control first for CNOT)
 template<class T>

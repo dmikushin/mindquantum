@@ -10,3 +10,6 @@
 [submodule "build/ThirdParty/digestpp"]
 	path = ThirdParty/digestpp
 	url = https://github.com/kerukuro/digestpp.git
+[submodule "ThirdParty/eigen"]
+	path = ThirdParty/eigen
+	url = https://gitlab.com/libeigen/eigen.git

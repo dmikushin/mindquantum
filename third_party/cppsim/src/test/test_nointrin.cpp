@@ -24,10 +24,11 @@ template<int nqubits, typename Kernels, typename V>
 bool compare(Kernels kernels, V& psi1)
 {
 	std::default_random_engine dre;
+	dre.seed(0);
 	std::uniform_int_distribution<int> uid(-1000, 1000);
 
 	// Generate m matrix as integers.
-	std::array<std::array<int, nqubits>, nqubits> m;
+	std::array<std::array<int, 1UL << nqubits>, 1UL << nqubits> m;
 	for (int j = 0; j < m.size(); j++)
 		for (int i = 0; i < m.size(); i++)
 			m[j][i] = uid(dre);
@@ -49,10 +50,10 @@ bool compare(Kernels kernels, V& psi1)
 		return true;
 
 	if (diff2.first != psi1.end())
-		std::cout << "Mismatch at " << std::distance(psi1.begin(), diff2.first) <<
+		std::cout << "Mismatch in psi2 at " << std::distance(psi1.begin(), diff2.first) <<
 			" : " << *(diff2.first) << " != " << *(diff2.second) << std::endl;
 	if (diff3.first != psi1.end())
-		std::cout << "Mismatch at " << std::distance(psi1.begin(), diff3.first) <<
+		std::cout << "Mismatch in psi3 at " << std::distance(psi1.begin(), diff3.first) <<
 			" : " << *(diff3.first) << " != " << *(diff3.second) << std::endl;
 
 	return false;
