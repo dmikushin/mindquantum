@@ -4,11 +4,6 @@ import itertools
 import os
 
 def kernelgen(nqubits, ids=None, matvec=True):
-    # Temporary falling back to no-matvec for runtime-generated
-    # kernels, because we don't have Eigen included there yet.
-    if ids:
-        matvec = False
-
     # All combinations of qubits, excluding dupes, e.g. for nqubits = 2:
     # 0 0
     # 1 0

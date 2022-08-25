@@ -21,7 +21,7 @@ bool benchmark()
 	std::uniform_int_distribution<int> uid(-1000, 1000);
 
 	// Generate m matrix as integers.
-	std::array<std::array<int, nqubits>, nqubits> m;
+	std::array<std::array<int, 1UL << nqubits>, 1UL << nqubits> m;
 	for (int j = 0; j < m.size(); j++)
 		for (int i = 0; i < m.size(); i++)
 			m[j][i] = uid(dre);

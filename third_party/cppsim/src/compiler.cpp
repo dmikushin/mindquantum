@@ -150,7 +150,7 @@ void* Compiler::codegen(
 		ss << " -g -O3 -ffast-math -fopenmp -std=c++17 -x c++ ";
 #endif
 		ss << filename;
-		ss << " -fPIC -shared -o";
+		ss << " -I/usr/include/eigen3 -fPIC -shared -o";
 		ss << binname;
 		ss << " >";
 		ss << errlog;
