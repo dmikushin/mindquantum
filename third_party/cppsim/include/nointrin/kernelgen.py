@@ -3,7 +3,7 @@ import argparse
 import itertools
 import os
 
-def kernelgen(nqubits, ids=None, matvec=True):
+def kernelgen(nqubits, ids=None, matvec=True, combinations=False):
     # All combinations of qubits, excluding dupes, e.g. for nqubits = 2:
     # 0 0
     # 1 0
@@ -54,6 +54,7 @@ def kernelgen(nqubits, ids=None, matvec=True):
 {include} <complex>
 {include} <cstdlib>
 {eigen}
+{combinations}
 
 {define} add(a, b) (a + b)
 {define} mul(a, b) (a * b)
@@ -68,6 +69,8 @@ inline void kernel_core(T* psi, std::size_t I{d_var}, const T* m)
     {psi_assign}
 }}
 
+{undef} add
+{undef} mul
 {undef} M
 """.format( \
         include    = "#include", \
@@ -75,6 +78,7 @@ inline void kernel_core(T* psi, std::size_t I{d_var}, const T* m)
         undef      = "#undef", \
         nqubits    = nqubits, \
         eigen      = "{define} EIGEN_DEFAULT_DENSE_INDEX_TYPE int{newline}{define} EIGEN_VECTORIZE{newline}{include} <Eigen/Dense>".format(define="#define", newline=newline, include = "#include") if matvec else '', \
+        combinations = "#include \"combinations.h\"" if combinations else '', \
         n          = len(strcombs),
         d_template = ''.join('std::size_t d{}, '.format(i) for i in range (0, nqubits)) if ids != None else '', \
         d_var      = ''.join(', std::size_t d{}'.format(i) for i in range (0, nqubits)) if ids == None else '', \
@@ -109,12 +113,7 @@ void kernel(T* psi, {id_var}const T* m, std::size_t ctrlmask)
     }}
 }}
 
-{undef} add
-{undef} mul
-
 """.format( \
-        define      = "#define", \
-        undef       = "#undef", \
         pragma      = "#pragma", \
         nqubits     = nqubits, \
         id_var      = ''.join('unsigned id{}, '.format(nqubits - i - 1) for i in range (0, nqubits)) if ids == None else '', \
@@ -140,17 +139,21 @@ void kernel(T* psi, {id_var}const T* m, std::size_t ctrlmask)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate Haener-Steiger quantum kernels in the form used in ProjectQ simulator')
-    parser.add_argument('nqubits', type=int, help='The number of qubits to generate the kernel for')
-    parser.add_argument('output', type=str, help='Output file name')
+    parser.add_argument('nqubits', type=int, help='the number of qubits to generate the kernel for')
+    parser.add_argument('output', type=str, help='output file name')
+    parser.add_argument('-matvec', '--matvec', nargs='?', type=bool, default=True, help='kernel core implementation: as a matrix-vector operation (True, default), or as an explicit formula (False)')
+    parser.add_argument('-combinations', '--combinations', nargs='?', type=bool, default=True, help='multithreading implementation: combinations partitioner (True, default), or OpenMP collapse (False, only for CPU with small number of cores)')
     args = parser.parse_args()
     
     nqubits = int(args.nqubits)
     output = args.output
+    matvec = args.matvec
+    combinations = args.combinations
 
     try:
         os.makedirs(os.path.dirname(output))
     except:
         pass
     with open(output, "w") as o:
-        o.write(kernelgen(nqubits))
+        o.write(kernelgen(nqubits, matvec=matvec, combinations=combinations))
 

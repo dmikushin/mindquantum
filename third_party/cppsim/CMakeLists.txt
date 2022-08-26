@@ -37,7 +37,7 @@ macro(kernelgen)
 	# Call generator.
 	add_custom_command(
 		OUTPUT ${KERNEL_PATH}
-		COMMAND ${Python3_EXECUTABLE} ${KERNELGEN} ${NQUBITS} ${KERNEL_PATH}
+		COMMAND ${Python3_EXECUTABLE} ${KERNELGEN} ${NQUBITS} ${KERNEL_PATH} --combinations=True
 		COMMENT "Generating kernel for ${NQUBITS} qubits"
 		DEPENDS ${KERNELGEN})
 	set_source_files_properties("${KERNEL_PATH}" PROPERTIES GENERATED TRUE)
