@@ -1,18 +1,6 @@
 #ifndef COMBINATIONS_H
 #define COMBINATIONS_H
 
-#define COMBINATIONS_RETVAL(expr) \
-	if constexpr (std::is_same<Result, bool>::value) \
-	{ \
-		if (!(expr)) return false; \
-	} \
-	else \
-		expr;
-
-#define COMBINATIONS_RETVAL_TRUE() \
-	if constexpr (std::is_same<Result, bool>::value) \
-		return true; \
-
 #include "gpu_support.h"
 
 #include <algorithm>
@@ -32,124 +20,83 @@ class Combinations
 private :
 
 	template<
-		uint32_t k, // length of sequence
-		uint32_t m, // max allowed sequence element value
-		typename Result = void, // use bool return type to continue or stop
-		class Callable
+		class Callable,
+		uint32_t n0, uint32_t n1, uint32_t ...n // max allowed sequence element value
 	>
 	GPU_SUPPORT
-	static constexpr Result _iterate(Callable&& c)
+	static constexpr void _iterate(Callable&& c)
 	{
-		static_assert(k > 0);
-		for (uint32_t i = 0; i <= m; i++)
+		for (uint32_t i = 0; i <= n0; i += 2 * n1)
 		{
-			if constexpr(k == 1)
+			auto bind_an_argument = [i, &c](auto... args)
 			{
-				COMBINATIONS_RETVAL( c(i) );
-			}
-			else
-			{
-				auto bind_an_argument = [i, &c](auto... args)
-				{
-					COMBINATIONS_RETVAL(( c(i, args...) ));
-					COMBINATIONS_RETVAL_TRUE();
-				};
+				c(i, args...);
+			};
 
-				COMBINATIONS_RETVAL(( _iterate<k - 1, m, Result>(bind_an_argument) ));
-			}
+			_iterate<n1, n...>(bind_an_argument);
 		}
-		
-		COMBINATIONS_RETVAL_TRUE();
 	}
+
+	template<
+		class Callable,
+		uint32_t n0 // max allowed sequence element value
+	>
+	GPU_SUPPORT
+	static constexpr void _iterate(Callable&& c)
+	{
+		for (uint32_t i = 0; i <= n0; i++)
+		{
+			c(i);
+		}
+	}
+
 
 public :
 
-	template<
-		uint32_t k, // length of sequence
-		uint32_t m  // max allowed sequence element value
-	>
+	template<uint32_t ...n>
 	struct Combination
 	{
-		using type = std::array<uint32_t, k>;
+		using type = std::array<uint32_t, sizeof...(n)>;
 	};
 
 	// Iterate through all combinations.
 	// For each combination, call a user-provided function.
 	template<
-		uint32_t k, // length of sequence
-		uint32_t m, // max allowed sequence element value
-		typename Result = void, // use bool return type to continue or stop
-		class Callable
+		class Callable,
+		uint32_t ...n // max allowed sequence element value
 	>
 	GPU_SUPPORT
-	static constexpr Result iterate(Callable&& c)
+	static constexpr void iterate(Callable&& c)
 	{
-		COMBINATIONS_RETVAL(( _iterate<k, m, Result>(c) ));
-		COMBINATIONS_RETVAL_TRUE();
+		_iterate<n...>(c);
 	}
 
 	// Tell the length of a combination supplied by the iterator
 	// configured with the given set of template parameters.
-	template<
-		uint32_t k, // length of sequence
-		uint32_t m  // max allowed sequence element value
-	>
+	template<uint32_t ...n>
 	static constexpr uint32_t length()
 	{
-		return k;
+		return sizeof...(n);
 	}
 
 	// Tell the number of combinations supplied by the iterator
 	// configured with the given set of template parameters.
-	template<
-		uint32_t k, // length of sequence
-		uint32_t m  // max allowed sequence element value
-	>
+	template<uint32_t ...n>
 	static uint32_t popcount()
 	{
-		if (k == 0) return 0;
+		if (sizeof...(n) == 0) return 0;
 
 		uint32_t result = 1;
-		for (int i = 0; i < k; i++)
-			result *= m + 1;
-
-		return result;
-	}
-
-	// Tell the number of combinations supplied by the iterator
-	// configured with the given set of runtime parameters.
-	static uint32_t popcount(
-		const uint32_t k, // length of sequence
-		const uint32_t m) // max allowed sequence element value
-	{
-		if (k == 0) return 0;
-
-		uint32_t result = 1;
-		for (int i = 0; i < k; i++)
-			result *= m + 1;
-
+		// TODO
 		return result;
 	}
 
 	// Reverse the order of elements in a combination
 	// configured with the given set of template parameters.	
-	template<
-		uint32_t k, // length of sequence
-		uint32_t m  // max allowed sequence element value
-	>
-	static void reverse(typename Combination<k, m>::type& c)
+	template<uint32_t ...n>
+	static void reverse(typename Combination<n...>::type& c)
 	{
 		std::reverse(c.begin(), c.end());
-	}
-
-	// Reverse the order of elements in a combination
-	// configured with the given set of runtime parameters.	
-	static void reverse(
-		const uint32_t k, // length of sequence
-		const uint32_t m, // max allowed sequence element value
-		uint32_t* c)
-	{
-		std::reverse(c, c + k);
 	}
 
 // *****************************************************************************
@@ -158,39 +105,43 @@ public :
 public :
 
 	template<
-		uint32_t k, // length of sequence
-		uint32_t m, // max allowed sequence element value
-		typename Result = void, // use bool return type to continue or stop
-		class Callable
+		class Callable,
+		uint32_t n0, uint32_t n1, uint32_t ...n // max allowed sequence element value
 	>
 	GPU_SUPPORT
-	static constexpr Result _iterate(uint32_t* start, uint32_t& limit, Callable&& c)
+	static constexpr void _iterate(uint32_t* start, uint32_t& limit, Callable&& c)
 	{
-		static_assert(k > 0);
-		for (uint32_t i = start[k - 1]; (i <= m) && limit; i++)
+		for (uint32_t i = start; (i <= n0) && limit; i += 2 * n1)
 		{
 			// Flush starting point to zero, in order for all subsequent iterations
 			// to start from zero as usual.
-			start[k - 1] = 0;
+			*start = 0;
 
-			if constexpr(k == 1)
+			auto bind_an_argument = [i, &c](auto... args)
 			{
-				COMBINATIONS_RETVAL( c(i) );
-				limit--;
-			}
-			else
-			{
-				auto bind_an_argument = [i, &c](auto... args)
-				{
-					COMBINATIONS_RETVAL(( c(i, args...) ));
-					COMBINATIONS_RETVAL_TRUE();
-				};
+				c(i, args...);
+			};
 
-				COMBINATIONS_RETVAL(( _iterate<k - 1, m, Result>(start, limit, bind_an_argument) ));
-			}
+			_iterate<n1, n...>(start++, limit, bind_an_argument);
 		}
-		
-		COMBINATIONS_RETVAL_TRUE();
+	}
+
+	template<
+		class Callable,
+		uint32_t n0 // max allowed sequence element value
+	>
+	GPU_SUPPORT
+	static constexpr void _iterate(uint32_t* start, uint32_t& limit, Callable&& c)
+	{
+		for (uint32_t i = start; (i <= n0) && limit; i++)
+		{
+			// Flush starting point to zero, in order for all subsequent iterations
+			// to start from zero as usual.
+			*start = 0;
+
+			c(i);
+			limit--;
+		}
 	}
 
 public :
@@ -198,38 +149,21 @@ public :
 	// Iterate through combinations with specific starting point and duration.
 	// For each combination, call a user-provided function.
 	template<
-		uint32_t k, // length of sequence
-		uint32_t m, // max allowed sequence element value
-		typename Result = void, // use bool return type to continue or stop
-		class Callable
+		class Callable,
+		uint32_t ...n // max allowed sequence element value
 	>
 	GPU_SUPPORT
-	static constexpr Result iterate(const std::array<uint32_t, k>& start_, const uint32_t limit_, Callable&& c)
+	static constexpr void iterate(const typename Combination<n...>::type& start_, const uint32_t limit_, Callable&& c)
 	{
-		std::array<uint32_t, k> start = start_;
+		auto start = start_;
 		uint32_t limit = limit_;
-		COMBINATIONS_RETVAL(( _iterate<k, m, Result>(start.data(), limit, c) ));
-		COMBINATIONS_RETVAL_TRUE();
+		_iterate<n...>(start.data(), limit, c);
 	}
 
 	// Tell the number of combinations supplied by the iterator
 	// configured with the given set of template parameters.
-	template<
-		uint32_t k, // length of sequence
-		uint32_t m  // max allowed sequence element value
-	>
+	template<uint32_t ...n>
 	static uint32_t popcount(const uint32_t limit)
-	{
-		// TODO Actually could be less than limit, if start is closer to the end.
-		return limit;
-	}
-
-	// Tell the number of combinations supplied by the iterator
-	// configured with the given set of runtime parameters.
-	static uint32_t popcount(
-		const uint32_t k, // length of sequence
-		const uint32_t m, // max allowed sequence element value
-		const uint32_t limit)
 	{
 		// TODO Actually could be less than limit, if start is closer to the end.
 		return limit;
