@@ -9,8 +9,6 @@
 #include <stdint.h>
 #include <type_traits>
 
-namespace combinations {
-
 // Iterate through the combinations using currying approach: https://stackoverflow.com/a/54508163/4063520
 class Combinations
 {
@@ -20,13 +18,13 @@ class Combinations
 private :
 
 	template<
-		class Callable,
-		uint32_t n0, uint32_t n1, uint32_t ...n // max allowed sequence element value
+		uint32_t n0, uint32_t n1, uint32_t ...n, // max allowed sequence element value
+		class Callable
 	>
 	GPU_SUPPORT
 	static constexpr void _iterate(Callable&& c)
 	{
-		for (uint32_t i = 0; i <= n0; i += 2 * n1)
+		for (uint32_t i = 0; i < n0; i += 2 * n1)
 		{
 			auto bind_an_argument = [i, &c](auto... args)
 			{
@@ -38,13 +36,13 @@ private :
 	}
 
 	template<
-		class Callable,
-		uint32_t n0 // max allowed sequence element value
+		uint32_t n0, // max allowed sequence element value
+		class Callable
 	>
 	GPU_SUPPORT
 	static constexpr void _iterate(Callable&& c)
 	{
-		for (uint32_t i = 0; i <= n0; i++)
+		for (uint32_t i = 0; i < n0; i++)
 		{
 			c(i);
 		}
@@ -62,8 +60,8 @@ public :
 	// Iterate through all combinations.
 	// For each combination, call a user-provided function.
 	template<
-		class Callable,
-		uint32_t ...n // max allowed sequence element value
+		uint32_t ...n, // max allowed sequence element value
+		class Callable
 	>
 	GPU_SUPPORT
 	static constexpr void iterate(Callable&& c)
@@ -105,13 +103,13 @@ public :
 public :
 
 	template<
-		class Callable,
-		uint32_t n0, uint32_t n1, uint32_t ...n // max allowed sequence element value
+		uint32_t n0, uint32_t n1, uint32_t ...n, // max allowed sequence element value
+		class Callable
 	>
 	GPU_SUPPORT
 	static constexpr void _iterate(uint32_t* start, uint32_t& limit, Callable&& c)
 	{
-		for (uint32_t i = start; (i <= n0) && limit; i += 2 * n1)
+		for (uint32_t i = start; (i < n0) && limit; i += 2 * n1)
 		{
 			// Flush starting point to zero, in order for all subsequent iterations
 			// to start from zero as usual.
@@ -127,13 +125,13 @@ public :
 	}
 
 	template<
-		class Callable,
-		uint32_t n0 // max allowed sequence element value
+		uint32_t n0, // max allowed sequence element value
+		class Callable
 	>
 	GPU_SUPPORT
 	static constexpr void _iterate(uint32_t* start, uint32_t& limit, Callable&& c)
 	{
-		for (uint32_t i = start; (i <= n0) && limit; i++)
+		for (uint32_t i = start; (i < n0) && limit; i++)
 		{
 			// Flush starting point to zero, in order for all subsequent iterations
 			// to start from zero as usual.
@@ -149,8 +147,8 @@ public :
 	// Iterate through combinations with specific starting point and duration.
 	// For each combination, call a user-provided function.
 	template<
-		class Callable,
-		uint32_t ...n // max allowed sequence element value
+		uint32_t ...n, // max allowed sequence element value
+		class Callable
 	>
 	GPU_SUPPORT
 	static constexpr void iterate(const typename Combination<n...>::type& start_, const uint32_t limit_, Callable&& c)
@@ -169,8 +167,6 @@ public :
 		return limit;
 	}
 };
-
-} // namespace combinations
 
 #endif // COMBINATIONS_H
 
