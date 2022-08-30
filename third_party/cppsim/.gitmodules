@@ -13,3 +13,6 @@
 [submodule "ThirdParty/eigen"]
 	path = ThirdParty/eigen
 	url = https://gitlab.com/libeigen/eigen.git
+[submodule "ThirdParty/hipThrust"]
+	path = ThirdParty/hipThrust
+	url = https://github.com/dmikushin/Thrust.git

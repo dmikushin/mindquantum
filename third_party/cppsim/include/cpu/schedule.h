@@ -1,7 +1,7 @@
 #ifndef SCHEDULE_CPU_H
 #define SCHEDULE_CPU_H
 
-#include "combinations/distributed/partitioner.h"
+#include "partitioner.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -10,17 +10,11 @@
 #include <sstream>
 #include <vector>
 
-namespace combinations {
-
-namespace distributed {
-
 namespace cpu {
 
 template<
 	class Contexts,
 	class Callable,
-	typename Combinations,
-	typename Earnest,
 	uint32_t ...Args // Underlying combination parameters
 >
 class Schedule
@@ -47,7 +41,7 @@ public :
 		// fast, as the iterator body is trivial. Then we re-use
 		// this schedule to perform the real iterations with a
 		// meaningful user-defined iterator body.		
-		Partitioner<Combinations, Earnest>::template partition<Args...>(
+		Partitioner::template partition<Args...>(
 			starts, nworkers, maxCombinationsPerWorker);
 	}
 	
@@ -73,8 +67,6 @@ public :
 // most evenly.
 template<
 	class Contexts,
-	typename Combinations,
-	typename Earnest,
 	uint32_t ...Args, // Underlying combination parameters
 	class Callable
 >
@@ -100,16 +92,10 @@ auto make_schedule(Callable c, int nworkers = 0)
 	return Schedule<
 		Contexts,
 		Callable,
-		Combinations,
-		Earnest,
 		Args...>(nworkers, c);
 }
 
 } // namespace cpu
-
-} // namespace distributed
-
-} // namespace combinations
 
 #endif // SCHEDULE_CPU_H
 

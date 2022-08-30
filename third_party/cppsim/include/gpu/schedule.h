@@ -3,7 +3,7 @@
 #ifndef SCHEDULE_GPU_H
 #define SCHEDULE_GPU_H
 
-#include "combinations/distributed/partitioner.h"
+#include "partitioner.h"
 
 #include <stdint.h>
 #include <string>
@@ -16,17 +16,12 @@
 #include <hipThrust/thrust/host_vector.h>
 #endif
 
-namespace combinations {
-
-namespace distributed {
-
 namespace gpu {
 
 template<
 	class Contexts,
 	class Callable,
 	class Starts,
-	typename Combinations,
 	uint32_t ...Args // Underlying combination parameters
 >
 __global__ void kernel(Contexts ctxs, Callable c,
@@ -46,8 +41,6 @@ __global__ void kernel(Contexts ctxs, Callable c,
 template<
 	class Contexts,
 	class Callable,
-	typename Combinations,
-	typename Earnest,
 	uint32_t ...Args // Underlying combination parameters
 >
 class Schedule
@@ -79,7 +72,7 @@ public :
 		// this schedule to perform the real iterations with a
 		// meaningful user-defined iterator body.		
 		thrust::host_vector<Combination> startsHost;
-		Partitioner<Combinations, Earnest>::template partition<Args...>(
+		Partitioner::template partition<Args...>(
 			startsHost, nworkers, maxCombinationsPerWorker);
 		starts = startsHost;
 		
@@ -121,8 +114,6 @@ public :
 // most evenly.
 template<
 	class Contexts,
-	typename Combinations,
-	typename Earnest,
 	uint32_t ...Args, // Underlying combination parameters
 	class Callable
 >
@@ -145,8 +136,6 @@ auto make_schedule(Callable c, int nworkers = 0)
 		return Schedule<
 			Contexts,
 			Callable,
-			Combinations,
-			Earnest,
 			Args...>(nworkers, nblocks, c);			
 	}
 
@@ -170,16 +159,10 @@ auto make_schedule(Callable c, int nworkers = 0)
 	return Schedule<
 		Contexts,
 		Callable,
-		Combinations,
-		Earnest,
 		Args...>(nblocks * ::gpu::nthreadsPerBlock, nblocks, c);
 }
 
 } // namespace gpu
-
-} // namespace distributed
-
-} // namespace combinations
 
 #endif // SCHEDULE_GPU_H
 
