@@ -58,11 +58,17 @@ kernelgen(TARGET test_nointrin NQUBITS 3 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 4 VARIANT nointrin)
 kernelgen(TARGET test_nointrin NQUBITS 5 VARIANT nointrin)
 
+add_executable(test_popcount "src/test/test_popcount.cpp")
+set_target_properties(test_popcount PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
+target_include_directories(test_popcount PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(test_popcount PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/eigen)
+target_link_libraries(test_popcount PRIVATE gtest)
+
 add_executable(test_combinations "src/test/test_combinations.cpp")
 set_target_properties(test_combinations PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
 target_include_directories(test_combinations PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(test_combinations PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/eigen)
-target_link_libraries(test_combinations PRIVATE gtest kernelgen)
+target_link_libraries(test_combinations PRIVATE gtest)
 
 add_executable(benchmark "src/benchmark/benchmark.cpp")
 target_link_libraries(benchmark PRIVATE gtest kernelgen)

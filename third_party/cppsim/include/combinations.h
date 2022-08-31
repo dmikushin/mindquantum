@@ -79,14 +79,27 @@ public :
 
 	// Tell the number of combinations supplied by the iterator
 	// configured with the given set of template parameters.
+	template<uint32_t n0>
+	static uint32_t _popcount()
+	{
+		return n0;
+	}
+
+	// Tell the number of combinations supplied by the iterator
+	// configured with the given set of template parameters.
+	template<uint32_t n0, uint32_t n1, uint32_t ...n>
+	static uint32_t _popcount()
+	{
+		return (n0 / (2 * n1)) * _popcount<n1, n...>();
+	}
+
+	// Tell the number of combinations supplied by the iterator
+	// configured with the given set of template parameters.
 	template<uint32_t ...n>
 	static uint32_t popcount()
 	{
 		if (sizeof...(n) == 0) return 0;
-
-		uint32_t result = 1;
-		// TODO
-		return result;
+		return _popcount<n...>();
 	}
 
 	// Reverse the order of elements in a combination
@@ -109,7 +122,7 @@ public :
 	GPU_SUPPORT
 	static constexpr void _iterate(uint32_t* start, uint32_t& limit, Callable&& c)
 	{
-		for (uint32_t i = start; (i < n0) && limit; i += 2 * n1)
+		for (uint32_t i = *start; (i < n0) && limit; i += 2 * n1)
 		{
 			// Flush starting point to zero, in order for all subsequent iterations
 			// to start from zero as usual.
@@ -131,7 +144,7 @@ public :
 	GPU_SUPPORT
 	static constexpr void _iterate(uint32_t* start, uint32_t& limit, Callable&& c)
 	{
-		for (uint32_t i = start; (i < n0) && limit; i++)
+		for (uint32_t i = *start; (i < n0) && limit; i++)
 		{
 			// Flush starting point to zero, in order for all subsequent iterations
 			// to start from zero as usual.
@@ -163,7 +176,7 @@ public :
 	template<uint32_t ...n>
 	static uint32_t popcount(const uint32_t limit)
 	{
-		// TODO Actually could be less than limit, if start is closer to the end.
+		// XXX Actually could be less than limit, if start is closer to the end.
 		return limit;
 	}
 };
