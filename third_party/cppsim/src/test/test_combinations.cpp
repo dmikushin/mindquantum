@@ -151,6 +151,54 @@ void kernel_combinations(T* psi, const T* m, std::size_t ctrlmask)
     }
 }
 
+#include "schedule.h"
+
+// bit indices id[.] are given from high to low (e.g. control first for CNOT)
+template<unsigned id0, unsigned id1, unsigned id2, unsigned id3, unsigned id4, class T>
+void kernel_combinations_partitioned(T* psi, const T* m, std::size_t ctrlmask)
+{
+    constexpr std::size_t d0 = 1UL << id0, d1 = 1UL << id1, d2 = 1UL << id2, d3 = 1UL << id3, d4 = 1UL << id4;
+    constexpr std::size_t n = 1 + d0 + d1 + d2 + d3 + d4;
+    std::size_t dsorted[] = { d4, d3, d2, d1, d0 };
+    std::sort(dsorted, dsorted + 5, std::greater<std::size_t>());
+
+    if (ctrlmask == 0){
+        // Here we do the "planning" of execution, not the execution itself.
+        // We do already specify though an interation loop body, in order
+        // for the backend to make the resources allocation.
+        auto backend = Schedule<BackendPreferCPU>::template schedule<uint32_t*, n, d4, d3, d2, d1, d0>(
+            [=](uint32_t& count_worker, auto... i)
+        {
+	    kernel_core(psi, (i + ...), d0, d1, d2, d3, d4, m);
+        });
+
+        printf("Using %s backend with %u workers\n",
+            backend.getName(), backend.getWorkersCount());
+
+        // Finally, execute the iterations.
+        uint32_t* ptr = nullptr;
+        Schedule<BackendPreferCPU>::iterate(ptr, backend);
+    }
+    else{
+        // Here we do the "planning" of execution, not the execution itself.
+        // We do already specify though an interation loop body, in order
+        // for the backend to make the resources allocation.
+        auto backend = Schedule<BackendPreferCPU>::template schedule<uint32_t*, n, d4, d3, d2, d1, d0>(
+            [=](uint32_t& count_worker, auto... i)
+        {
+            if (((i + ...) & ctrlmask) == ctrlmask)
+	        kernel_core(psi, (i + ...), d0, d1, d2, d3, d4, m);
+        });
+
+        printf("Using %s backend with %u workers\n",
+            backend.getName(), backend.getWorkersCount());
+
+        // Finally, execute the iterations.
+        uint32_t* ptr = nullptr;
+        Schedule<BackendPreferCPU>::iterate(ptr, backend);
+    }
+}
+
 #include <array>
 #include <iostream>
 #include <random>
@@ -180,14 +228,18 @@ bool compare(Kernels kernels, V& psi1)
 	std::size_t ctrlmask = 0; // uid(dre);
 
 	// Compare kernel against generated kernel.
-	kernels(psi1, psi2, m, ctrlmask);
-	auto diff = std::mismatch(psi1.begin(), psi1.end(), psi2.begin());
-	if (diff.first == psi1.end())
+	kernels(psi1, psi2, psi3, m, ctrlmask);
+	auto diff2 = std::mismatch(psi1.begin(), psi1.end(), psi2.begin());
+	auto diff3 = std::mismatch(psi1.begin(), psi1.end(), psi3.begin());
+	if ((diff2.first == psi1.end()) && (diff3.first == psi1.end()))
 		return true;
 
-	if (diff.first != psi1.end())
-		std::cout << "Mismatch in psi2 at " << std::distance(psi1.begin(), diff.first) <<
-			" : " << *(diff.first) << " != " << *(diff.second) << std::endl;
+	if (diff2.first != psi1.end())
+		std::cout << "Mismatch in psi2 at " << std::distance(psi1.begin(), diff2.first) <<
+			" : " << *(diff2.first) << " != " << *(diff2.second) << std::endl;
+	if (diff3.first != psi1.end())
+		std::cout << "Mismatch in psi3 at " << std::distance(psi1.begin(), diff3.first) <<
+			" : " << *(diff3.first) << " != " << *(diff3.second) << std::endl;
 
 	return false;
 }
@@ -202,10 +254,11 @@ TEST(nointrin, kernel5)
 	n += 1UL << id3;
 	n += 1UL << id4;
 	std::vector<int> psi(n);
-	ASSERT_TRUE(compare<5>([&](auto& psi1, auto& psi2, auto m, auto ctrlmask)
+	ASSERT_TRUE(compare<5>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(&psi1[0], id4, id3, id2, id1, id0, &m[0][0], ctrlmask);
 		kernel_combinations<id0, id1, id2, id3, id4>(&psi2[0], &m[0][0], ctrlmask);
+		kernel_combinations_partitioned<id0, id1, id2, id3, id4>(&psi3[0], &m[0][0], ctrlmask);
 	},
 	psi));
 }

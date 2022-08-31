@@ -35,11 +35,11 @@ public :
 		{
 			// Prioritize GPU execution, if supported.
 #if defined(__CUDACC__) || defined(__HIPCC__)
-			return combinations::distributed::gpu::make_schedule<
+			return gpu::make_schedule<
 				Contexts,
 				Args...>(c, nworkers);
 #else
-			return combinations::distributed::cpu::make_schedule<
+			return cpu::make_schedule<
 				Contexts,
 				Args...>(c, nworkers);
 #endif
@@ -47,14 +47,14 @@ public :
 #if defined(__CUDACC__) || defined(__HIPCC__)
 		else if constexpr (backend == BackendPreferDiscreteGPU)
 		{
-			return combinations::distributed::gpu::make_schedule<
+			return gpu::make_schedule<
 				Contexts,
 				Args...>(c, nworkers);
 		}
 #endif
 		else if constexpr (backend == BackendPreferCPU)
 		{
-			return combinations::distributed::cpu::make_schedule<
+			return cpu::make_schedule<
 				Contexts,
 				Args...>(c, nworkers);
 		}
