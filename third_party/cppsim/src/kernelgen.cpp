@@ -7,6 +7,7 @@
 #include <pybind11/stl.h>
 
 namespace py = pybind11;
+using namespace pybind11::literals;
 
 std::string KernelGen::generate(int nqubits, unsigned* ids)
 {
@@ -25,7 +26,7 @@ std::string KernelGen::generate(int nqubits, unsigned* ids)
 		{
 			std::vector<unsigned> vids;
 			vids.assign(ids, ids + nqubits);
-			auto source = globals["kernelgen"](nqubits, vids).cast<std::string>();
+			auto source = globals["kernelgen"](nqubits, "ids"_a = vids).cast<std::string>();
 			return source;
 		}
 		else
