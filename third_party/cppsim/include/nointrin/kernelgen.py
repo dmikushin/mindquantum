@@ -3,7 +3,13 @@ import argparse
 import itertools
 import os
 
-def kernelgen(nqubits, ids=None, matvec=True, combinations=False):
+def kernelgen(nqubits, ids=None, m=None, matvec=True, combinations=False):
+    # If m matrix is given explicitly, do not use matrix-vector form
+    # of operation, because we expect many terms to be removed, due to
+    # multiplication by zero m element.
+    if not (m is None):
+        matvec = False
+
     # All combinations of qubits, excluding dupes, e.g. for nqubits = 2:
     # 0 0
     # 1 0
@@ -25,15 +31,28 @@ def kernelgen(nqubits, ids=None, matvec=True, combinations=False):
     left = '_'
     right = ''
     if matvec:
-    	left = '['
-    	right = ']'
+        left = '['
+        right = ']'
 
     # Pretty-print the right hand sides (recursively).
-    def rhs(n, j, i):
-        if i < n - 1:
-            return f'add(mul(v{left}{i}{right}, M({j}, {i})), ' + rhs(n, j, i + 1)
-        else:
-            return f'mul(v{left}{i}{right}, M({j}, {i})' + ''.join(')' for k in range(0, n))
+    if m is None:
+        def rhs(n, j, i):
+            if i < n - 1:
+                return f'add(mul(v{left}{i}{right}, M({j}, {i})), ' + rhs(n, j, i + 1) + ''.join(')')
+            else:
+                return f'mul(v{left}{i}{right}, M({j}, {i})'
+    else:
+        def rhs(n, j, i):
+            if i < n - 1:
+                if m(j, i) != 0:
+                    return f'add(mul(v{left}{i}{right}, M({j}, {i})), ' + rhs(n, j, i + 1) + ''.join(')')
+                else:
+                    return rhs(n, j, i + 1)
+            else:
+                if m(j, i) != 0:
+                    return f'mul(v{left}{i}{right}, M({j}, {i})'
+                else:
+                    return 0
 
     strrhs = [] 
     for j in range(0, len(strcombs)):
@@ -41,7 +60,7 @@ def kernelgen(nqubits, ids=None, matvec=True, combinations=False):
 
     ids_sorted = []
     if ids != None:
-    	ids_sorted = sorted(ids, reverse = True)
+        ids_sorted = sorted(ids, reverse = True)
 
     # Some string constants clash with the {} syntax of print(), so we
     # substitute them as constants.
