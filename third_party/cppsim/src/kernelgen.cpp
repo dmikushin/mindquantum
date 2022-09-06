@@ -24,7 +24,7 @@ std::string KernelGen::generate(int nqubits, unsigned* ids)
 		py::eval<py::eval_statements>(nointrin, globals, globals);
 		if (ids)
 		{
-			std::vector<unsigned> vids;
+			std::vector<unsigned> vids(nqubits);
 			vids.assign(ids, ids + nqubits);
 			auto source = globals["kernelgen"](nqubits, "ids"_a = vids).cast<std::string>();
 			return source;
