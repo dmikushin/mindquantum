@@ -61,15 +61,14 @@ bool compare(Kernels kernels, V& psi1)
 
 TEST(nointrin, kernel1)
 {
-	unsigned id0 = 0;
-	size_t n = 1;
-	n += 1UL << id0;
+	unsigned id0 = 1;
+	std::array ids { id0 };
+	size_t n = 1UL << (*std::max_element(std::begin(ids), std::end(ids)) + 1);
 	std::vector<int> psi(n);
 	ASSERT_TRUE(compare<1>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id0, m, ctrlmask);
 		generated_kernel(&psi2[0], id0, &m[0][0], ctrlmask);
-		std::array ids { id0 };
 		kernelgen(psi3, ids, m , ctrlmask);
 	},
 	psi));
@@ -77,16 +76,14 @@ TEST(nointrin, kernel1)
 
 TEST(nointrin, kernel2)
 {
-	unsigned id0 = 0, id1 = 1;
-	size_t n = 1;
-	n += 1UL << id0;
-	n += 1UL << id1;
+	unsigned id0 = 1, id1 = 3;
+	std::array ids { id0, id1 };
+	size_t n = 1UL << (*std::max_element(std::begin(ids), std::end(ids)) + 1);
 	std::vector<int> psi(n);
 	ASSERT_TRUE(compare<2>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id1, id0, m, ctrlmask);
 		generated_kernel(&psi2[0], id1, id0, &m[0][0], ctrlmask);
-		std::array ids { id0, id1 };
 		kernelgen(psi3, ids, m, ctrlmask);
 	},
 	psi));
@@ -94,17 +91,14 @@ TEST(nointrin, kernel2)
 
 TEST(nointrin, kernel3)
 {
-	unsigned id0 = 0, id1 = 1, id2 = 2;
-	size_t n = 1;
-	n += 1UL << id0;
-	n += 1UL << id1;
-	n += 1UL << id2;
+	unsigned id0 = 1, id1 = 3, id2 = 5;
+	std::array ids { id0, id1, id2 };
+	size_t n = 1UL << (*std::max_element(std::begin(ids), std::end(ids)) + 1);
 	std::vector<int> psi(n);
 	ASSERT_TRUE(compare<3>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id2, id1, id0, m, ctrlmask);
 		generated_kernel(&psi2[0], id2, id1, id0, &m[0][0], ctrlmask);
-		std::array ids { id0, id1, id2 };
 		kernelgen(psi3, ids, m, ctrlmask);
 	},
 	psi));
@@ -112,18 +106,14 @@ TEST(nointrin, kernel3)
 
 TEST(nointrin, kernel4)
 {
-	unsigned id0 = 0, id1 = 1, id2 = 2, id3 = 3;
-	size_t n = 1;
-	n += 1UL << id0;
-	n += 1UL << id1;
-	n += 1UL << id2;
-	n += 1UL << id3;
+	unsigned id0 = 1, id1 = 3, id2 = 5, id3 = 7;
+	std::array ids { id0, id1, id2, id3 };
+	size_t n = 1UL << (*std::max_element(std::begin(ids), std::end(ids)) + 1);
 	std::vector<int> psi(n);
 	ASSERT_TRUE(compare<4>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id3, id2, id1, id0, m, ctrlmask);
 		generated_kernel(&psi2[0], id3, id2, id1, id0, &m[0][0], ctrlmask);
-		std::array ids { id0, id1, id2, id3 };
 		kernelgen(psi3, ids, m, ctrlmask);
 	},
 	psi));
@@ -131,19 +121,14 @@ TEST(nointrin, kernel4)
 
 TEST(nointrin, kernel5)
 {
-	unsigned id0 = 0, id1 = 1, id2 = 2, id3 = 3, id4 = 4;
-	size_t n = 1;
-	n += 1UL << id0;
-	n += 1UL << id1;
-	n += 1UL << id2;
-	n += 1UL << id3;
-	n += 1UL << id4;
+	unsigned id0 = 1, id1 = 3, id2 = 5, id3 = 7, id4 = 9;
+	std::array ids { id0, id1, id2, id3, id4 };
+	size_t n = 1UL << (*std::max_element(std::begin(ids), std::end(ids)) + 1);
 	std::vector<int> psi(n);
 	ASSERT_TRUE(compare<5>([&](auto& psi1, auto& psi2, auto& psi3, auto m, auto ctrlmask)
 	{
 		kernel(psi1, id4, id3, id2, id1, id0, m, ctrlmask);
 		generated_kernel(&psi2[0], id4, id3, id2, id1, id0, &m[0][0], ctrlmask);
-		std::array ids { id0, id1, id2, id3, id4 };
 		kernelgen(psi3, ids, m, ctrlmask);
 	},
 	psi));
