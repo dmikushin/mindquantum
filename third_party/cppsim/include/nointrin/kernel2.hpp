@@ -36,17 +36,17 @@ inline void kernel_core(V &psi, std::size_t I, std::size_t d0, std::size_t d1, M
 template <class V, class M>
 void kernel(V &psi, unsigned id1, unsigned id0, M const& m, std::size_t ctrlmask)
 {
-    std::size_t n = psi.size();
-    std::size_t d0 = 1UL << id0;
-    std::size_t d1 = 1UL << id1;
-    std::size_t dsorted[] = {d0 , d1};
-    std::sort(dsorted, dsorted + 2, std::greater<std::size_t>());
+    std::size_t ids_sorted[] = { id1, id0 };
+    std::sort(ids_sorted, ids_sorted + 2, std::greater<std::size_t>());
+    std::size_t n = 1UL << (ids_sorted[0] + 1);
+    std::size_t d0 = 1UL << id0, d1 = 1UL << id1;
+    std::size_t dsorted0 = 1UL << ids_sorted[0], dsorted1 = 1UL << ids_sorted[1];
 
     if (ctrlmask == 0){
         #pragma omp for collapse(LOOP_COLLAPSE2) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){
-            for (std::size_t i1 = 0; i1 < dsorted[0]; i1 += 2 * dsorted[1]){
-                for (std::size_t i2 = 0; i2 < dsorted[1]; ++i2){
+        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (std::size_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
+                for (std::size_t i2 = 0; i2 < dsorted1; ++i2){
                     kernel_core(psi, i0 + i1 + i2, d0, d1, m);
                 }
             }
@@ -54,9 +54,9 @@ void kernel(V &psi, unsigned id1, unsigned id0, M const& m, std::size_t ctrlmask
     }
     else{
         #pragma omp for collapse(LOOP_COLLAPSE2) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){
-            for (std::size_t i1 = 0; i1 < dsorted[0]; i1 += 2 * dsorted[1]){
-                for (std::size_t i2 = 0; i2 < dsorted[1]; ++i2){
+        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (std::size_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
+                for (std::size_t i2 = 0; i2 < dsorted1; ++i2){
                     if (((i0 + i1 + i2)&ctrlmask) == ctrlmask)
                         kernel_core(psi, i0 + i1 + i2, d0, d1, m);
                 }

@@ -39,10 +39,10 @@ void kernelgen(V &psi, Id& ids, M const& m, std::size_t ctrlmask)
 	}
 	
 	// Call the generated kernel.
-	typedef void (*kernel_t)(int* /*psi*/, unsigned int* /*ids*/, const int* /*m*/, size_t /*ctrlmask*/);
+	typedef void (*kernel_t)(void* /*psi*/, unsigned int* /*ids*/, const int* /*m*/, size_t /*ctrlmask*/);
 	auto kernel = (kernel_t)handle;
 	#pragma omp parallel
-	kernel(reinterpret_cast<int*>(&psi[0]), &ids[0], reinterpret_cast<const int*>(&m[0][0]), ctrlmask);
+	kernel(reinterpret_cast<void*>(&psi[0]), &ids[0], reinterpret_cast<const int*>(&m[0][0]), ctrlmask);
 }
 
 #endif // KERNELGEN_HPP

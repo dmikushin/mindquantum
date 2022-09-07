@@ -333,23 +333,20 @@ inline void kernel_core(V &psi, std::size_t I, std::size_t d0, std::size_t d1, s
 template <class V, class M>
 void kernel(V &psi, unsigned id4, unsigned id3, unsigned id2, unsigned id1, unsigned id0, M const& m, std::size_t ctrlmask)
 {
-    std::size_t n = psi.size();
-    std::size_t d0 = 1UL << id0;
-    std::size_t d1 = 1UL << id1;
-    std::size_t d2 = 1UL << id2;
-    std::size_t d3 = 1UL << id3;
-    std::size_t d4 = 1UL << id4;
-    std::size_t dsorted[] = {d0 , d1, d2, d3, d4};
-    std::sort(dsorted, dsorted + 5, std::greater<std::size_t>());
+    std::size_t ids_sorted[] = { id4, id3, id2, id1, id0 };
+    std::sort(ids_sorted, ids_sorted + 5, std::greater<std::size_t>());
+    std::size_t n = 1UL << (ids_sorted[0] + 1);
+    std::size_t d0 = 1UL << id0, d1 = 1UL << id1, d2 = 1UL << id2, d3 = 1UL << id3, d4 = 1UL << id4;
+    std::size_t dsorted0 = 1UL << ids_sorted[0], dsorted1 = 1UL << ids_sorted[1], dsorted2 = 1UL << ids_sorted[2], dsorted3 = 1UL << ids_sorted[3], dsorted4 = 1UL << ids_sorted[4];
 
     if (ctrlmask == 0){
         #pragma omp for collapse(LOOP_COLLAPSE5) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){
-            for (std::size_t i1 = 0; i1 < dsorted[0]; i1 += 2 * dsorted[1]){
-                for (std::size_t i2 = 0; i2 < dsorted[1]; i2 += 2 * dsorted[2]){
-                    for (std::size_t i3 = 0; i3 < dsorted[2]; i3 += 2 * dsorted[3]){
-                        for (std::size_t i4 = 0; i4 < dsorted[3]; i4 += 2 * dsorted[4]){
-                            for (std::size_t i5 = 0; i5 < dsorted[4]; ++i5){
+        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (std::size_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
+                for (std::size_t i2 = 0; i2 < dsorted1; i2 += 2 * dsorted2){
+                    for (std::size_t i3 = 0; i3 < dsorted2; i3 += 2 * dsorted3){
+                        for (std::size_t i4 = 0; i4 < dsorted3; i4 += 2 * dsorted4){
+                            for (std::size_t i5 = 0; i5 < dsorted4; ++i5){
                                 kernel_core(psi, i0 + i1 + i2 + i3 + i4 + i5, d0, d1, d2, d3, d4, m);
                             }
                         }
@@ -360,12 +357,12 @@ void kernel(V &psi, unsigned id4, unsigned id3, unsigned id2, unsigned id1, unsi
     }
     else{
         #pragma omp for collapse(LOOP_COLLAPSE5) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){
-            for (std::size_t i1 = 0; i1 < dsorted[0]; i1 += 2 * dsorted[1]){
-                for (std::size_t i2 = 0; i2 < dsorted[1]; i2 += 2 * dsorted[2]){
-                    for (std::size_t i3 = 0; i3 < dsorted[2]; i3 += 2 * dsorted[3]){
-                        for (std::size_t i4 = 0; i4 < dsorted[3]; i4 += 2 * dsorted[4]){
-                            for (std::size_t i5 = 0; i5 < dsorted[4]; ++i5){
+        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (std::size_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
+                for (std::size_t i2 = 0; i2 < dsorted1; i2 += 2 * dsorted2){
+                    for (std::size_t i3 = 0; i3 < dsorted2; i3 += 2 * dsorted3){
+                        for (std::size_t i4 = 0; i4 < dsorted3; i4 += 2 * dsorted4){
+                            for (std::size_t i5 = 0; i5 < dsorted4; ++i5){
                                 if (((i0 + i1 + i2 + i3 + i4 + i5)&ctrlmask) == ctrlmask)
                                     kernel_core(psi, i0 + i1 + i2 + i3 + i4 + i5, d0, d1, d2, d3, d4, m);
                             }

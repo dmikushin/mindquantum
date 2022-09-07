@@ -28,8 +28,11 @@ inline void kernel_core(V &psi, std::size_t I, std::size_t d0, M const& m, M con
 template <class V, class M>
 void kernel(V &psi, unsigned id0, M const& m, std::size_t ctrlmask)
 {
-    std::size_t n = psi.size();
+    std::size_t ids_sorted[] = { id0 };
+    std::sort(ids_sorted, ids_sorted + 1, std::greater<std::size_t>());
+    std::size_t n = 1UL << (ids_sorted[0] + 1);
     std::size_t d0 = 1UL << id0;
+    std::size_t dsorted0 = 1UL << ids_sorted[0];
 
     __m256d mm[] = {load(&m[0][0], &m[1][0]), load(&m[0][1], &m[1][1])};
     __m256d mmt[2];
@@ -40,20 +43,18 @@ void kernel(V &psi, unsigned id0, M const& m, std::size_t ctrlmask)
         mmt[i] = _mm256_mul_pd(badc, neg);
     }
 
-    std::size_t dsorted[] = {d0};
-
     if (ctrlmask == 0){
         #pragma omp for collapse(LOOP_COLLAPSE1) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){
-            for (std::size_t i1 = 0; i1 < dsorted[0]; ++i1){
+        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (std::size_t i1 = 0; i1 < dsorted0; ++i1){
                 kernel_core(psi, i0 + i1, d0, mm, mmt);
             }
         }
     }
     else{
         #pragma omp for collapse(LOOP_COLLAPSE1) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted[0]){
-            for (std::size_t i1 = 0; i1 < dsorted[0]; ++i1){
+        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (std::size_t i1 = 0; i1 < dsorted0; ++i1){
                 if (((i0 + i1)&ctrlmask) == ctrlmask)
                     kernel_core(psi, i0 + i1, d0, mm, mmt);
             }
