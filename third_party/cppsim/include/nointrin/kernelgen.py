@@ -109,10 +109,12 @@ inline void kernel_core(T* psi, std::size_t I{d_var}, const T* m)
 template<class T>
 void kernel(T* psi, {id_var}const T* m, std::size_t ctrlmask)
 {{
-    {constexpr}std::size_t {d};
-    {constexpr}std::size_t {n};
-    {constexpr}std::size_t {dsorted};
+    {ids_sorted}
     {sort}
+    {constexpr}std::size_t {n};
+    {constexpr}std::size_t {d};
+    {constexpr}std::size_t {dsorted};
+
     if (ctrlmask == 0){{
         {pragma} omp for collapse({collapse}) schedule(static)
         for (std::size_t i0 = 0; i0 < n; i0 += 2 * {dsorted_0}){{
@@ -139,20 +141,19 @@ void kernel(T* psi, {id_var}const T* m, std::size_t ctrlmask)
         constexpr   = 'constexpr ' if ids != None else '',
         d           = f"d0 = 1UL << {'id0' if ids == None else ids[0]}{''.join(', d{} = 1UL << {}'.format(i, 'id{}'.format(i) if ids == None else ids[i]) for i in range (1, nqubits))}", \
         d_args      = ''.join('d{}, '.format(i) for i in range (0, nqubits)) if ids == None else '', \
-        n           = 'n = 1' + ''.join(' + d{}'.format(i) for i in range (0, nqubits)), \
-        dsorted     = (f"dsorted[] = {{ d{nqubits - 1}" + ''.join(', d{}'.format(nqubits - i - 1) for i in range (1, nqubits)) + f" }}") if ids == None else (f"dsorted0 = 1UL << {ids_sorted[0]}{''.join(', dsorted{} = 1UL << {}'.format(i, ids_sorted[i]) for i in range (1, nqubits))}"), \
-        dsorted_0    = "dsorted[0]" if ids == None else "dsorted0", \
-        dsorted_last = f"dsorted[{nqubits - 1}]" if ids == None else f"dsorted{nqubits - 1}", \
-        sort        = f'std::sort(dsorted, dsorted + {nqubits}, std::greater<std::size_t>());{newline}' if ids == None else '', \
+        n           = 'n = 1UL << (ids_sorted[0] + 1)' if ids == None else f'n = 1UL << {ids_sorted[0] + 1}', \
+        ids_sorted  = (f"{'constexpr ' if ids != None else ''}std::size_t ids_sorted[] = {{ id{nqubits - 1}" + ''.join(', id{}'.format(nqubits - i - 1) for i in range (1, nqubits)) + f" }};") if ids == None else '', \
+        sort        = f'std::sort(ids_sorted, ids_sorted + {nqubits}, std::greater<std::size_t>());' if ids == None else '', \
+        dsorted     = f"dsorted0 = 1UL << {'ids_sorted[0]' if ids == None else ids_sorted[0]}{''.join(', dsorted{} = 1UL << {}'.format(i, 'ids_sorted[{}]'.format(i) if ids == None else ids_sorted[i]) for i in range (1, nqubits))}", \
+        dsorted_0    = "dsorted0", \
+        dsorted_last = f"dsorted{nqubits - 1}", \
         collapse    = f"{nqubits + 1}", \
         offset    = ''.join('    '.format(i) for i in range (0, nqubits)), \
         offset_1    = ''.join('    '.format(i) for i in range (0, nqubits + 1)), \
         offset_2    = ''.join('    '.format(i) for i in range (0, nqubits + 2)), \
         d_template  = ('<d0' + ''.join(', d{}'.format(i) for i in range (1, nqubits)) + '>') if ids != None else '', \
         i           = 'i0' + ''.join(' + i{}'.format(i) for i in range (1, nqubits + 1)), \
-        for_loops   = ''.join('{}for (std::size_t i{} = 0; i{} < dsorted{left}{}{right}; i{} += 2 * dsorted{left}{}{right}){}'.format(''.join('    ' for j in range(0, i + 2)), i, i, i - 1, i, i, newline,
-            left  = '[' if ids == None else '', \
-            right = ']' if ids == None else '') for i in range (1, nqubits)))
+        for_loops   = ''.join('{}for (std::size_t i{} = 0; i{} < dsorted{}; i{} += 2 * dsorted{}){}'.format(''.join('    ' for j in range(0, i + 2)), i, i, i - 1, i, i, newline) for i in range (1, nqubits)))
 
     return kernel
 
