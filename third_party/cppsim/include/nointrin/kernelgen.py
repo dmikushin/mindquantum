@@ -52,7 +52,7 @@ def kernelgen(nqubits, ids=None, m=None, matvec=True, combinations=False):
                 if m(j, i) != 0:
                     return f'mul(v{left}{i}{right}, M({j}, {i})'
                 else:
-                    return 0
+                    return '0'
 
     strrhs = [] 
     for j in range(0, len(strcombs)):
