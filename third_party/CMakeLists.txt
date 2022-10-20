@@ -67,6 +67,13 @@ if(ENABLE_CXX_EXPERIMENTAL)
   include(${CMAKE_CURRENT_LIST_DIR}/cereal/cereal.cmake)
   include(${CMAKE_CURRENT_LIST_DIR}/symengine/symengine.cmake)
   include(${CMAKE_CURRENT_LIST_DIR}/tweedledum/tweedledum.cmake)
+
+  # cppsim dependencies
+  if(ENABLE_CPPSIM)
+    include(${CMAKE_CURRENT_LIST_DIR}/digestpp/digestpp.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/res_embed/res_embed.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/cppsim/cppsim.cmake)
+  endif()
 endif()
 
 # ==============================================================================
