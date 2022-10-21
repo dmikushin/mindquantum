@@ -8,12 +8,13 @@ endif()
 
 # ==============================================================================
 
-find_package(pybind11 REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
+find_package(res_embed CONFIG REQUIRED)
+find_package(OpenMP REQUIRED)
 find_package(
   Python @CPPSIM_PYTHON_VERSION_MIN@
   COMPONENTS Interpreter Development.Embed
   REQUIRED)
-find_package(OpenMP REQUIRED)
 
 # ------------------------------------------------------------------------------
 
