@@ -72,7 +72,7 @@ if(NOT res_embed_FOUND)
   FetchContent_Declare(
     res_embed
     GIT_REPOSITORY https://github.com/dmikushin/res_embed.git
-    GIT_TAG 26a18b27794c1fcf698e603beb8b122218dae490)
+    GIT_TAG b803e4df20b09bdd65477a9662530a6feeb228e6)
   FetchContent_MakeAvailable(res_embed)
 endif()
 include(ResEmbed)
