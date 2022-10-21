@@ -29,6 +29,10 @@ endif()
 
 # ==============================================================================
 
+set(CPPSIM_INCLUDE_DIR ${PACKAGE_PREFIX_DIR}/@CPPSIM_INSTALL_INCLUDEDIR@)
+
 include(${CMAKE_CURRENT_LIST_DIR}/cppsimTargets.cmake)
+
+include(${CMAKE_CURRENT_LIST_DIR}/commands/kernelgen.cmake)
 
 # ==============================================================================

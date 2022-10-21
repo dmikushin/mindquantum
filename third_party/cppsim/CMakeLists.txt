@@ -5,6 +5,8 @@ project(
   VERSION 1.0.0
   LANGUAGES C CXX)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/commands)
+
 # Minimum required Python version (used both in this file and in the installed
 # CMake configuration)
 set(CPPSIM_PYTHON_VERSION_MIN 3.7.0)
@@ -127,6 +129,9 @@ install(FILES ${PROJECT_BINARY_DIR}/cppsimConfig.cmake
               ${PROJECT_BINARY_DIR}/cppsimConfigVersion.cmake
         DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
 
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/cmake/commands
+        DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
+
 file(GLOB _headers ${CMAKE_CURRENT_LIST_DIR}/include/*.h
      ${CMAKE_CURRENT_LIST_DIR}/include/*.hpp LIST_DIRECTORIES FALSE)
 install(FILES ${_headers} DESTINATION ${CPPSIM_INSTALL_INCLUDEDIR})
@@ -162,32 +167,6 @@ target_link_libraries(
 pybind11_add_module(${PROJECT_NAME} SHARED "src/_${PROJECT_NAME}.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE kernelgen)
 
-macro(kernelgen)
-  set(oneValueArgs NQUBITS VARIANT TARGET)
-  cmake_parse_arguments(KERNELGEN "${options}" "${oneValueArgs}"
-                        "${multiValueArgs}" ${ARGN})
-
-  set(NQUBITS ${KERNELGEN_NQUBITS})
-  set(VARIANT ${KERNELGEN_VARIANT})
-  set(KERNELGEN "${CMAKE_CURRENT_SOURCE_DIR}/include/${VARIANT}/kernelgen.py")
-  set(KERNEL_PATH
-      "${CMAKE_CURRENT_BINARY_DIR}/generated/${VARIANT}/kernel${NQUBITS}.hpp")
-
-  # Call generator.
-  add_custom_command(
-    OUTPUT ${KERNEL_PATH}
-    COMMAND ${Python_EXECUTABLE} ${KERNELGEN} ${NQUBITS} ${KERNEL_PATH}
-            --combinations=True
-    COMMENT "Generating kernel for ${NQUBITS} qubits"
-    DEPENDS ${KERNELGEN})
-  set_source_files_properties("${KERNEL_PATH}" PROPERTIES GENERATED TRUE)
-
-  # Append the generated file to the target sources.
-  target_sources(${KERNELGEN_TARGET} PRIVATE ${KERNEL_PATH})
-  target_include_directories(${KERNELGEN_TARGET}
-                             PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-endmacro()
-
 # ==============================================================================
 
 install(
@@ -207,6 +186,8 @@ install(
 # ==============================================================================
 
 if(BUILD_TESTING)
+  include(kernelgen)
+
   add_executable(test_nointrin "src/test/test_nointrin.cpp")
   set_target_properties(test_nointrin PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS
                                                                  OFF)
