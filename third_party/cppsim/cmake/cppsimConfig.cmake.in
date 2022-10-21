@@ -17,11 +17,14 @@ find_package(OpenMP REQUIRED)
 
 # ------------------------------------------------------------------------------
 
-add_library(digestpp::digestpp INTERFACE)
-target_include_directories(
-  digestpp::digestpp
-  INTERFACE
-    ${PACKAGE_PREFIX_DIR}/@CPPSIM_INSTALL_INCLUDEDIR@/third_party/digestpp-src)
+if(NOT TARGET digestpp::digestpp)
+  add_library(digestpp::digestpp INTERFACE IMPORTED)
+  target_include_directories(
+    digestpp::digestpp
+    INTERFACE
+      ${PACKAGE_PREFIX_DIR}/@CPPSIM_INSTALL_INCLUDEDIR@/third_party/digestpp-src
+  )
+endif()
 
 # ==============================================================================
 

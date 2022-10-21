@@ -5,6 +5,10 @@ project(
   VERSION 1.0.0
   LANGUAGES C CXX)
 
+# Minimum required Python version (used both in this file and in the installed
+# CMake configuration)
+set(CPPSIM_PYTHON_VERSION_MIN 3.7.0)
+
 option(BUILD_TESTING "Build the test suite?" OFF)
 
 # ==============================================================================
@@ -48,11 +52,24 @@ if(BUILD_TESTING)
   endif()
 endif()
 
+# ------------------------------------------------------------------------------
+# In the case of digestpp, the repository only consists of a list of
+# files/directories that we need both our build process to find as well as
+# future users of an installed copy of cppsim.
+#
+# We therefore provide a target that we use for our current build and also
+# install its files into a sub-directory of the installation prefix. We then
+# define the digestpp::digestpp target directly within cppsimConfig.cmake
+
 FetchContent_Declare(
   digestpp
   GIT_REPOSITORY https://github.com/kerukuro/digestpp.git
   GIT_TAG 4ec4106677e652a90716ad929d657a622089ef16)
 FetchContent_MakeAvailable(digestpp)
+
+add_library(digestpp::digestpp INTERFACE IMPORTED)
+target_include_directories(digestpp::digestpp
+                           INTERFACE $<BUILD_INTERFACE:${digestpp_SOURCE_DIR}>)
 
 install(
   DIRECTORY ${digestpp_SOURCE_DIR}
@@ -60,11 +77,7 @@ install(
   PATTERN docs EXCLUDE
   PATTERN .git EXCLUDE)
 
-add_library(digestpp::digestpp INTERFACE IMPORTED)
-# NB: No INSTALL_INTERFACE here since that is taken care of within
-# cppsimConfig.cmake
-target_include_directories(digestpp::digestpp
-                           INTERFACE $<BUILD_INTERFACE:${digestpp_SOURCE_DIR}>)
+# ------------------------------------------------------------------------------
 
 find_package(res_embed QUIET CONFIG)
 if(NOT res_embed_FOUND)
@@ -76,6 +89,8 @@ if(NOT res_embed_FOUND)
 endif()
 include(ResEmbed)
 
+# ------------------------------------------------------------------------------
+
 find_package(pybind11 CONFIG QUIET)
 if(NOT pybind11_FOUND)
   FetchContent_Declare(
@@ -85,9 +100,12 @@ if(NOT pybind11_FOUND)
   FetchContent_MakeAvailable(pybind11)
 endif()
 
-set(CPPSIM_PYTHON_VERSION_MIN 3.7.0)
+# ------------------------------------------------------------------------------
+
 find_package(Python ${CPPSIM_PYTHON_VERSION_MIN} COMPONENTS Interpreter
                                                             Development.Embed)
+
+# ------------------------------------------------------------------------------
 
 find_package(OpenMP REQUIRED)
 
