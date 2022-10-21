@@ -61,11 +61,10 @@ install(
   PATTERN .git EXCLUDE)
 
 add_library(digestpp::digestpp INTERFACE IMPORTED)
-target_include_directories(
-  digestpp::digestpp
-  INTERFACE
-    $<BUILD_INTERFACE:${digestpp_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${CPPSIM_INSTALL_INCLUDEDIR}/third_party/digestpp-src>)
+# NB: No INSTALL_INTERFACE here since that is taken care of within
+# cppsimConfig.cmake
+target_include_directories(digestpp::digestpp
+                           INTERFACE $<BUILD_INTERFACE:${digestpp_SOURCE_DIR}>)
 
 find_package(res_embed QUIET CONFIG)
 if(NOT res_embed_FOUND)
