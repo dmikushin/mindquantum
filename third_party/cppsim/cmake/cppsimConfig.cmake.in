@@ -23,13 +23,13 @@ if(NOT TARGET digestpp::digestpp)
   target_include_directories(
     digestpp::digestpp
     INTERFACE
-      ${PACKAGE_PREFIX_DIR}/@CPPSIM_INSTALL_INCLUDEDIR@/third_party/digestpp-src
+      "${PACKAGE_PREFIX_DIR}/@CPPSIM_INSTALL_INCLUDEDIR@/third_party/digestpp-src"
   )
 endif()
 
 # ==============================================================================
 
-set(CPPSIM_INCLUDE_DIR ${PACKAGE_PREFIX_DIR}/@CPPSIM_INSTALL_INCLUDEDIR@)
+set(CPPSIM_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CPPSIM_INSTALL_INCLUDEDIR@")
 
 include(${CMAKE_CURRENT_LIST_DIR}/cppsimTargets.cmake)
 
