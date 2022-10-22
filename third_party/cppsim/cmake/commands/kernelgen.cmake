@@ -21,8 +21,8 @@ function(kernelgen)
   set(KERNEL_PATH
       "${CMAKE_CURRENT_BINARY_DIR}/generated/${VARIANT}/kernel${NQUBITS}.hpp")
       
-  if(NOT EXISTS "${KERNELGEN}")
-    message(FATAL_ERROR "Cannot locate kernelgen Python script: ${KERNELGEN}")
+  if(NOT EXISTS "${KERNELGEN_PY}")
+    message(FATAL_ERROR "Cannot locate kernelgen Python script: ${KERNELGEN_PY}")
   endif()
   
   set(_args)
@@ -33,10 +33,10 @@ function(kernelgen)
   # Call generator.
   add_custom_command(
     OUTPUT ${KERNEL_PATH}
-    COMMAND ${Python_EXECUTABLE} ${KERNELGEN} ${NQUBITS} ${KERNEL_PATH}
+    COMMAND ${Python_EXECUTABLE} ${KERNELGEN_PY} ${NQUBITS} ${KERNEL_PATH}
             ${_args}
     COMMENT "Generating kernel for ${NQUBITS} qubits"
-    DEPENDS ${KERNELGEN})
+    DEPENDS ${KERNELGEN_PY})
   set_source_files_properties("${KERNEL_PATH}" PROPERTIES GENERATED TRUE)
 
   # Append the generated file to the target sources.

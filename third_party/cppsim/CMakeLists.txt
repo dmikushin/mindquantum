@@ -194,11 +194,11 @@ if(BUILD_TESTING)
   target_include_directories(test_nointrin
                              PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(test_nointrin PRIVATE gtest kernelgen Eigen3::Eigen)
-  kernelgen(TARGET test_nointrin NQUBITS 1 VARIANT nointrin)
-  kernelgen(TARGET test_nointrin NQUBITS 2 VARIANT nointrin)
-  kernelgen(TARGET test_nointrin NQUBITS 3 VARIANT nointrin)
-  kernelgen(TARGET test_nointrin NQUBITS 4 VARIANT nointrin)
-  kernelgen(TARGET test_nointrin NQUBITS 5 VARIANT nointrin)
+  kernelgen(TARGET test_nointrin NQUBITS 1 VARIANT nointrin COMBINATIONS)
+  kernelgen(TARGET test_nointrin NQUBITS 2 VARIANT nointrin COMBINATIONS)
+  kernelgen(TARGET test_nointrin NQUBITS 3 VARIANT nointrin COMBINATIONS)
+  kernelgen(TARGET test_nointrin NQUBITS 4 VARIANT nointrin COMBINATIONS)
+  kernelgen(TARGET test_nointrin NQUBITS 5 VARIANT nointrin COMBINATIONS)
 
   add_executable(test_popcount "src/test/test_popcount.cpp")
   set_target_properties(test_popcount PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS
