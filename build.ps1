@@ -24,6 +24,7 @@ Param(
     [switch]$CleanCache,
     [switch]$CleanVenv,
     [ValidateNotNullOrEmpty()][string]$Config,
+    [switch]$CppSim,
     [ValidateNotNullOrEmpty()][string]$CudaArch,
     [switch]$Cxx,
     [switch]$Debug,
@@ -486,6 +487,9 @@ Do not use the CMake registry to find packages
 
 .PARAMETER Config
 Path to INI configuration file with default values for the parameters
+
+.PARAMETER CppSim
+(experimental) Enable the use of cppsim to generate simulation kernels
 
 .PARAMETER Cxx
 (experimental) Enable MindQuantum C++ support
