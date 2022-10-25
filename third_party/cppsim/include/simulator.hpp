@@ -24,6 +24,7 @@
 #include "intrin/kernels.hpp"
 #endif
 
+#include "cppsim_omp.hpp"
 #include "intrin/alignedallocator.hpp"
 #include "fusion.hpp"
 #include "kernelgen.hpp"
@@ -62,7 +63,7 @@ public:
               std::swap(newvec, tmpBuff1_);
             newvec.resize(1UL << N_);
 #pragma omp parallel for schedule(static)
-            for (std::size_t i = 0; i < newvec.size(); ++i)
+            for (omp::idx_t i = 0; i < newvec.size(); ++i)
                 newvec[i] = (i < vec_.size())?vec_[i]:0.;
             std::swap(vec_, newvec);
             // recycle large memory
@@ -99,8 +100,8 @@ public:
 
         short up = 0, down = 0;
         #pragma omp parallel for schedule(static) reduction(|:up,down)
-        for (std::size_t i = 0; i < vec_.size(); i += 2*delta){
-            for (std::size_t j = 0; j < delta; ++j){
+        for (omp::idx_t i = 0; i < vec_.size(); i += 2*delta){
+            for (omp::idx_t j = 0; j < delta; ++j){
                 up = up | ((std::norm(vec_[i+j]) > tol)&1);
                 down = down | ((std::norm(vec_[i+j+delta]) > tol)&1);
             }
@@ -116,7 +117,7 @@ public:
 
         if (!shrink){
             #pragma omp parallel for schedule(static)
-            for (std::size_t i = 0; i < vec_.size(); i += 2*delta){
+            for (omp::idx_t i = 0; i < vec_.size(); i += 2*delta){
                 for (std::size_t j = 0; j < delta; ++j)
                     vec_[i+j+static_cast<std::size_t>(!value)*delta] = 0.;
             }
@@ -127,7 +128,7 @@ public:
               std::swap(tmpBuff1_, newvec);
             newvec.resize((1UL << (N_-1)));
             #pragma omp parallel for schedule(static) if(0)
-            for (std::size_t i = 0; i < vec_.size(); i += 2*delta)
+            for (omp::idx_t i = 0; i < vec_.size(); i += 2*delta)
                 std::copy_n(&vec_[i + static_cast<std::size_t>(value)*delta],
                             delta, &newvec[i/2]);
             std::swap(vec_, newvec);
@@ -174,7 +175,7 @@ public:
         // set bad entries to 0
         calc_type N = 0.;
         #pragma omp parallel for reduction(+:N) schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); ++i){
+        for (omp::idx_t i = 0; i < vec_.size(); ++i){
             if ((i & mask) != val)
                 vec_[i] = 0.;
             else
@@ -183,7 +184,7 @@ public:
         // re-normalize
         N = 1./std::sqrt(N);
         #pragma omp parallel for schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); ++i)
+        for (omp::idx_t i = 0; i < vec_.size(); ++i)
             vec_[i] *= N;
     }
 
@@ -238,7 +239,7 @@ public:
           std::swap(newvec, tmpBuff1_);
         newvec.resize(vec_.size());
 #pragma omp parallel for schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); i++)
+        for (omp::idx_t i = 0; i < vec_.size(); i++)
           newvec[i] = 0;
 
 //#pragma omp parallel reduction(+:newvec[:newvec.size()]) if(parallelize) // requires OpenMP 4.5
@@ -300,7 +301,7 @@ public:
           std::swap(tmpBuff1_, current_state);
         current_state.resize(vec_.size());
 #pragma omp parallel for schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); ++i)
+        for (omp::idx_t i = 0; i < vec_.size(); ++i)
           current_state[i] = vec_[i];
 
         for (auto const& term : td){
@@ -308,7 +309,7 @@ public:
             apply_term(term.first, ids, {});
             calc_type delta = 0.;
             #pragma omp parallel for reduction(+:delta) schedule(static)
-            for (std::size_t i = 0; i < vec_.size(); ++i){
+            for (omp::idx_t i = 0; i < vec_.size(); ++i){
                 auto const a1 = std::real(current_state[i]);
                 auto const b1 = -std::imag(current_state[i]);
                 auto const a2 = std::real(vec_[i]);
@@ -333,7 +334,7 @@ public:
         new_state.resize(vec_.size());
         current_state.resize(vec_.size());
 #pragma omp parallel for schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); ++i){
+        for (omp::idx_t i = 0; i < vec_.size(); ++i){
           new_state[i] = 0;
           current_state[i] = vec_[i];
         }
@@ -341,7 +342,7 @@ public:
             auto const& coefficient = term.second;
             apply_term(term.first, ids, {});
             #pragma omp parallel for schedule(static)
-            for (std::size_t i = 0; i < vec_.size(); ++i){
+            for (omp::idx_t i = 0; i < vec_.size(); ++i){
                 new_state[i] += coefficient * vec_[i];
                 vec_[i] = current_state[i];
             }
@@ -363,7 +364,7 @@ public:
         }
         calc_type probability = 0.;
         #pragma omp parallel for reduction(+:probability) schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); ++i)
+        for (omp::idx_t i = 0; i < vec_.size(); ++i)
             if ((i & mask) == bit_str)
                 probability += std::norm(vec_[i]);
         return probability;
@@ -413,14 +414,14 @@ public:
                 for (auto const& tup : td){
                     apply_term(tup.first, ids, {});
                     #pragma omp parallel for schedule(static)
-                    for (std::size_t j = 0; j < vec_.size(); ++j){
+                    for (omp::idx_t j = 0; j < vec_.size(); ++j){
                         update[j] += vec_[j] * tup.second;
                         vec_[j] = current_state[j];
                     }
                 }
                 nrm_change = 0.;
                 #pragma omp parallel for reduction(+:nrm_change) schedule(static)
-                for (std::size_t j = 0; j < vec_.size(); ++j){
+                for (omp::idx_t j = 0; j < vec_.size(); ++j){
                     update[j] *= coeff;
                     vec_[j] = update[j];
                     if ((j & ctrlmask) == ctrlmask){
@@ -431,7 +432,7 @@ public:
                 nrm_change = std::sqrt(nrm_change);
             }
             #pragma omp parallel for schedule(static)
-            for (std::size_t j = 0; j < vec_.size(); ++j){
+            for (omp::idx_t j = 0; j < vec_.size(); ++j){
                 if ((j & ctrlmask) == ctrlmask)
                     output_state[j] *= correction;
                 vec_[j] = output_state[j];
@@ -451,7 +452,7 @@ public:
         for (unsigned i = 0; i < ordering.size(); ++i)
             map_[ordering[i]] = i;
         #pragma omp parallel for schedule(static)
-        for (std::size_t i = 0; i < wavefunction.size(); ++i)
+        for (omp::idx_t i = 0; i < wavefunction.size(); ++i)
             vec_[i] = wavefunction[i];
     }
 
@@ -469,7 +470,7 @@ public:
         // set bad entries to 0 and compute probability of outcome to renormalize
         calc_type N = 0.;
         #pragma omp parallel for reduction(+:N) schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); ++i){
+        for (omp::idx_t i = 0; i < vec_.size(); ++i){
             if ((i & mask) == val)
                 N += std::norm(vec_[i]);
         }
@@ -478,7 +479,7 @@ public:
         // re-normalize (if possible)
         N = 1./std::sqrt(N);
         #pragma omp parallel for schedule(static)
-        for (std::size_t i = 0; i < vec_.size(); ++i){
+        for (omp::idx_t i = 0; i < vec_.size(); ++i){
             if ((i & mask) != val)
                 vec_[i] = 0.;
             else

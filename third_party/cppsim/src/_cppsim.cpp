@@ -19,9 +19,7 @@
 #include <complex>
 #include <iostream>
 
-#if defined(_OPENMP)
-#  include <omp.h>
-#endif
+#include "cppsim_omp.hpp"
 #include "simulator.hpp"
 
 namespace py = pybind11;

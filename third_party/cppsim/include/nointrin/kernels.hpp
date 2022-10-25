@@ -21,6 +21,8 @@
 #define add(a, b) (a + b)
 #define mul(a, b) (a * b)
 
+#include "cppsim_omp.hpp"
+
 #include "kernel1.hpp"
 #include "kernel2.hpp"
 #include "kernel3.hpp"

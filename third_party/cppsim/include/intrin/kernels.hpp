@@ -21,6 +21,8 @@
 #include "cintrin.hpp"
 #include "alignedallocator.hpp"
 
+#include "cppsim_omp.hpp"
+
 #define LOOP_COLLAPSE1 2
 #define LOOP_COLLAPSE2 3
 #define LOOP_COLLAPSE3 4

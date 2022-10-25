@@ -341,12 +341,12 @@ void kernel(V &psi, unsigned id4, unsigned id3, unsigned id2, unsigned id1, unsi
 
     if (ctrlmask == 0){
         #pragma omp for collapse(LOOP_COLLAPSE5) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
-            for (std::size_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
-                for (std::size_t i2 = 0; i2 < dsorted1; i2 += 2 * dsorted2){
-                    for (std::size_t i3 = 0; i3 < dsorted2; i3 += 2 * dsorted3){
-                        for (std::size_t i4 = 0; i4 < dsorted3; i4 += 2 * dsorted4){
-                            for (std::size_t i5 = 0; i5 < dsorted4; ++i5){
+        for (omp::idx_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (omp::idx_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
+                for (omp::idx_t i2 = 0; i2 < dsorted1; i2 += 2 * dsorted2){
+                    for (omp::idx_t i3 = 0; i3 < dsorted2; i3 += 2 * dsorted3){
+                        for (omp::idx_t i4 = 0; i4 < dsorted3; i4 += 2 * dsorted4){
+                            for (omp::idx_t i5 = 0; i5 < dsorted4; ++i5){
                                 kernel_core(psi, i0 + i1 + i2 + i3 + i4 + i5, d0, d1, d2, d3, d4, m);
                             }
                         }
@@ -357,12 +357,12 @@ void kernel(V &psi, unsigned id4, unsigned id3, unsigned id2, unsigned id1, unsi
     }
     else{
         #pragma omp for collapse(LOOP_COLLAPSE5) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
-            for (std::size_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
-                for (std::size_t i2 = 0; i2 < dsorted1; i2 += 2 * dsorted2){
-                    for (std::size_t i3 = 0; i3 < dsorted2; i3 += 2 * dsorted3){
-                        for (std::size_t i4 = 0; i4 < dsorted3; i4 += 2 * dsorted4){
-                            for (std::size_t i5 = 0; i5 < dsorted4; ++i5){
+        for (omp::idx_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (omp::idx_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
+                for (omp::idx_t i2 = 0; i2 < dsorted1; i2 += 2 * dsorted2){
+                    for (omp::idx_t i3 = 0; i3 < dsorted2; i3 += 2 * dsorted3){
+                        for (omp::idx_t i4 = 0; i4 < dsorted3; i4 += 2 * dsorted4){
+                            for (omp::idx_t i5 = 0; i5 < dsorted4; ++i5){
                                 if (((i0 + i1 + i2 + i3 + i4 + i5)&ctrlmask) == ctrlmask)
                                     kernel_core(psi, i0 + i1 + i2 + i3 + i4 + i5, d0, d1, d2, d3, d4, m);
                             }

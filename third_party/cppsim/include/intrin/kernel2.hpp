@@ -48,9 +48,9 @@ void kernel(V &psi, unsigned id1, unsigned id0, M const& m, std::size_t ctrlmask
 
     if (ctrlmask == 0){
         #pragma omp for collapse(LOOP_COLLAPSE2) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
-            for (std::size_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
-                for (std::size_t i2 = 0; i2 < dsorted1; ++i2){
+        for (omp::idx_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (omp::idx_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
+                for (omp::idx_t i2 = 0; i2 < dsorted1; ++i2){
                     kernel_core(psi, i0 + i1 + i2, d0, d1, mm, mmt);
                 }
             }
@@ -58,9 +58,9 @@ void kernel(V &psi, unsigned id1, unsigned id0, M const& m, std::size_t ctrlmask
     }
     else{
         #pragma omp for collapse(LOOP_COLLAPSE2) schedule(static)
-        for (std::size_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
-            for (std::size_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
-                for (std::size_t i2 = 0; i2 < dsorted1; ++i2){
+        for (omp::idx_t i0 = 0; i0 < n; i0 += 2 * dsorted0){
+            for (omp::idx_t i1 = 0; i1 < dsorted0; i1 += 2 * dsorted1){
+                for (omp::idx_t i2 = 0; i2 < dsorted1; ++i2){
                     if (((i0 + i1 + i2)&ctrlmask) == ctrlmask)
                         kernel_core(psi, i0 + i1 + i2, d0, d1, mm, mmt);
                 }
