@@ -18,8 +18,9 @@
 #include <vector>
 #include <complex>
 #include <iostream>
+
 #if defined(_OPENMP)
-#include <omp.h>
+#  include <omp.h>
 #endif
 #include "simulator.hpp"
 

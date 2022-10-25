@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cstddef> // size_t
-#include <complex>
 #include <algorithm>
+#include <array>
+#include <complex>
+#include <cstdint> // size_t
+#include <functional>
 
 #define add(a, b) (a + b)
 #define mul(a, b) (a * b)
