@@ -28,6 +28,10 @@ set(CPPSIM_INSTALL_3RDPARTYDIR "${CPPSIM_INSTALL_LIBDIR}/third_party")
 
 # ==============================================================================
 
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/compiler_has_std_filesystem.cmake")
+
+# ==============================================================================
+
 include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)
 
@@ -106,6 +110,12 @@ find_package(Python ${CPPSIM_PYTHON_VERSION_MIN} COMPONENTS Interpreter Developm
 
 find_package(OpenMP REQUIRED)
 
+set(filesystem_LIBS)
+if(NOT CPPSIM_HAS_STD_FILESYSTEM)
+  find_package(Boost REQUIRED COMPONENTS filesystem)
+  set(filesystem_LIBS Boost::filesystem)
+endif()
+
 # ==============================================================================
 
 include(CMakePackageConfigHelpers)
@@ -121,6 +131,7 @@ install(FILES ${PROJECT_BINARY_DIR}/cppsimConfig.cmake ${PROJECT_BINARY_DIR}/cpp
         DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/cmake/commands DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
+install(FILES ${PROJECT_SOURCE_DIR}/cmake/compiler_has_std_filesystem.cmake DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
 
 file(GLOB _headers ${CMAKE_CURRENT_LIST_DIR}/include/*.h ${CMAKE_CURRENT_LIST_DIR}/include/*.hpp LIST_DIRECTORIES FALSE)
 install(FILES ${_headers} DESTINATION ${CPPSIM_INSTALL_INCLUDEDIR})
@@ -142,7 +153,7 @@ res_embed(
   KEYWORD)
 
 target_link_libraries(kernelgen PUBLIC digestpp::digestpp pybind11::pybind11 Python::Python OpenMP::OpenMP_CXX
-                                       ${CMAKE_DL_LIBS})
+                                       ${CMAKE_DL_LIBS} ${filesystem_LIBS})
 
 pybind11_add_module(${PROJECT_NAME} SHARED "src/_${PROJECT_NAME}.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE kernelgen)
