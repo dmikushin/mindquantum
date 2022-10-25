@@ -104,7 +104,7 @@ endif()
 
 # ------------------------------------------------------------------------------
 
-find_package(Python ${CPPSIM_PYTHON_VERSION_MIN} COMPONENTS Interpreter Development.Embed)
+find_package(Python ${CPPSIM_PYTHON_VERSION_MIN} COMPONENTS Interpreter Development.Module)
 
 # ------------------------------------------------------------------------------
 
@@ -152,7 +152,7 @@ res_embed(
   PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py"
   KEYWORD)
 
-target_link_libraries(kernelgen PUBLIC digestpp::digestpp pybind11::pybind11 Python::Python OpenMP::OpenMP_CXX
+target_link_libraries(kernelgen PUBLIC digestpp::digestpp pybind11::pybind11 Python::Module OpenMP::OpenMP_CXX
                                        ${CMAKE_DL_LIBS} ${filesystem_LIBS})
 
 pybind11_add_module(${PROJECT_NAME} SHARED "src/_${PROJECT_NAME}.cpp")
