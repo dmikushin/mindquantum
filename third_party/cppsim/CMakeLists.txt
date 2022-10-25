@@ -7,8 +7,7 @@ project(
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/commands)
 
-# Minimum required Python version (used both in this file and in the installed
-# CMake configuration)
+# Minimum required Python version (used both in this file and in the installed CMake configuration)
 set(CPPSIM_PYTHON_VERSION_MIN 3.7.0)
 
 option(BUILD_TESTING "Build the test suite?" OFF)
@@ -55,13 +54,11 @@ if(BUILD_TESTING)
 endif()
 
 # ------------------------------------------------------------------------------
-# In the case of digestpp, the repository only consists of a list of
-# files/directories that we need both our build process to find as well as
-# future users of an installed copy of cppsim.
+# In the case of digestpp, the repository only consists of a list of files/directories that we need both our build
+# process to find as well as future users of an installed copy of cppsim.
 #
-# We therefore provide a target that we use for our current build and also
-# install its files into a sub-directory of the installation prefix. We then
-# define the digestpp::digestpp target directly within cppsimConfig.cmake
+# We therefore provide a target that we use for our current build and also install its files into a sub-directory of the
+# installation prefix. We then define the digestpp::digestpp target directly within cppsimConfig.cmake
 
 FetchContent_Declare(
   digestpp
@@ -70,8 +67,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(digestpp)
 
 add_library(digestpp::digestpp INTERFACE IMPORTED)
-target_include_directories(digestpp::digestpp
-                           INTERFACE $<BUILD_INTERFACE:${digestpp_SOURCE_DIR}>)
+target_include_directories(digestpp::digestpp INTERFACE $<BUILD_INTERFACE:${digestpp_SOURCE_DIR}>)
 
 install(
   DIRECTORY ${digestpp_SOURCE_DIR}
@@ -104,8 +100,7 @@ endif()
 
 # ------------------------------------------------------------------------------
 
-find_package(Python ${CPPSIM_PYTHON_VERSION_MIN} COMPONENTS Interpreter
-                                                            Development.Embed)
+find_package(Python ${CPPSIM_PYTHON_VERSION_MIN} COMPONENTS Interpreter Development.Embed)
 
 # ------------------------------------------------------------------------------
 
@@ -117,52 +112,37 @@ include(CMakePackageConfigHelpers)
 
 set(_namespace cppsim::)
 
-configure_package_config_file(
-  ${CMAKE_CURRENT_LIST_DIR}/cmake/cppsimConfig.cmake.in
-  ${PROJECT_BINARY_DIR}/cppsimConfig.cmake
-  INSTALL_DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
+configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/cppsimConfig.cmake.in
+                              ${PROJECT_BINARY_DIR}/cppsimConfig.cmake INSTALL_DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
 
-write_basic_package_version_file(${PROJECT_BINARY_DIR}/cppsimConfigVersion.cmake
-                                 COMPATIBILITY SameMajorVersion)
+write_basic_package_version_file(${PROJECT_BINARY_DIR}/cppsimConfigVersion.cmake COMPATIBILITY SameMajorVersion)
 
-install(FILES ${PROJECT_BINARY_DIR}/cppsimConfig.cmake
-              ${PROJECT_BINARY_DIR}/cppsimConfigVersion.cmake
+install(FILES ${PROJECT_BINARY_DIR}/cppsimConfig.cmake ${PROJECT_BINARY_DIR}/cppsimConfigVersion.cmake
         DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/cmake/commands
-        DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/cmake/commands DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
 
-file(GLOB _headers ${CMAKE_CURRENT_LIST_DIR}/include/*.h
-     ${CMAKE_CURRENT_LIST_DIR}/include/*.hpp LIST_DIRECTORIES FALSE)
+file(GLOB _headers ${CMAKE_CURRENT_LIST_DIR}/include/*.h ${CMAKE_CURRENT_LIST_DIR}/include/*.hpp LIST_DIRECTORIES FALSE)
 install(FILES ${_headers} DESTINATION ${CPPSIM_INSTALL_INCLUDEDIR})
-install(
-  DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/cpu
-            ${CMAKE_CURRENT_LIST_DIR}/include/gpu
-            ${CMAKE_CURRENT_LIST_DIR}/include/intrin
-            ${CMAKE_CURRENT_LIST_DIR}/include/nointrin
-  DESTINATION ${CPPSIM_INSTALL_INCLUDEDIR})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/cpu ${CMAKE_CURRENT_LIST_DIR}/include/gpu
+                  ${CMAKE_CURRENT_LIST_DIR}/include/intrin ${CMAKE_CURRENT_LIST_DIR}/include/nointrin
+        DESTINATION ${CPPSIM_INSTALL_INCLUDEDIR})
 
 # ==============================================================================
 
-add_library(kernelgen STATIC "src/kernelgen.cpp" "src/compiler.cpp"
-                             "src/tempfile.cpp")
-set_target_properties(kernelgen PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF)
+add_library(kernelgen STATIC "src/kernelgen.cpp" "src/compiler.cpp" "src/tempfile.cpp")
+target_compile_features(kernelgen PUBLIC cxx_std_17)
 set_property(TARGET kernelgen PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(
-  kernelgen PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                   $<INSTALL_INTERFACE:${CPPSIM_INSTALL_INCLUDEDIR}>)
+target_include_directories(kernelgen PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                                            $<INSTALL_INTERFACE:${CPPSIM_INSTALL_INCLUDEDIR}>)
 res_embed(
-  TARGET
-  kernelgen
-  NAME
-  "nointrin"
-  PATH
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py"
+  TARGET kernelgen
+  NAME "nointrin"
+  PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py"
   KEYWORD)
 
-target_link_libraries(
-  kernelgen PUBLIC digestpp::digestpp pybind11::pybind11 Python::Python
-                   OpenMP::OpenMP_CXX ${CMAKE_DL_LIBS})
+target_link_libraries(kernelgen PUBLIC digestpp::digestpp pybind11::pybind11 Python::Python OpenMP::OpenMP_CXX
+                                       ${CMAKE_DL_LIBS})
 
 pybind11_add_module(${PROJECT_NAME} SHARED "src/_${PROJECT_NAME}.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE kernelgen)
@@ -189,31 +169,45 @@ if(BUILD_TESTING)
   include(kernelgen)
 
   add_executable(test_nointrin "src/test/test_nointrin.cpp")
-  set_target_properties(test_nointrin PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS
-                                                                 OFF)
-  target_include_directories(test_nointrin
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_compile_features(test_nointrin PRIVATE cxx_std_17)
+  target_include_directories(test_nointrin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(test_nointrin PRIVATE gtest kernelgen Eigen3::Eigen)
-  kernelgen(TARGET test_nointrin NQUBITS 1 VARIANT nointrin COMBINATIONS)
-  kernelgen(TARGET test_nointrin NQUBITS 2 VARIANT nointrin COMBINATIONS)
-  kernelgen(TARGET test_nointrin NQUBITS 3 VARIANT nointrin COMBINATIONS)
-  kernelgen(TARGET test_nointrin NQUBITS 4 VARIANT nointrin COMBINATIONS)
-  kernelgen(TARGET test_nointrin NQUBITS 5 VARIANT nointrin COMBINATIONS)
+
+  kernelgen(
+    TARGET test_nointrin
+    NQUBITS 1
+    VARIANT nointrin
+    COMBINATIONS)
+  kernelgen(
+    TARGET test_nointrin
+    NQUBITS 2
+    VARIANT nointrin
+    COMBINATIONS)
+  kernelgen(
+    TARGET test_nointrin
+    NQUBITS 3
+    VARIANT nointrin
+    COMBINATIONS)
+  kernelgen(
+    TARGET test_nointrin
+    NQUBITS 4
+    VARIANT nointrin
+    COMBINATIONS)
+  kernelgen(
+    TARGET test_nointrin
+    NQUBITS 5
+    VARIANT nointrin
+    COMBINATIONS)
 
   add_executable(test_popcount "src/test/test_popcount.cpp")
-  set_target_properties(test_popcount PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS
-                                                                 OFF)
-  target_include_directories(test_popcount
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_compile_features(test_popcount PRIVATE cxx_std_17)
+  target_include_directories(test_popcount PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(test_popcount PRIVATE Eigen3::Eigen gtest)
 
   add_executable(test_combinations "src/test/test_combinations.cpp")
-  set_target_properties(test_combinations PROPERTIES CXX_STANDARD 17
-                                                     CXX_EXTENSIONS OFF)
-  target_include_directories(test_combinations
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-  target_link_libraries(test_combinations PRIVATE gtest Eigen3::Eigen
-                                                  OpenMP::OpenMP_CXX)
+  target_compile_features(test_combinations PRIVATE cxx_std_17)
+  target_include_directories(test_combinations PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_link_libraries(test_combinations PRIVATE gtest Eigen3::Eigen OpenMP::OpenMP_CXX)
 
   add_executable(benchmark "src/benchmark/benchmark.cpp")
   target_link_libraries(benchmark PRIVATE gtest kernelgen)

@@ -1,0 +1,44 @@
+---
+
+markup:
+  first_comment_is_literal: true
+format:
+  disable: false
+  line_width: 120
+  tab_size: 2
+  use_tabchars: false
+  max_subgroups_hwrap: 2
+  max_pargs_hwrap: 6
+  max_rows_cmdline: 2
+  separate_ctrl_name_with_space: false
+  separate_fn_name_with_space: false
+  dangle_parens: false
+  dangle_align: prefix
+  min_prefix_chars: 4
+  max_prefix_chars: 10
+  max_lines_hwrap: 2
+  line_ending: unix
+  command_case: canonical
+  keyword_case: unchanged
+  enable_sort: true
+  autosort: false
+  require_valid_layout: false
+parse:
+  additional_commands:
+    res_embed:
+      pargs:
+        flags:
+          - KEYWORD
+      kwargs:
+        TARGET: 1
+        NAME: 1
+        PATH: 1
+        DEPENDS: 1+
+    kernelgen:
+      pargs:
+        flags:
+          - COMBINATIONS
+      kwargs:
+        TARGET: 1
+        NQUBITS: 1
+        VARIANT: 1

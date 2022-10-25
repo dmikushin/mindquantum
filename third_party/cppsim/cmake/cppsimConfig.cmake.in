@@ -6,8 +6,7 @@
 set(CPPSIM_PREFIX_DIR "${PACKAGE_PREFIX_DIR}")
 
 if(TARGET cppsim::cppsim)
-  # Protect against double definitions due to previous call or
-  # add_subdirectory()
+  # Protect against double definitions due to previous call or add_subdirectory()
   return()
 endif()
 
@@ -25,11 +24,8 @@ find_package(
 
 if(NOT TARGET digestpp::digestpp)
   add_library(digestpp::digestpp INTERFACE IMPORTED)
-  target_include_directories(
-    digestpp::digestpp
-    INTERFACE
-      "${CPPSIM_PREFIX_DIR}/@CPPSIM_INSTALL_INCLUDEDIR@/third_party/digestpp-src"
-  )
+  target_include_directories(digestpp::digestpp
+                             INTERFACE "${CPPSIM_PREFIX_DIR}/@CPPSIM_INSTALL_INCLUDEDIR@/third_party/digestpp-src")
 endif()
 
 # ==============================================================================
