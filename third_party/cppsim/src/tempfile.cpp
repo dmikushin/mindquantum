@@ -1,11 +1,18 @@
 #include "tempfile.h"
 
 #include <errno.h>
+#if __has_include(<version>)
+#  include <version>
+#endif
+#if __has_include(<filesystem>) && __cpp_lib_filesystem >= 201703
 #include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
 #include <vector>
 #include <unistd.h>
-
-namespace fs = std::filesystem;
 
 const std::string& TempFile::string(std::error_code& ec_) const
 {
