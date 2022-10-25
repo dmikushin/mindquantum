@@ -2,11 +2,27 @@
 #define TEMP_FILE_H
 
 #include <string>
+
+#if __has_include(<version>)
+#  include <version>
+#endif
+
+#if __has_include(<filesystem>) && __cpp_lib_filesystem >= 201703
+#include <filesystem>
 #include <system_error>
+namespace ec_ns = std;
+namespace fs = std::filesystem;
+#else
+#include <boost/system/error_code.hpp>
+#include <boost/filesystem.hpp>
+namespace ec_ns = boost::system;
+namespace fs = boost::filesystem;
+#endif
+
 
 class TempFile
 {
-	std::error_code ec;
+        ec_ns::error_code ec;
 
 	std::string filename;
 
