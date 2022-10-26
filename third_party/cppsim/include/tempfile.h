@@ -13,8 +13,8 @@
 namespace ec_ns = std;
 namespace fs = std::filesystem;
 #else
-#include <boost/system/error_code.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/system/error_code.hpp>
 namespace ec_ns = boost::system;
 namespace fs = boost::filesystem;
 #endif
