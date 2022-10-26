@@ -93,6 +93,10 @@ include(ResEmbed)
 
 # ------------------------------------------------------------------------------
 
+find_package(Python ${CPPSIM_PYTHON_VERSION_MIN} COMPONENTS Interpreter Development.Module)
+
+# ------------------------------------------------------------------------------
+
 find_package(pybind11 CONFIG QUIET)
 if(NOT pybind11_FOUND)
   FetchContent_Declare(
@@ -101,10 +105,6 @@ if(NOT pybind11_FOUND)
     GIT_TAG 68e6fdaa90fc93979e6d5d1e9f788f464593e8f2)
   FetchContent_MakeAvailable(pybind11)
 endif()
-
-# ------------------------------------------------------------------------------
-
-find_package(Python ${CPPSIM_PYTHON_VERSION_MIN} COMPONENTS Interpreter Development.Module)
 
 # ------------------------------------------------------------------------------
 
