@@ -2,13 +2,16 @@
 #include "tempfile.h"
 #include "digestpp.hpp"
 
-#include <cstdlib>
-#include <dlfcn.h>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <streambuf>
+#include <array>               // for array
+#include <cstdlib>             // for system
+#include <fstream>             // for ofstream
+#include <iterator>            // for istreambuf_iterator, operator==
+#include <map>                 // for map
+#include <sstream>             // for stringstream
+#include <system_error>        // for error_code
+#include <utility>             // for make_pair, pair
+
+#include <dlfcn.h>             // for dlerror, dlopen, dlsym
 
 Compiler::Compiler() { }
 

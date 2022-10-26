@@ -110,6 +110,30 @@ endif()
 
 find_package(OpenMP REQUIRED)
 
+# ------------------------------------------------------------------------------
+
+if(MSCV
+   OR MINGW
+   AND NOT MSYS)
+  find_package(dlfcn-win32 CONFIG QUIET)
+  if(NOT dlfcn-win32_FOUND)
+    set(_build_shared_libs ${BUILD_SHARED_LIBS})
+    set(BUILD_SHARED_LIBS OFF)
+    FetchContent_Declare(
+      dlfcn-win32
+      GIT_REPOSITORY https://github.com/dlfcn-win32/dlfcn-win32.git
+      GIT_TAG 9d0ef119d9fcb9139f831adc224857b791c81140)
+    FetchContent_MakeAvailable(dlfcn-win32)
+    set(BUILD_SHARED_LIBS ${_build_shared_libs})
+    target_include_directories(dl PUBLIC ${dlfcn-win32_SOURCE_DIR}/src)
+    list(APPEND CMAKE_DL_LIBS dl)
+  else()
+    list(APPEND CMAKE_DL_LIBS dlfcn-win32::dl)
+  endif()
+endif()
+
+# ------------------------------------------------------------------------------
+
 set(filesystem_LIBS)
 if(NOT CPPSIM_HAS_STD_FILESYSTEM)
   find_package(Boost REQUIRED COMPONENTS filesystem)
