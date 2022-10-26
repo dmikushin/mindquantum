@@ -152,10 +152,10 @@ res_embed(
   PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py"
   KEYWORD)
 
-target_link_libraries(kernelgen PUBLIC digestpp::digestpp pybind11::pybind11 Python::Module OpenMP::OpenMP_CXX
-                                       ${CMAKE_DL_LIBS} ${filesystem_LIBS})
+target_link_libraries(kernelgen PUBLIC digestpp::digestpp pybind11::module OpenMP::OpenMP_CXX ${CMAKE_DL_LIBS}
+                                       ${filesystem_LIBS})
 
-pybind11_add_module(${PROJECT_NAME} SHARED "src/_${PROJECT_NAME}.cpp")
+pybind11_add_module(${PROJECT_NAME} MODULE "src/_${PROJECT_NAME}.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE kernelgen)
 
 # ==============================================================================
