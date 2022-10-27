@@ -12,6 +12,11 @@ set(CPPSIM_PYTHON_VERSION_MIN 3.7.0)
 
 option(BUILD_TESTING "Build the test suite?" OFF)
 
+if(NOT DEFINED ITERATOR_DEBUG_VALUE)
+  set(ITERATOR_DEBUG_VALUE 0)
+endif()
+option(MSVC_ITERATOR_DEBUG "Define _ITERATOR_DEBUG_LEVEL (defaults to 0, can be set using ITERATOR_DEBUG_VALUE)" OFF)
+
 # ==============================================================================
 
 include(GNUInstallDirs)
@@ -231,6 +236,11 @@ target_compile_features(kernelgen PUBLIC cxx_std_17)
 set_property(TARGET kernelgen PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(kernelgen PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                                             $<INSTALL_INTERFACE:${CPPSIM_INSTALL_INCLUDEDIR}>)
+
+if(MSVC AND MSVC_ITERATOR_DEBUG)
+  target_compile_definitions(kernelgen PUBLIC _ITERATOR_DEBUG=${ITERATOR_DEBUG_VALUE})
+endif()
+
 res_embed(
   TARGET kernelgen
   NAME "nointrin"
