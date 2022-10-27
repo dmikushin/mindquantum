@@ -172,7 +172,7 @@ find_package(OpenMP REQUIRED)
 
 # ------------------------------------------------------------------------------
 
-if(MSCV
+if(MSVC
    OR MINGW
    AND NOT MSYS)
   find_package(dlfcn-win32 CONFIG QUIET)
