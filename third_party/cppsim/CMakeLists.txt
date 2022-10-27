@@ -88,6 +88,8 @@ if(NOT res_embed_FOUND)
     GIT_REPOSITORY https://github.com/dmikushin/res_embed.git
     GIT_TAG b803e4df20b09bdd65477a9662530a6feeb228e6)
   FetchContent_MakeAvailable(res_embed)
+else()
+  message(STATUS "Found res_embed at ${res_embed_DIR}")
 endif()
 include(ResEmbed)
 
@@ -104,6 +106,8 @@ if(NOT pybind11_FOUND)
     GIT_REPOSITORY https://github.com/pybind/pybind11.git
     GIT_TAG 68e6fdaa90fc93979e6d5d1e9f788f464593e8f2)
   FetchContent_MakeAvailable(pybind11)
+else()
+  message(STATUS "Found pybind11 at ${pybind11_DIR}")
 endif()
 
 # ------------------------------------------------------------------------------
@@ -184,6 +188,7 @@ if(MSCV
     target_include_directories(dl PUBLIC ${dlfcn-win32_SOURCE_DIR}/src)
     list(APPEND CMAKE_DL_LIBS dl)
   else()
+    message(STATUS "Found dlfcn-win32 at ${dlfcn-win32_DIR}")
     list(APPEND CMAKE_DL_LIBS dlfcn-win32::dl)
   endif()
 endif()
