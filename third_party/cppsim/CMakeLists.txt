@@ -108,6 +108,62 @@ endif()
 
 # ------------------------------------------------------------------------------
 
+if(APPLE)
+  find_program(BREW_CMD brew PATHS /usr/local/bin)
+  if(BREW_CMD)
+    # Homebrew installs libomp in ${LIBOMP_PREFIX}/lib and the headers in ${LIBOMP_PREFIX}/include
+    execute_process(COMMAND ${BREW_CMD} --prefix libomp OUTPUT_VARIABLE LIBOMP_PREFIX)
+    string(STRIP ${LIBOMP_PREFIX} LIBOMP_PREFIX)
+
+    find_library(
+      LIBOMP_LIB omp gomp libomp
+      HINTS ${LIBOMP_PREFIX}
+      PATH_SUFFIXES lib
+      NO_DEFAULT_PATH)
+    if(LIBOMP_LIB)
+      get_filename_component(LIBOMP_DIR ${LIBOMP_LIB} DIRECTORY)
+      list(APPEND CMAKE_LIBRARY_PATH ${LIBOMP_DIR})
+    endif()
+
+    find_path(
+      LIBOMP_INC omp.h
+      HINTS ${LIBOMP_PREFIX}
+      PATH_SUFFIXES include
+      NO_DEFAULT_PATH)
+    if(LIBOMP_INC)
+      list(APPEND CMAKE_INCLUDE_PATH ${LIBOMP_INC})
+    else()
+      message(WARNING "Unable to locate omp.h, the code might not compile properly.\n"
+                      "You might want to try installing the `libomp` Homebrew formula: brew install libomp")
+    endif()
+  else()
+    set(_macports_install_prefix "/opt/local")
+    # MacPorts install libomp in ${_macports_install_prefix}/lib/libomp and the headers in
+    # ${_macports_install_prefix}/include/libomp
+    find_library(
+      LIBOMP_LIB omp gomp libomp
+      PATHS "${_macports_install_prefix}/lib"
+      PATH_SUFFIXES libomp
+      NO_DEFAULT_PATH)
+    if(LIBOMP_LIB)
+      get_filename_component(LIBOMP_DIR ${LIBOMP_LIB} DIRECTORY)
+      list(APPEND CMAKE_LIBRARY_PATH ${LIBOMP_DIR})
+    endif()
+
+    find_path(
+      LIBOMP_INC omp.h
+      PATHS "${_macports_install_prefix}/include"
+      PATH_SUFFIXES libomp
+      NO_DEFAULT_PATH)
+    if(LIBOMP_INC)
+      list(APPEND CMAKE_INCLUDE_PATH ${LIBOMP_INC})
+    else()
+      message(WARNING "Unable to locate omp.h, the code might not compile properly.\n"
+                      "You might want to try installing the `libomp` MacPorts port: sudo port install libomp")
+    endif()
+  endif()
+endif()
+
 find_package(OpenMP REQUIRED)
 
 # ------------------------------------------------------------------------------
