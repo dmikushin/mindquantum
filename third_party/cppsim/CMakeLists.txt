@@ -179,7 +179,7 @@ find_package(OpenMP REQUIRED)
 
 if(MSVC
    OR MINGW
-   AND NOT MSYS)
+   OR MSYS)
   find_package(dlfcn-win32 CONFIG QUIET)
   if(NOT dlfcn-win32_FOUND)
     set(_build_shared_libs ${BUILD_SHARED_LIBS})
