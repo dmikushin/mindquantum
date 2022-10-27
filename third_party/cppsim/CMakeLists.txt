@@ -185,7 +185,7 @@ if(MSVC
       GIT_TAG 9d0ef119d9fcb9139f831adc224857b791c81140)
     FetchContent_MakeAvailable(dlfcn-win32)
     set(BUILD_SHARED_LIBS ${_build_shared_libs})
-    target_include_directories(dl PUBLIC ${dlfcn-win32_SOURCE_DIR}/src)
+    target_include_directories(dl PUBLIC $<BUILD_INTERFACE:${dlfcn-win32_SOURCE_DIR}/src>)
     list(APPEND CMAKE_DL_LIBS dl)
   else()
     message(STATUS "Found dlfcn-win32 at ${dlfcn-win32_DIR}")
