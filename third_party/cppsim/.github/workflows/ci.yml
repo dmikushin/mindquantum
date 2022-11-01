@@ -23,11 +23,13 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout cppsim repository
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
+      - name: Checkout res_embed repository
+        uses: actions/checkout@v3
         with:
-          repository: Takishima/res_embed
+          repository: dmikushin/res_embed
           ref: master
           path: res_embed
 
@@ -75,11 +77,13 @@ jobs:
           # - "Xcode_13.3.1"  # macos-12 only
           # - "Xcode_13.4.1"  # macos-12 only
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout cppsim repository
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
+      - name: Checkout res_embed repository
+        uses: actions/checkout@v3
         with:
-          repository: Takishima/res_embed
+          repository: dmikushin/res_embed
           ref: master
           path: res_embed
 
@@ -124,11 +128,13 @@ jobs:
     name: "GCC ${{ matrix.gcc }} • x64"
     container: "gcc:${{ matrix.gcc }}"
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout cppsim repository
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
+      - name: Checkout res_embed repository
+        uses: actions/checkout@v3
         with:
-          repository: Takishima/res_embed
+          repository: dmikushin/res_embed
           ref: master
           path: res_embed
 
@@ -177,11 +183,13 @@ jobs:
     name: "Clang ${{ matrix.clang }} • x64"
     container: "silkeh/clang:${{ matrix.clang }}"
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout cppsim repository
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
+      - name: Checkout res_embed repository
+        uses: actions/checkout@v3
         with:
-          repository: Takishima/res_embed
+          repository: dmikushin/res_embed
           ref: master
           path: res_embed
 
@@ -210,11 +218,13 @@ jobs:
     runs-on: windows-latest
     name: "MSVC • x64"
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout cppsim repository
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
+      - name: Checkout res_embed repository
+        uses: actions/checkout@v3
         with:
-          repository: Takishima/res_embed
+          repository: dmikushin/res_embed
           ref: master
           path: res_embed
 
@@ -258,11 +268,13 @@ jobs:
       BOOST_VERSION: 1.78.0
       BOOST_PATH: ${{github.workspace}}/boost/boost
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout cppsim repository
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
+      - name: Checkout res_embed repository
+        uses: actions/checkout@v3
         with:
-          repository: Takishima/res_embed
+          repository: dmikushin/res_embed
           ref: master
           path: res_embed
 
@@ -368,11 +380,13 @@ jobs:
 
     name: "MSYS2 ${{ matrix.msystem }} • x64"
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout cppsim repository
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
+      - name: Checkout res_embed repository
+        uses: actions/checkout@v3
         with:
-          repository: Takishima/res_embed
+          repository: dmikushin/res_embed
           ref: master
           path: res_embed
 
@@ -426,11 +440,13 @@ jobs:
     steps:
       - run: git config --global core.autocrlf input
 
-      - uses: actions/checkout@v3
+      - name: Checkout cppsim repository
+        uses: actions/checkout@v3
 
-      - uses: actions/checkout@v3
+      - name: Checkout res_embed repository
+        uses: actions/checkout@v3
         with:
-          repository: Takishima/res_embed
+          repository: dmikushin/res_embed
           ref: master
           path: res_embed
 
