@@ -91,7 +91,7 @@ if(NOT res_embed_FOUND)
   FetchContent_Declare(
     res_embed
     GIT_REPOSITORY https://github.com/dmikushin/res_embed.git
-    GIT_TAG bf1a143e12dda57a5cb45cb1dc4413b9d6846cb2)
+    GIT_TAG 415f23d253cdf2b17aa792600d2f9058779dc2f7)
   FetchContent_MakeAvailable(res_embed)
 else()
   message(STATUS "Found res_embed at ${res_embed_DIR}")
