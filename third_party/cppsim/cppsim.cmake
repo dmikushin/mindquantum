@@ -22,8 +22,7 @@ set(GIT_TAG "f0c786a99833e73c28378450582d3c425095adb3")
 if(ENABLE_GITEE)
   set(GIT_REPOSITORY "https://gitee.com/dmikushin/cppsim.git")
 else()
-  # set(GIT_REPOSITORY "https://github.com/dmikushin/cppsim.git")
-  set(GIT_REPOSITORY "https://gitee.com/dmikushin/cppsim.git")
+  set(GIT_REPOSITORY "https://github.com/dmikushin/cppsim.git")
 endif()
 
 set(CMAKE_OPTION
