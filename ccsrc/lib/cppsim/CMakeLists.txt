@@ -5,8 +5,6 @@ project(
   VERSION 1.0.0
   LANGUAGES C CXX)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/commands)
-
 # Minimum required Python version (used both in this file and in the installed CMake configuration)
 set(CPPSIM_PYTHON_VERSION_MIN 3.7.0)
 
@@ -33,7 +31,8 @@ set(CPPSIM_INSTALL_3RDPARTYDIR "${CPPSIM_INSTALL_LIBDIR}/third_party")
 
 # ==============================================================================
 
-include("${CMAKE_CURRENT_LIST_DIR}/cmake/compiler_has_std_filesystem.cmake")
+# TODO
+include("${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake/compiler_has_std_filesystem.cmake")
 
 # ==============================================================================
 
@@ -104,19 +103,6 @@ find_package(Python ${CPPSIM_PYTHON_VERSION_MIN} COMPONENTS Interpreter Developm
 
 # ------------------------------------------------------------------------------
 
-find_package(pybind11 CONFIG QUIET)
-if(NOT pybind11_FOUND)
-  FetchContent_Declare(
-    pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11.git
-    GIT_TAG 68e6fdaa90fc93979e6d5d1e9f788f464593e8f2)
-  FetchContent_MakeAvailable(pybind11)
-else()
-  message(STATUS "Found pybind11 at ${pybind11_DIR}")
-endif()
-
-# ------------------------------------------------------------------------------
-
 if(APPLE)
   find_program(BREW_CMD brew PATHS /usr/local/bin)
   if(BREW_CMD)
@@ -177,6 +163,8 @@ find_package(OpenMP REQUIRED)
 
 # ------------------------------------------------------------------------------
 
+# TODO Shouldn't we take dlfcn-win32 to third_party,
+# or replace it with cross-platform dynalo?
 if(MSVC
    OR MINGW
    OR MSYS)
@@ -212,7 +200,7 @@ include(CMakePackageConfigHelpers)
 
 set(_namespace cppsim::)
 
-configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/cppsimConfig.cmake.in
+configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/cppsimConfig.cmake.in
                               ${PROJECT_BINARY_DIR}/cppsimConfig.cmake INSTALL_DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
 
 write_basic_package_version_file(${PROJECT_BINARY_DIR}/cppsimConfigVersion.cmake COMPATIBILITY SameMajorVersion)
@@ -220,21 +208,21 @@ write_basic_package_version_file(${PROJECT_BINARY_DIR}/cppsimConfigVersion.cmake
 install(FILES ${PROJECT_BINARY_DIR}/cppsimConfig.cmake ${PROJECT_BINARY_DIR}/cppsimConfigVersion.cmake
         DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/cmake/commands DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
-install(FILES ${PROJECT_SOURCE_DIR}/cmake/compiler_has_std_filesystem.cmake DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/../../../cmake/commands DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
+install(FILES ${PROJECT_SOURCE_DIR}/../../../cmake/compiler_has_std_filesystem.cmake DESTINATION ${CPPSIM_INSTALL_CMAKEDIR})
 
 file(GLOB _headers ${CMAKE_CURRENT_LIST_DIR}/include/*.h ${CMAKE_CURRENT_LIST_DIR}/include/*.hpp LIST_DIRECTORIES FALSE)
 install(FILES ${_headers} DESTINATION ${CPPSIM_INSTALL_INCLUDEDIR})
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/cpu ${CMAKE_CURRENT_LIST_DIR}/include/gpu
-                  ${CMAKE_CURRENT_LIST_DIR}/include/intrin ${CMAKE_CURRENT_LIST_DIR}/include/nointrin
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../../include/cppsim/cpu ${CMAKE_CURRENT_LIST_DIR}/../../include/cppsim/gpu
+                  ${CMAKE_CURRENT_LIST_DIR}/../../include/cppsim/intrin ${CMAKE_CURRENT_LIST_DIR}/../../include/cppsim/nointrin
         DESTINATION ${CPPSIM_INSTALL_INCLUDEDIR})
 
 # ==============================================================================
 
-add_library(kernelgen STATIC "src/kernelgen.cpp" "src/compiler.cpp" "src/tempfile.cpp")
+add_library(kernelgen STATIC "kernelgen.cpp" "compiler.cpp" "tempfile.cpp")
 target_compile_features(kernelgen PUBLIC cxx_std_17)
 set_property(TARGET kernelgen PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(kernelgen PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+target_include_directories(kernelgen PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include/cppsim>
                                             $<INSTALL_INTERFACE:${CPPSIM_INSTALL_INCLUDEDIR}>)
 
 if(MSVC AND MSVC_ITERATOR_DEBUG)
@@ -244,13 +232,13 @@ endif()
 res_embed(
   TARGET kernelgen
   NAME "nointrin"
-  PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/nointrin/kernelgen.py"
+  PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../include/cppsim/nointrin/kernelgen.py"
   KEYWORD)
 
 target_link_libraries(kernelgen PUBLIC digestpp::digestpp pybind11::module OpenMP::OpenMP_CXX ${CMAKE_DL_LIBS}
                                        ${filesystem_LIBS})
 
-pybind11_add_module(${PROJECT_NAME} MODULE "src/_${PROJECT_NAME}.cpp")
+pybind11_add_module(${PROJECT_NAME} MODULE "_${PROJECT_NAME}.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE kernelgen)
 
 # ==============================================================================
@@ -274,9 +262,8 @@ install(
 if(BUILD_TESTING)
   include(kernelgen)
 
-  add_executable(test_nointrin "src/test/test_nointrin.cpp")
+  add_executable(test_nointrin "test/test_nointrin.cpp")
   target_compile_features(test_nointrin PRIVATE cxx_std_17)
-  target_include_directories(test_nointrin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(test_nointrin PRIVATE gtest kernelgen Eigen3::Eigen)
 
   kernelgen(
@@ -305,16 +292,14 @@ if(BUILD_TESTING)
     VARIANT nointrin
     COMBINATIONS)
 
-  add_executable(test_popcount "src/test/test_popcount.cpp")
+  add_executable(test_popcount "test/test_popcount.cpp")
   target_compile_features(test_popcount PRIVATE cxx_std_17)
-  target_include_directories(test_popcount PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(test_popcount PRIVATE Eigen3::Eigen gtest)
 
-  add_executable(test_combinations "src/test/test_combinations.cpp")
+  add_executable(test_combinations "test/test_combinations.cpp")
   target_compile_features(test_combinations PRIVATE cxx_std_17)
-  target_include_directories(test_combinations PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(test_combinations PRIVATE gtest Eigen3::Eigen OpenMP::OpenMP_CXX)
 
-  add_executable(benchmark "src/benchmark/benchmark.cpp")
+  add_executable(benchmark "benchmark/benchmark.cpp")
   target_link_libraries(benchmark PRIVATE gtest kernelgen)
 endif()

@@ -76,13 +76,15 @@ class aligned_allocator
         std::free(p);
 #endif
     }
-
+#if 0
+    // TODO
+    // class std::allocator<std::complex<double> >’ has no member named ‘max_size’; did you mean ‘_M_max_size’?
     size_type max_size() const noexcept
     {
         std::allocator<T> a;
         return a.max_size();
     }
-
+#endif
 #if __cplusplus >= 201103L
     template <typename C, class... Args>
     void construct(C* c, Args&&... args)

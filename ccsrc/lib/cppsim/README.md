@@ -54,10 +54,6 @@ The proposed generator reproduces the hand-written kernels, and extends support 
 ## Testing
 
 ```
-mkdir build
-cd build
-cmake .. -G Ninja
-ninja
 ./test_nointrin
 ./benchmark
 ```
